@@ -480,7 +480,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
   </div>
   <div class="stats-row">
     <div class="stat-card sc-streak"><div class="stat-val" id="dStreak">0🔥</div><div class="stat-lbl">días seguidos</div></div>
-    <div class="stat-card sc-pts"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">punts ⭐</div></div>
+    <div class="stat-card sc-pts"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
     <div class="stat-card"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
   </div>
   <div class="timer-card">
@@ -554,7 +554,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <span class="tb-icon">📌</span>
     <span class="tb-text" id="taskBannerText"></span>
     <span class="task-time-mini" id="taskTimeMini"></span>
-    <button class="tb-done" id="tbDoneBtn" onclick="markTaskDone()" disabled>✓ Fet</button>
+    <button class="tb-done" id="tbDoneBtn" onclick="markTaskDone()" disabled>✓ Hecho</button>
   </div>
   <div class="mode-tabs" id="modeTabs"></div>
 
@@ -870,7 +870,7 @@ const OB_TOTAL=7;
 
 const OB=[
   ()=>`<div class="qcard"><span class="qemoji">🎓</span><div class="qtitle">¿En qué curso estás?</div><div class="qsub">El agente se adaptará a tu nivel</div><div class="opt-list">${CURSOOS.map(([id,ic,t])=>`<div class="opt${obP.curso===id?' sel':''}" onclick="obCurso('${id}',this)"><span class="oi">${ic}</span><span class="ot">${t}</span><span class="ochk">${obP.curso===id?'✓':''}</span></div>`).join('')}</div></div>`,
-  ()=>`<div class="qcard"><span class="qemoji">👋</span><div class="qtitle">¿Cómo te llamas?</div><div class="qsub">Escribe tu nombre</div><input class="name-in" id="nameIn" type="text" placeholder="El teu nom..." maxlength="20" oninput="obP.name=this.value.trim();obU()" onkeydown="if(event.key==='Enter'&&obP.name)obNextStep()"/></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">👋</span><div class="qtitle">¿Cómo te llamas?</div><div class="qsub">Escribe tu nombre</div><input class="name-in" id="nameIn" type="text" placeholder="Tu nombre..." maxlength="20" oninput="obP.name=this.value.trim();obU()" onkeydown="if(event.key==='Enter'&&obP.name)obNextStep()"/></div>`,
   ()=>`<div class="qcard"><span class="qemoji">🎭</span><div class="qtitle">¿Cuál es tu emoji favorito?</div><div class="qsub">Serà el teu icone</div><div class="ava-grid">${AVAS.map(a=>`<button class="ava-btn${obP.avatar===a?' sel':''}" onclick="obAva('${a}')">${a}</button>`).join('')}</div></div>`,
   ()=>`<div class="qcard"><span class="qemoji">📚</span><div class="qtitle">¿Cómo te van las asignaturas?</div><div class="qsub">Sé sincero/a — el agente lo usará</div><div class="subj-ob">${SUBJS.map(s=>`<div class="sr"><div class="sr-top"><span class="sr-icon">${s.icon}</span><span class="sr-name">${s.name}</span></div><div class="feel-row"><button class="fb${obP.subjectFeelings[s.id]==='love'?' fl':''}" onclick="obFeel('${s.id}','love')">😄 Me mola</button><button class="fb${obP.subjectFeelings[s.id]==='ok'?' fok':''}" onclick="obFeel('${s.id}','ok')">😐 Regular</button><button class="fb${obP.subjectFeelings[s.id]==='hard'?' fh':''}" onclick="obFeel('${s.id}','hard')">😰 Me cuesta</button></div></div>`).join('')}</div></div>`,
   ()=>`<div class="qcard"><span class="qemoji">🎯</span><div class="qtitle">¿Qué te gusta cuando no estudias?</div><div class="qsub">El agente usará tus gustos para los ejemplos</div><div class="opt-list">${HOBBIES.map(([id,i,t])=>`<div class="opt msel${obP.hobbies.includes(id)?' sel':''}" onclick="obHobby('${id}',this)"><span class="oi">${i}</span><span class="ot">${t}</span><span class="ochk">${obP.hobbies.includes(id)?'✓':''}</span></div>`).join('')}</div></div>`,
@@ -946,7 +946,10 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();startTimer();
+  renderTasks();renderExams();renderExamBanner();
+  // Pausar timer cuando estamos en dashboard
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  updateTimerUI();
   show('s_dash');
 }
 
@@ -1016,10 +1019,12 @@ function startTaskTimer(){
 }
 
 function updateTaskTimerUI(){
-  const minReq=curSubj?.minMins||10;const mins=Math.floor(taskTimerSecs/60);const secs=taskTimerSecs%60;
-  const remaining=Math.max(0,minReq*60-taskTimerSecs);const remMins=Math.floor(remaining/60);const remSecs=remaining%60;
+  const taskKey=curTask?'lujuji_task_req_'+curTask.id:null;
+  const minReqSecs=taskKey?parseInt(localStorage.getItem(taskKey)||String((curSubj?.minMins||10)*60)):(curSubj?.minMins||10)*60;
+  const remaining=Math.max(0,minReqSecs-taskTimerSecs);
+  const remMins=Math.floor(remaining/60);const remSecs=remaining%60;
   const el=document.getElementById('taskTimeMini');
-  if(el&&remaining>0)el.textContent=`${remMins}:${String(remSecs).padStart(2,'0')} restantes`;
+  if(el&&remaining>0)el.textContent=remMins+':'+String(remSecs).padStart(2,'0')+' restantes';
 }
 
 // ════════════════════════════════════════════
@@ -1064,7 +1069,7 @@ function saveExam(){
 function toggleTask(id){
   const task=tasks.find(t=>t.id===id);if(!task||task.type==='agent')return;
   task.done=!task.done;
-  if(task.done){profile.pts=(profile.pts||0)+20;sv();document.getElementById('dPts').textContent=profile.pts;toast('+20 pts ⭐');}
+  if(task.done&&!task.ptsGiven){task.ptsGiven=true;profile.pts=(profile.pts||0)+20;sv();document.getElementById('dPts').textContent=profile.pts;toast('+20 pts ⭐');}
   svTasks();renderTasks();
 }
 
@@ -1153,7 +1158,7 @@ function showSubjSelector(){
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
   const sheet=document.createElement('div');
   sheet.style.cssText='background:#fff;border-radius:22px 22px 0 0;padding:1.75rem 1.25rem 3rem;width:100%;max-width:560px';
-  const title=document.createElement('div');title.style.cssText='font-size:18px;font-weight:700;margin-bottom:1.25rem';title.textContent='Que quieres estudiar hoy?';sheet.appendChild(title);
+  const title=document.createElement('div');title.style.cssText='font-size:18px;font-weight:700;margin-bottom:1.25rem';title.textContent='¿Qué quieres estudiar hoy?';sheet.appendChild(title);
   SUBJS.forEach(s=>{
     const row=document.createElement('div');
     row.style.cssText='display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid '+(s.colorB||'#E8E8E8')+';border-radius:14px;cursor:pointer;background:'+(s.colorL||'#FAFAFA')+';margin-bottom:8px';
@@ -1189,12 +1194,24 @@ function openStudy(subj,task){
 
   // Task banner
   if(curTask){
+    // Penalización si ya había empezado esta tarea y salió antes de tiempo
+    const taskKey='lujuji_task_timer_'+curTask.id;
+    const prevSecs=parseInt(localStorage.getItem(taskKey)||'0');
+    const minReq=(subj.minMins||10)*60;
+    if(prevSecs>0&&prevSecs<minReq){
+      // Ya había empezado — añadir 1 min de penalización
+      const penalty=60;
+      const newReq=minReq+penalty;
+      localStorage.setItem('lujuji_task_req_'+curTask.id,newReq);
+      toast('⚠️ Has salido antes de tiempo. +1 minuto de penalización.');
+    }
     document.getElementById('taskBanner').style.display='flex';
     document.getElementById('taskBanner').className='task-banner active';
     document.getElementById('taskBannerText').textContent=curTask.name;
-    document.getElementById('tbDoneBtn').disabled=true;
-    document.getElementById('taskTimeMini').textContent=`${subj.minMins} min mínimo`;
-    document.getElementById('taskTimeMini').style.color='var(--amber)';
+    const prevDone=prevSecs>=(parseInt(localStorage.getItem('lujuji_task_req_'+curTask.id)||String(minReq)));
+    document.getElementById('tbDoneBtn').disabled=!prevDone;
+    document.getElementById('taskTimeMini').textContent=prevDone?'✓ ¡Listo!':`${subj.minMins} min mínimo`;
+    document.getElementById('taskTimeMini').style.color=prevDone?'var(--green)':'var(--amber)';
     startTaskTimer();
   } else {
     document.getElementById('taskBanner').style.display='none';
@@ -1217,6 +1234,7 @@ function openStudy(subj,task){
   buildDictado(subj);gInit();simPregs=[];
 
   setTimeout(()=>greet(),300);
+  startTimer(); // Solo cuenta dentro de asignatura
   show('s_study');recordActivity();
 }
 
@@ -1232,11 +1250,15 @@ function markTaskDone(){
   const minReq=curSubj?.minMins||10;
   if(taskTimerSecs<minReq*60){toast(`¡Faltan ${Math.ceil((minReq*60-taskTimerSecs)/60)} minutos! 💪 💪`);return;}
   tasks.find(t=>t.id===curTask.id)&&(tasks.find(t=>t.id===curTask.id).done=true);
-  profile.pts=(profile.pts||0)+20;sv();svTasks();
-  document.getElementById('dPts').textContent=profile.pts;
+  const taskObj=tasks.find(t=>t.id===curTask.id);
+  if(taskObj&&!taskObj.ptsGiven){taskObj.ptsGiven=true;profile.pts=(profile.pts||0)+20;sv();document.getElementById('dPts').textContent=profile.pts;}
+  svTasks();
+  // Limpiar timer de esta tarea
+  localStorage.removeItem('lujuji_task_timer_'+curTask.id);
+  localStorage.removeItem('lujuji_task_req_'+curTask.id);
   document.getElementById('taskBanner').style.display='none';
   if(taskTimerInterval)clearInterval(taskTimerInterval);
-  toast('✓ Tarea hecha! +20 pts ⭐');confetti();
+  toast('✓ ¡Tarea hecha! +20 pts ⭐');confetti();
   const next=tasks.find(t=>!t.done&&t.type==='agent');
   if(next){curTask=next;const subj=SUBJS.find(s=>next.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)))||curSubj;document.getElementById('taskBanner').style.display='flex';document.getElementById('taskBannerText').textContent=next.name;document.getElementById('tbDoneBtn').disabled=true;startTaskTimer();if(subj.id!==curSubj.id){curSubj=subj;addBot(`Ara passem a ${subj.name}! 😊`);}}
   else{curTask=null;}
@@ -1260,7 +1282,7 @@ function buildSys(){
 
   return `Ets l'agent de ${p.name} (${p.cursoLabel||'Primària'}) per a l'assignatura: ${s.name}. ${li[s.lang]}
 PERFIL: Le mola: ${hbs||'variat'}. Le mola: ${lv||'vàries'}. Li costa: ${hd||'no especificat'}.
-USA els seus hobbies per a exemples concrets i analogies.
+USA els seus hobbies per a exemples concrets i analogies. VARIA les analogies — no repeteixis sempre el mateix esport o joc. Alterna entre tots els seus hobbies de forma aleatòria i de vegades usa analogies sorprenents i inesperades que els facin somriure.
 ${taskCtx}
 ${temariCtx}
 ${examCtx}
@@ -1280,7 +1302,8 @@ CORRECCIÓ QUAN FALLA (5 PASSOS):
 3.💡 Una analogia MUY concreta de la seua vida
 4.❓ UNA pregunta de verificació curta
 5.🌟 Reforç positiu quan ho confirme
-TO: MAI "incorrecte". Màxim 2-3 frases. Celebra l'intent.`;
+TO: MAI "incorrecte". Màxim 2-3 frases. Celebra l'intent.
+VERIFICACIÓ DE CÀLCULS: Si l'alumne dona una resposta matemàtica, COMPROVA sempre si és correcta abans de confirmar-la. Si és incorrecta, aplica els 5 passos de correcció. MAI diguis "exacto" si el resultat és erroni.`;
 }
 
 // ════════════════════════════════════════════
@@ -1358,7 +1381,7 @@ function doneSend(){loading=false;document.getElementById('sendBtn').disabled=or
 
 function updateMood(m){
   const lang=curSubj?.lang||'es';
-  const st={ok:{c:'#16A34A',t:{es:'Listo 😊',ca:'Llest 😊',en:'Ready 😊'}},curious:{c:'#2563EB',t:{es:'¡Curioso! 🌟',ca:'Curiós! 🌟',en:'Curious! 🌟'}},frustrated:{c:'#DC2626',t:{es:'Un poco frustrado/a',ca:'Una mica frustrat/da',en:'A bit frustrated'}},tired:{c:'#9CA3AF',t:{es:'Parece cansado/a',ca:'Sembla cansat/da',en:'Seems tired'}}};
+  const st={ok:{c:'#16A34A',t:{es:'Listo 😊',ca:'Listo 😊',en:'Ready 😊'}},curious:{c:'#2563EB',t:{es:'¡Curioso! 🌟',ca:'¡Curioso! 🌟',en:'Curious! 🌟'}},frustrated:{c:'#DC2626',t:{es:'Un poco frustrado/a',ca:'Un poco frustrado/a',en:'A bit frustrated'}},tired:{c:'#9CA3AF',t:{es:'Parece cansado/a',ca:'Parece cansado/a',en:'Seems tired'}}};
   const s=st[m]||st.ok;document.getElementById('mDot').style.background=s.c;document.getElementById('mTxt').textContent=s.t[lang]||s.t.es;
 }
 
@@ -1450,6 +1473,11 @@ async function analyzePhotos(){
 // ════════════════════════════════════════════
 // JUEGO
 // ════════════════════════════════════════════
+function useTemaManualGame(){
+  const tema=document.getElementById('temaManualGame')?.value.trim();
+  if(!tema){toast('Escribe el tema primero');return;}
+  temariText=tema;updateFotoWarnings();toast('✓ Tema cargado: '+tema.substring(0,40));
+}
 function selGM(card){document.querySelectorAll('.gmode-card').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');gMode=card.dataset.gm;}
 function gInit(){gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;document.getElementById('gSum').classList.remove('vis');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';}
 
@@ -1511,13 +1539,13 @@ function gShowFb(ok,q){
   }else setGNext();
   recordActivity();
 }
-function g5ChkV(){const ua=document.getElementById('g5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(g5VA)||g5VA.includes(ua);const res=document.getElementById('g5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ Perfecte! 🌟';const r=document.getElementById('g5R');r.style.display='block';r.textContent='🌟 Genial! Seguim! 💪';document.getElementById('g5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${g5VA}" 😊`;setGNext();}
+function g5ChkV(){const ua=document.getElementById('g5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(g5VA)||g5VA.includes(ua);const res=document.getElementById('g5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ ¡Perfecto! 🌟';const r=document.getElementById('g5R');r.style.display='block';r.textContent='🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('g5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${g5VA}" 😊`;setGNext();}
 function setGNext(){const nb=document.getElementById('gNext');nb.textContent=gQ<gPool.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
 function gNextQ(){gQ++;gShowQ();recordActivity();}
 function gSummary(){
   document.getElementById('gameWrap').style.display='none';document.getElementById('gSum').classList.add('vis');
   const pct=Math.round(gScore/gPool.length*100);
-  const icons={90:'🏆',70:'🌟',50:'😊',0:'💪'};const msgs={90:'Increïble! 🔥',70:'Molt bé! 🌟',50:'Bé! 😊',0:'Bon intent! 💪'};
+  const icons={90:'🏆',70:'🌟',50:'😊',0:'💪'};const msgs={90:'¡Increíble! 🔥',70:'¡Muy bien! 🌟',50:'¡Bien! 😊',0:'¡Buen intento! 💪'};
   const lvl=pct>=90?90:pct>=70?70:pct>=50?50:0;
   document.getElementById('gSI').textContent=icons[lvl];document.getElementById('gST').textContent=msgs[lvl];
   document.getElementById('gSC').textContent=gScore+'/'+gPool.length;document.getElementById('gSP').textContent=pct+'%';document.getElementById('gSS').textContent=gMaxS+'🔥';
@@ -1528,6 +1556,11 @@ function gSummary(){
 // ════════════════════════════════════════════
 // SIMULACRO (desde temario)
 // ════════════════════════════════════════════
+function useTemaManualSim(){
+  const tema=document.getElementById('temaManualSim')?.value.trim();
+  if(!tema){toast('Escribe el tema primero');return;}
+  temariText=tema;updateFotoWarnings();toast('✓ Tema cargado: '+tema.substring(0,40));
+}
 async function simStart(){
   if(!temariText){toast('¡Sube primero las fotos del temario! 📸');return;}
   document.getElementById('simIntro').style.display='none';document.getElementById('simPlay').style.display='block';document.getElementById('simSum').classList.remove('vis');
@@ -1597,7 +1630,7 @@ function sShowFb(ok,q){
   if(ok){if(q.model){document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model;}setSnext();}
   recordActivity();
 }
-function s5ChkV(){const ua=document.getElementById('s5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(sVA)||sVA.includes(ua);const res=document.getElementById('s5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ Perfecte! 🌟';const r=document.getElementById('s5R');r.style.display='block';r.textContent='🌟 Genial! Seguim! 💪';document.getElementById('s5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${sVA}" 😊`;setSnext();}
+function s5ChkV(){const ua=document.getElementById('s5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(sVA)||sVA.includes(ua);const res=document.getElementById('s5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ ¡Perfecto! 🌟';const r=document.getElementById('s5R');r.style.display='block';r.textContent='🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('s5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${sVA}" 😊`;setSnext();}
 function setSnext(){const nb=document.getElementById('sNext');nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
 function sNextQ(){sQ++;sSimShowQ();recordActivity();}
 function sSimResults(){
@@ -1627,7 +1660,7 @@ function playDictado(){
   if(dictPlaying){window.speechSynthesis.cancel();dictPlaying=false;btn.textContent='🔊 Escuchar el dictado';return;}
   dictPlaying=true;btn.textContent='⏸ Pausar';
   const u=new SpeechSynthesisUtterance(dictText);u.lang=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';u.rate=0.8;
-  u.onend=()=>{dictPlaying=false;btn.textContent='🔊 Escoltar de nou';};
+  u.onend=()=>{dictPlaying=false;btn.textContent='🔊 Escuchar de nuevo';};
   window.speechSynthesis.speak(u);recordActivity();
 }
 
