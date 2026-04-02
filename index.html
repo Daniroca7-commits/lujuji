@@ -1247,8 +1247,12 @@ function updateFotoWarnings(){
 
 function markTaskDone(){
   if(!curTask)return;
-  const minReq=curSubj?.minMins||10;
-  if(taskTimerSecs<minReq*60){toast(`¡Faltan ${Math.ceil((minReq*60-taskTimerSecs)/60)} minutos! 💪 💪`);return;}
+  // Solo bloquear si el botón está deshabilitado
+  const btn=document.getElementById('tbDoneBtn');
+  if(btn&&btn.disabled){
+    const minReq=curSubj?.minMins||10;
+    toast('¡Faltan '+Math.ceil((minReq*60-taskTimerSecs)/60)+' minutos! 💪');return;
+  }
   tasks.find(t=>t.id===curTask.id)&&(tasks.find(t=>t.id===curTask.id).done=true);
   const taskObj=tasks.find(t=>t.id===curTask.id);
   if(taskObj&&!taskObj.ptsGiven){taskObj.ptsGiven=true;profile.pts=(profile.pts||0)+20;sv();document.getElementById('dPts').textContent=profile.pts;}
