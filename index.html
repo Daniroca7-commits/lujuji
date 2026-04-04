@@ -1510,8 +1510,13 @@ async function startGame(){
       const lang=curSubj?.lang||'ca';
       const langInstr={es:'Genera las preguntas en español.',ca:'Genera les preguntes en català/valencià.',en:'Generate questions in English.'};
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:`Genera 10 preguntes de joc basades en aquest temari de ${curSubj.name}. ${langInstr[lang]} Mezcla tipus: vf (verdader/fals), opts (4 opcions), completa (completar frase). JSON sense markdown:\n[{"type":"vf|opts|completa","q":"pregunta","ans":true/false/1/0/2/3/"paraula","opts":["a","b","c","d"],"ok":"feedback positiu","err":"feedback negatiu si falla","analogy":"analogia per recordar","verifyQ":"pregunta verificació","verifyA":"resposta 1-3 paraules"}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
-      const data=await res.json();const raw=data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-      gPool=JSON.parse(raw)||[];
+      const data=await res.json();
+      let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
+      raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
+      // Extraer el array JSON
+      const arrStart=raw.indexOf('[');const arrEnd=raw.lastIndexOf(']');
+      if(arrStart>=0&&arrEnd>arrStart)raw=raw.substring(arrStart,arrEnd+1);
+      try{gPool=JSON.parse(raw)||[];}catch(e2){console.error('Parse error:',e2,raw.substring(0,200));gPool=[];}
     }catch(e){gPool=[];}
   }
 
@@ -1593,8 +1598,12 @@ async function simStart(){
       const lang=curSubj?.lang||'ca';
       const langInstr={es:'Genera en español.',ca:'Genera en català/valencià.',en:'Generate in English.'};
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,messages:[{role:"user",content:`Genera 5 preguntes de simulacre d'examen basades en aquest temari de ${curSubj.name}. ${langInstr[lang]} Mezcla: vf, opts (4 opcions), completa, dev (desenvolupament). Per a cada error inclou els 5 passos de correcció. JSON sense markdown:\n[{"type":"vf|opts|completa|dev","q":"pregunta","ans":true/false/1/0/"paraula","opts":["a","b","c","d"],"ok":"feedback si encerta","err":"feedback si falla","analogy":"analogia","verifyQ":"pregunta verificació","verifyA":"resposta","model":"resposta model completa","punts":["paraula1","paraula2"]}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
-      const data=await res.json();const raw=data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
-      simPregs=JSON.parse(raw)||[];
+      const data=await res.json();
+      let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
+      raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
+      const arrStart=raw.indexOf('[');const arrEnd=raw.lastIndexOf(']');
+      if(arrStart>=0&&arrEnd>arrStart)raw=raw.substring(arrStart,arrEnd+1);
+      try{simPregs=JSON.parse(raw)||[];}catch(e2){console.error('Sim parse error:',e2);simPregs=[];}
     }catch(e){simPregs=[];}
   }
   if(!simPregs.length){toast('Error generando el simulacro.');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
