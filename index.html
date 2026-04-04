@@ -1490,7 +1490,10 @@ async function analyzePhotos(){
 function useTemaManualGame(){
   const tema=document.getElementById('temaManualGame')?.value.trim();
   if(!tema){toast('Escribe el tema primero');return;}
-  temariText=tema;updateFotoWarnings();toast('✓ Tema cargado: '+tema.substring(0,40));
+  temariText=tema;
+  document.getElementById('jocFotoWarn').style.display='none';
+  document.getElementById('startGameBtn').style.display='block';
+  toast('✓ Tema cargado. ¡Ahora toca Empezar!');
 }
 function selGM(card){document.querySelectorAll('.gmode-card').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');gMode=card.dataset.gm;}
 function gInit(){gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;document.getElementById('gSum').classList.remove('vis');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';}
@@ -1573,7 +1576,10 @@ function gSummary(){
 function useTemaManualSim(){
   const tema=document.getElementById('temaManualSim')?.value.trim();
   if(!tema){toast('Escribe el tema primero');return;}
-  temariText=tema;updateFotoWarnings();toast('✓ Tema cargado: '+tema.substring(0,40));
+  temariText=tema;
+  document.getElementById('simFotoWarn').style.display='none';
+  document.getElementById('simStartWrap').style.display='block';
+  toast('✓ Tema cargado. ¡Ahora toca Empezar!');
 }
 async function simStart(){
   if(!temariText){toast('¡Sube primero las fotos del temario! 📸');return;}
