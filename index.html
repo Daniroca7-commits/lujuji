@@ -1513,10 +1513,18 @@ async function startGame(){
       const data=await res.json();
       let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
       raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
-      // Extraer el array JSON
       const arrStart=raw.indexOf('[');const arrEnd=raw.lastIndexOf(']');
       if(arrStart>=0&&arrEnd>arrStart)raw=raw.substring(arrStart,arrEnd+1);
-      try{gPool=JSON.parse(raw)||[];}catch(e2){console.error('Parse error:',e2,raw.substring(0,200));gPool=[];}
+      try{
+        gPool=JSON.parse(raw)||[];
+      }catch(e2){
+        console.error('Parse error:',e2);
+        // Intentar extraer preguntas individualmente
+        try{
+          const matches=raw.match(/\{[^{}]+\}/g)||[];
+          gPool=matches.map(m=>{try{return JSON.parse(m);}catch(e3){return null;}}).filter(Boolean);
+        }catch(e3){gPool=[];}
+      }
     }catch(e){gPool=[];}
   }
 
@@ -1603,7 +1611,15 @@ async function simStart(){
       raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
       const arrStart=raw.indexOf('[');const arrEnd=raw.lastIndexOf(']');
       if(arrStart>=0&&arrEnd>arrStart)raw=raw.substring(arrStart,arrEnd+1);
-      try{simPregs=JSON.parse(raw)||[];}catch(e2){console.error('Sim parse error:',e2);simPregs=[];}
+      try{
+        simPregs=JSON.parse(raw)||[];
+      }catch(e2){
+        console.error('Sim parse error:',e2);
+        try{
+          const matches=raw.match(/\{[^{}]+\}/g)||[];
+          simPregs=matches.map(m=>{try{return JSON.parse(m);}catch(e3){return null;}}).filter(Boolean);
+        }catch(e3){simPregs=[];}
+      }
     }catch(e){simPregs=[];}
   }
   if(!simPregs.length){toast('Error generando el simulacro.');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
