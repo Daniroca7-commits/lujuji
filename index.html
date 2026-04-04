@@ -599,11 +599,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
         <div class="gmode-card" data-gm="opts" onclick="selGM(this)"><div class="gm-icon">🎯</div><div class="gm-name">4 opcions</div><div class="gm-sub">Elige la correcta</div></div>
         <div class="gmode-card" data-gm="comp" onclick="selGM(this)"><div class="gm-icon">✍️</div><div class="gm-name">Completa</div><div class="gm-sub">Escribe la palabra</div></div>
       </div>
-      <div id="jocFotoWarn" style="display:none" class="no-foto-warn">
-        <div class="nfw-icon">📸</div>
-        <div class="nfw-title">¡Sube primero el temario!</div>
-        <div class="nfw-sub">Sube las fotos de lo que estás estudiando y el agente generará las preguntas del juego basándose en tu temario real.</div>
-        <button class="nfw-btn" onclick="sTab('agente',document.querySelector('.stab'))">📸 Ir a subir fotos</button>
+      <div id="jocFotoWarn" style="display:none">
+        <div style="background:var(--amber-l);border:1.5px solid var(--amber-b);border-radius:var(--r);padding:1.25rem;margin-bottom:.75rem">
+          <div style="font-size:15px;font-weight:700;color:#92400E;margin-bottom:8px">📚 ¿Sobre qué quieres jugar?</div>
+          <div style="font-size:13px;color:#92400E;margin-bottom:.75rem;line-height:1.5">Sube una foto del libro para máxima precisión, o escribe el tema directamente.</div>
+          <textarea id="temaManualGame" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--amber-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:70px;background:#fff;margin-bottom:8px" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado&#10;Ej: Present simple and past simple"></textarea>
+          <div style="display:flex;gap:8px">
+            <button onclick="useTemaManualGame()" style="flex:1;padding:11px;background:#92400E;color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer">✍️ Usar este tema</button>
+            <button onclick="sTab('agente',document.querySelector('.stab'))" style="flex:1;padding:11px;background:var(--faint);color:#555;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
+          </div>
+        </div>
       </div>
       <button class="start-game-btn" id="startGameBtn" onclick="startGame()">🚀 Empezar (10 preguntas)</button>
     </div>
@@ -633,11 +638,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
   <!-- TAB SIMULACRO -->
   <div class="tab-pane" id="tp-simulacro">
     <div id="simIntro">
-      <div id="simFotoWarn" style="display:none" class="no-foto-warn">
-        <div class="nfw-icon">📸</div>
-        <div class="nfw-title">¡Sube primero el temario!</div>
-        <div class="nfw-sub">Sube las fotos de lo que estás estudiando y el agente generará las preguntas del simulacro basándose en tu temario real.</div>
-        <button class="nfw-btn" onclick="sTab('agente',document.querySelector('.stab'))">📸 Ir a subir fotos</button>
+      <div id="simFotoWarn" style="display:none">
+        <div style="background:var(--purple-l);border:1.5px solid var(--purple-b);border-radius:var(--r);padding:1.25rem;margin-bottom:.75rem">
+          <div style="font-size:15px;font-weight:700;color:var(--purple);margin-bottom:8px">📚 ¿Sobre qué quieres hacer el simulacro?</div>
+          <div style="font-size:13px;color:#4C1D95;margin-bottom:.75rem;line-height:1.5">Sube una foto del libro para máxima precisión, o escribe el tema directamente.</div>
+          <textarea id="temaManualSim" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--purple-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:70px;background:#fff;margin-bottom:8px" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado&#10;Ej: Present simple and past simple"></textarea>
+          <div style="display:flex;gap:8px">
+            <button onclick="useTemaManualSim()" style="flex:1;padding:11px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer">✍️ Usar este tema</button>
+            <button onclick="sTab('agente',document.querySelector('.stab'))" style="flex:1;padding:11px;background:var(--faint);color:#555;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
+          </div>
+        </div>
       </div>
       <div id="simStartWrap">
         <div style="background:var(--white);border-radius:var(--r);padding:1.25rem;border:1.5px solid var(--border);margin-bottom:.75rem">
@@ -759,7 +769,7 @@ const SUBJS=[
 const AVAS=['🦁','🌸','🌿','🦊','🐻','🦋','🐸','🦄','🐯','🐼','🦅','🌟','⚡','🎯','🚀','🎮','🎨','🎵','⚽','🏆','🐶','🐱','🐭','🐹','🐰','🐺','🦸','🧙','👩‍🚀','🧑‍🎨','🦩','🦚','🦜','🐝','🌈','🍕','🍦','🎸','🎹','📚','✏️','🔭','🌍','🌊','🏄','🎭','🎪','🎠','🏅','💎','🔮','🧩','🎲','🃏','🎀','🌺','🌻','🌙','☀️','❄️','🔥','🐴','🏇','🐎'];
 
 const CURSOOS=[['1prim','🌱','1º Primaria'],['2prim','🌿','2º Primaria'],['3prim','🌳','3º Primaria'],['4prim','⭐','4º Primaria'],['5prim','🚀','5º Primaria'],['6prim','🏆','6º Primaria'],['1eso','🔥','1º ESO'],['2eso','⚡','2º ESO'],['3eso','💫','3º ESO'],['4eso','🎯','4º ESO']];
-const HOBBIES=[['deporte','⚽','Deporte (fútbol, natación...)'],['videojuegos','🎮','Videojuegos'],['musica','🎵','Música'],['dibujar','🎨','Dibujar o manualidades'],['leer','📚','Leer (libros, cómics...)'],['animales','🐾','Animales y naturaleza'],['cocinar','🍕','Cocinar o repostería'],['series','📺','Series, pelis o YouTube']];
+const HOBBIES=[['deporte','⚽','Deporte (fútbol, natación...)'],['hipica','🐴','Hípica (equitación, caballos)'],['videojuegos','🎮','Videojuegos'],['musica','🎵','Música'],['dibujar','🎨','Dibujar o manualidades'],['leer','📚','Leer (libros, cómics...)'],['animales','🐾','Animales y naturaleza'],['cocinar','🍕','Cocinar o repostería'],['series','📺','Series, pelis o YouTube']];
 const STYLES=[['silencio','🤫','En silencio total'],['musica','🎵','Con música de fondo'],['breve','⏱️','Ratos cortos con descansos'],['largo','📖','Un rato largo concentrado'],['voz','🔊','Leyendo en voz alta'],['escribiendo','✏️','Escribiendo a mano']];
 
 const DICTADOS={
