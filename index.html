@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Lujuji"/>
+<meta name="theme-color" content="#F7F7F2"/>
+<title>Lujuji 📚</title>
+<style>
+:root{
+  --bg:#F7F7F2;--white:#fff;--black:#1a1a1a;--border:#E8E8E8;
+  --muted:#999;--faint:#F0F0EC;
+  --blue:#2563EB;--blue-l:#EFF6FF;--blue-b:#BFDBFE;
+  --green:#16A34A;--green-l:#F0FDF4;--green-b:#86EFAC;
+  --red:#DC2626;--red-l:#FEF2F2;--red-b:#FCA5A5;
+  --amber:#D97706;--amber-l:#FFFBEB;--amber-b:#FDE68A;
+  --purple:#7C3AED;--purple-l:#F5F3FF;--purple-b:#C4B5FD;
+  --orange:#EA580C;--r:14px;--rl:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--black);width:100%;min-height:100vh;max-width:100%}
+.screen{display:none;padding:1rem .9rem 5rem;min-height:100vh;width:100%;max-width:560px;margin:0 auto}
+.screen.active{display:block}
+
+/* WELCOME */
+.wc{text-align:center;padding:3rem 1rem 2rem}
+.wlogo{font-size:72px;display:block;margin-bottom:.75rem;animation:wb 1.2s ease infinite}
+@keyframes wb{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.wname{font-size:38px;font-weight:800;letter-spacing:-2px;margin-bottom:6px}
+.wsub{font-size:15px;color:var(--muted);line-height:1.6;margin-bottom:2.5rem}
+.wbtn{display:block;width:100%;padding:18px;background:var(--black);color:#fff;border:none;border-radius:var(--rl);font-size:18px;font-weight:700;cursor:pointer}
+.wbtn2{display:block;width:100%;padding:13px;background:transparent;color:var(--muted);border:none;font-size:14px;cursor:pointer;margin-top:.75rem}
+
+/* ONBOARDING */
+.ob-top{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.ob-back{padding:7px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;color:#666;background:var(--white);flex-shrink:0}
+.prog{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:var(--black);border-radius:4px;transition:width .4s}
+.prog-num{font-size:12px;color:var(--muted);font-weight:600;flex-shrink:0}
+.qcard{background:var(--white);border-radius:24px;padding:1.75rem 1.5rem;border:1px solid var(--border);margin-bottom:1rem;box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.qemoji{font-size:48px;display:block;text-align:center;margin-bottom:.75rem}
+.qtitle{font-size:23px;font-weight:800;text-align:center;margin-bottom:6px;letter-spacing:-.4px}
+.qsub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:1.25rem;line-height:1.5}
+.name-in{width:100%;padding:16px;font-size:22px;text-align:center;border:2px solid var(--border);border-radius:var(--r);outline:none;font-weight:700;background:#FAFAFA;-webkit-appearance:none;transition:border .2s}
+.name-in:focus{border-color:var(--black);background:var(--white)}
+
+/* AVATAR GRID — más emojis */
+.ava-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-height:280px;overflow-y:auto}
+.ava-btn{aspect-ratio:1;border:2.5px solid var(--border);border-radius:13px;cursor:pointer;font-size:24px;display:flex;align-items:center;justify-content:center;background:#FAFAFA;transition:all .15s}
+.ava-btn.sel{border-color:var(--black);background:var(--faint);transform:scale(1.08)}
+
+.opt-list{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;align-items:center;gap:12px;padding:13px 15px;border:2px solid var(--border);border-radius:var(--r);cursor:pointer;background:#FAFAFA;transition:all .15s}
+.opt.sel{border-color:var(--black);background:var(--faint)}
+.opt.msel.sel{border-color:var(--blue);background:var(--blue-l)}
+.oi{font-size:22px;flex-shrink:0}.ot{font-size:14px;font-weight:500;flex:1;line-height:1.3}
+.ochk{width:22px;height:22px;border-radius:50%;border:2px solid #DDD;flex-shrink:0;margin-left:auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .15s}
+.opt.sel .ochk{background:var(--black);border-color:var(--black);color:#fff}
+.opt.msel.sel .ochk{background:var(--blue);border-color:var(--blue);color:#fff}
+.subj-ob{display:flex;flex-direction:column;gap:8px}
+.sr{background:#FAFAFA;border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px}
+.sr-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.sr-icon{font-size:19px}.sr-name{font-size:14px;font-weight:600;flex:1}
+.feel-row{display:flex;gap:6px}
+.fb{flex:1;padding:8px 3px;border:2px solid var(--border);border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;background:var(--white);text-align:center;transition:all .15s;line-height:1.3}
+.fb.fl{border-color:var(--green);background:var(--green-l);color:#166534}
+.fb.fok{border-color:var(--amber);background:var(--amber-l);color:#92400E}
+.fb.fh{border-color:var(--red);background:var(--red-l);color:#991B1B}
+.ob-next{width:100%;padding:16px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;margin-top:.75rem}
+.ob-next:disabled{opacity:.3;cursor:default}
+.ob-next.green{background:var(--green)}
+
+/* RESULTADO OB */
+.res-wrap{text-align:center;padding:1.5rem 0}
+.res-ava{font-size:90px;display:block;margin-bottom:.75rem;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.res-name{font-size:26px;font-weight:800;margin-bottom:4px}
+.res-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
+.res-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:.75rem;text-align:left}
+.rc-lbl{font-size:10px;font-weight:700;color:#CCC;letter-spacing:.08em;margin-bottom:8px}
+.rc-item{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid #F5F5F5}
+.rc-item:last-child{border-bottom:none}
+
+/* DASHBOARD */
+.dash-header{display:flex;align-items:center;gap:12px;margin-bottom:1rem;position:relative}
+.dash-ava{font-size:48px;flex-shrink:0;cursor:pointer;transition:transform .2s}.dash-ava:hover{transform:scale(1.1)}.dash-ava:active{transform:scale(.95)}
+.dash-name{font-size:18px;font-weight:700}
+.dash-curso{font-size:12px;color:var(--muted);margin-top:2px}
+.settings-tap{width:36px;height:36px;border-radius:50%;background:var(--faint);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;margin-left:auto;flex-shrink:0;-webkit-user-select:none;user-select:none}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat-card{background:var(--white);border-radius:var(--r);padding:14px 10px;text-align:center;border:1.5px solid var(--border)}
+.stat-val{font-size:24px;font-weight:800;margin-bottom:2px}
+.stat-lbl{font-size:11px;color:var(--muted);font-weight:500}
+.sc-streak .stat-val{color:var(--orange)}
+.sc-pts .stat-val{color:var(--blue)}
+
+/* TIMER */
+.timer-card{background:var(--white);border-radius:var(--r);padding:13px 15px;margin-bottom:1rem;border:1.5px solid var(--border);display:flex;align-items:center;gap:12px}
+.timer-bar-wrap{flex:1;height:9px;background:var(--border);border-radius:5px;overflow:hidden}
+.timer-bar-fill{height:100%;background:var(--green);border-radius:5px;transition:width 1s linear}
+.timer-bar-fill.warn{background:var(--amber)}
+.timer-bar-fill.done{background:var(--green)}
+.timer-txt{font-size:13px;font-weight:700;color:var(--black);flex-shrink:0;min-width:55px;text-align:right}
+
+/* EXAMEN BANNER */
+.exam-card{border-radius:var(--r);padding:12px 15px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;cursor:pointer}
+.exam-card.urgent{background:#FFF3E0;border:1.5px solid #FFE0B2}
+.exam-card.soon{background:var(--amber-l);border:1.5px solid var(--amber-b)}
+.exam-card.ok{background:var(--green-l);border:1.5px solid var(--green-b)}
+.exam-days{font-size:24px;font-weight:800;flex-shrink:0}
+.exam-name{font-size:14px;font-weight:600}
+.exam-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.exam-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:9px;flex-shrink:0}
+
+/* SECTION */
+.section-title{font-size:11px;color:#BBB;font-weight:700;letter-spacing:.07em;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+.add-btn-s{font-size:13px;color:var(--blue);font-weight:600;cursor:pointer;background:none;border:none;padding:0}
+
+/* TASKS */
+.task-item{background:var(--white);border-radius:var(--r);padding:13px 15px;border:1.5px solid var(--border);display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:all .15s}
+.task-item.done{border-color:var(--green-b);background:var(--green-l);opacity:.7}
+.task-item.locked{border-color:var(--amber-b);background:var(--amber-l)}
+.task-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:all .15s;cursor:pointer}
+.task-item.done .task-check{background:var(--green);border-color:var(--green);color:#fff}
+.task-name{font-size:14px;font-weight:600;flex:1}
+.task-item.done .task-name{text-decoration:line-through;color:var(--muted)}
+.task-type{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0}
+.tt-agent{background:var(--blue-l);color:var(--blue)}
+.tt-solo{background:var(--faint);color:#555}
+.task-timer{font-size:11px;color:var(--amber);font-weight:600;flex-shrink:0}
+
+/* EMPTY */
+.agenda-empty{background:var(--white);border-radius:var(--r);padding:1.75rem;text-align:center;border:2px dashed var(--border);margin-bottom:1rem}
+.ae-icon{font-size:44px;margin-bottom:.75rem}
+.ae-title{font-size:16px;font-weight:700;margin-bottom:5px}
+.ae-sub{font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5}
+
+/* MAIN ACTION */
+.main-action{width:100%;padding:16px;background:var(--black);color:#fff;border:none;border-radius:var(--rl);font-size:16px;font-weight:700;cursor:pointer;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:8px}
+
+/* MODALES */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.vis{display:flex}
+.modal-sheet{background:var(--white);border-radius:22px 22px 0 0;padding:1.75rem 1.25rem 3rem;width:100%;max-width:560px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-size:18px;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+.modal-close{font-size:22px;cursor:pointer;color:var(--muted);background:none;border:none;padding:0}
+.modal-in{width:100%;padding:13px 15px;font-size:15px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;margin-bottom:.75rem;background:#FAFAFA;-webkit-appearance:none}
+.modal-in:focus{border-color:var(--black);background:var(--white)}
+.modal-type-row{display:flex;gap:8px;margin-bottom:1rem}
+.mtype{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;text-align:center;background:var(--white);transition:all .15s}
+.mtype.sel{border-color:var(--black);background:var(--faint)}
+.modal-save{width:100%;padding:15px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer}
+.modal-save:disabled{opacity:.35;cursor:default}
+
+/* AGENDA SETUP */
+.upload-box{border:2px dashed var(--border);border-radius:var(--r);padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--white);margin-bottom:.75rem;position:relative}
+.upload-box:hover{border-color:var(--black);background:var(--faint)}
+.upload-box.filled{border-color:var(--black);border-style:solid;background:var(--faint)}
+.upload-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ub-prev{max-width:100%;max-height:150px;border-radius:10px;object-fit:contain;display:none;margin:0 auto}
+.tasks-input{width:100%;padding:13px 15px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;font-family:inherit;line-height:1.7;resize:none;min-height:110px;background:#FAFAFA}
+.tasks-input:focus{border-color:var(--black);background:var(--white)}
+
+/* STUDY */
+.study-header{background:var(--white);border-radius:var(--r);padding:12px 14px;margin-bottom:.75rem;border:1.5px solid var(--border);display:flex;align-items:center;gap:10px}
+.sh-back{padding:6px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--white);color:#666;flex-shrink:0}
+.sh-ava{font-size:22px;flex-shrink:0}
+.sh-name{font-size:13px;font-weight:700}
+.sh-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.sh-lang{font-size:11px;font-weight:700;padding:3px 9px;border-radius:9px;flex-shrink:0}
+.lp-es{background:#DBEAFE;color:#1D4ED8}.lp-ca{background:#DCFCE7;color:#166534}.lp-en{background:#EDE9FE;color:#6D28D9}
+
+/* TASK TIMER BANNER */
+.task-banner{border-radius:var(--r);padding:11px 14px;margin-bottom:.75rem;display:flex;align-items:center;gap:10px;font-size:13px}
+.task-banner.active{background:var(--blue-l);border:1.5px solid var(--blue-b)}
+.task-banner.locked{background:var(--amber-l);border:1.5px solid var(--amber-b)}
+.tb-icon{font-size:18px;flex-shrink:0}
+.tb-text{flex:1;font-weight:500}
+.task-banner.active .tb-text{color:var(--blue)}
+.task-banner.locked .tb-text{color:#92400E}
+.tb-done{padding:6px 12px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+.tb-done:disabled{opacity:.4;cursor:not-allowed}
+.task-time-mini{font-size:11px;font-weight:700;color:var(--amber);flex-shrink:0}
+
+/* MODO TABS */
+.mode-tabs{display:flex;gap:3px;background:#EEEEE8;padding:3px;border-radius:var(--r);margin-bottom:.75rem;overflow-x:auto}
+.stab{flex-shrink:0;flex:1;padding:9px 6px;font-size:11px;font-weight:600;border:none;border-radius:10px;cursor:pointer;background:transparent;color:#888;text-align:center;transition:all .15s;white-space:nowrap}
+.stab.active{background:var(--white);color:var(--black);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ORTO BLOCK */
+.orto-block{background:#FFF3E0;border:1.5px solid #FFE0B2;border-radius:var(--r);padding:12px 14px;margin-bottom:.75rem;display:none}
+.orto-block.vis{display:block}
+.orto-title{font-size:11px;font-weight:700;color:var(--orange);letter-spacing:.05em;margin-bottom:8px}
+.orto-item{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:5px}
+.orto-item:last-child{margin-bottom:0}
+.orto-wrong{color:var(--red);text-decoration:line-through;font-weight:600}
+.orto-arrow{color:var(--muted);font-size:11px}
+.orto-correct{color:var(--green);font-weight:700}
+.orto-confirm{width:100%;padding:10px;background:var(--orange);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;margin-top:8px}
+
+/* CHAT */
+.mood-bar{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:11px;background:var(--white);border:1px solid var(--border);margin-bottom:.65rem;font-size:12px;color:#888}
+.mood-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .4s}
+.chat-box{background:var(--white);border-radius:var(--r);border:1px solid var(--border);min-height:220px;max-height:300px;overflow-y:auto;padding:.9rem;margin-bottom:.65rem;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.msg{display:flex;gap:7px;align-items:flex-end}
+.msg.u{flex-direction:row-reverse}
+.bub{max-width:86%;padding:9px 13px;border-radius:16px;font-size:13px;line-height:1.65}
+.msg.bot .bub{background:#F4F4F0;color:var(--black);border-bottom-left-radius:4px}
+.msg.u .bub{background:var(--faint);color:var(--black);border-bottom-right-radius:4px}
+.bot-av{width:28px;height:28px;border-radius:50%;background:#F4F4F0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ldots span{display:inline-block;width:5px;height:5px;border-radius:50%;background:#BBB;margin:0 2px;animation:ld 1.2s infinite}
+.ldots span:nth-child(2){animation-delay:.2s}.ldots span:nth-child(3){animation-delay:.4s}
+@keyframes ld{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
+.qrow{display:flex;gap:5px;overflow-x:auto;margin-bottom:.65rem;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.qbtn{flex-shrink:0;padding:7px 13px;font-size:12px;border:1.5px solid var(--border);border-radius:18px;cursor:pointer;background:var(--white);color:#555;white-space:nowrap}
+.inp-wrap{display:flex;gap:7px;align-items:center;position:sticky;bottom:0;background:var(--bg);padding:.5rem 0}
+.photo-btn{width:44px;height:44px;background:var(--faint);border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.photo-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.chat-in{flex:1;padding:11px 15px;font-size:14px;border:1.5px solid #E0E0E0;border-radius:var(--r);outline:none;background:var(--white)}
+.chat-in:focus{border-color:var(--black)}
+.chat-in:disabled{background:#F5F5F5;color:var(--muted)}
+.send-btn{width:44px;height:44px;color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-size:17px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.send-btn:disabled{opacity:.4}
+.pts-flash{text-align:center;font-size:13px;font-weight:700;padding:3px 0;display:none;color:var(--black)}
+
+/* FOTOS */
+.photos-panel{background:var(--white);border-radius:var(--r);border:1.5px solid var(--border);padding:1rem;margin-bottom:.75rem;display:none}
+.photos-panel.vis{display:block}
+.pp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.pp-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.pp-close{font-size:14px;color:#AAA;cursor:pointer;background:none;border:none}
+.photos-row{display:flex;gap:8px;overflow-x:auto;margin-bottom:.75rem;padding-bottom:2px}
+.photo-thumb-wrap{position:relative;flex-shrink:0}
+.photo-thumb{width:72px;height:90px;border-radius:10px;object-fit:cover;border:1.5px solid var(--border)}
+.photo-rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700}
+.add-slot{width:72px;height:90px;flex-shrink:0;border:2px dashed #DDD;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer;background:#FAFAFA;position:relative}
+.add-slot input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.analyze-foto-btn{width:100%;padding:12px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer}
+.analyze-foto-btn:disabled{opacity:.4;cursor:default}
+.analyzing-bar{display:none;align-items:center;gap:8px;padding:10px 14px;background:var(--blue-l);border:1px solid var(--blue-b);border-radius:11px;margin-bottom:.75rem;font-size:13px;color:var(--blue);font-weight:500}
+.analyzing-bar.vis{display:flex}
+
+/* 5 PASOS */
+.corr{margin-top:.5rem}
+.cs{border-radius:11px;padding:10px 13px;margin-bottom:7px;font-size:13px;line-height:1.6;display:none}
+.cs.vis{display:block}
+.cs-t{font-size:10px;font-weight:700;letter-spacing:.05em;margin-bottom:4px}
+.cs-ok{background:var(--green-l);border:1px solid var(--green-b)}.cs-ok .cs-t,.cs-ok p{color:#166534}
+.cs-err{background:var(--red-l);border:1px solid var(--red-b)}.cs-err .cs-t,.cs-err p{color:#991B1B}
+.cs-tip{background:var(--amber-l);border:1px solid var(--amber-b)}.cs-tip .cs-t{color:var(--amber)}.cs-tip p{color:#92400E}
+.cs-ver{background:var(--blue-l);border:1px solid var(--blue-b)}.cs-ver .cs-t{color:#1D4ED8}
+.ver-q{font-size:13px;font-weight:600;color:#1D4ED8;margin-bottom:6px}
+.ver-row{display:flex;gap:6px}
+.ver-in{flex:1;padding:9px 12px;font-size:13px;border:1.5px solid var(--blue-b);border-radius:9px;outline:none}
+.ver-btn{padding:9px 13px;background:var(--blue);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer}
+.ver-res{margin-top:4px;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;display:none}
+.vr-ok{background:var(--green-l);color:#166534;display:block}
+.vr-ko{background:var(--red-l);color:#991B1B;display:block}
+.reinforce{background:var(--green-l);border:1px solid var(--green-b);border-radius:11px;padding:10px 13px;margin-top:6px;font-size:13px;font-weight:600;color:#166534;display:none}
+
+/* JUEGO */
+.score-row{display:flex;justify-content:space-between;margin-bottom:.65rem;font-size:12px;color:#888}
+.score-pts{font-size:14px;font-weight:700;color:var(--black)}
+.prog-game{height:7px;background:var(--border);border-radius:4px;margin-bottom:.75rem;overflow:hidden}
+.prog-gfill{height:100%;background:var(--black);border-radius:4px;transition:width .4s}
+.q-card{border:1.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;background:var(--white);margin-bottom:.75rem;transition:all .3s}
+.q-card.ok{border-color:var(--green-b);background:var(--green-l)}
+.q-card.ko{border-color:var(--red-b);background:var(--red-l)}
+.q-type{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.04em;margin-bottom:7px}
+.q-text{font-size:15px;font-weight:600;color:var(--black);line-height:1.65}
+.vf-row{display:flex;gap:8px;margin-top:.75rem}
+.vf-btn{flex:1;padding:13px;border:1.5px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;background:var(--white);transition:all .15s}
+.vf-btn.v{color:var(--green);border-color:var(--green-b)}.vf-btn.v:hover{background:var(--green-l)}
+.vf-btn.f{color:var(--red);border-color:var(--red-b)}.vf-btn.f:hover{background:var(--red-l)}
+.vf-btn:disabled{opacity:.45}
+.opts-col{display:flex;flex-direction:column;gap:8px;margin-top:.75rem}
+.opt-g{padding:12px 15px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;background:var(--white);text-align:left;transition:all .15s;color:var(--black)}
+.opt-g:hover{background:var(--faint)}
+.opt-g.correct{background:var(--green-l);border-color:var(--green);color:#166534;font-weight:600}
+.opt-g.wrong{background:var(--red-l);border-color:var(--red);color:#991B1B}
+.opt-g:disabled{cursor:default}
+.ans-row{display:flex;gap:7px;margin-top:.75rem}
+.ans-in{flex:1;padding:11px 15px;font-size:14px;border:1.5px solid #E0E0E0;border-radius:var(--r);outline:none}
+.ans-btn{padding:11px 15px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer}
+.ans-btn:disabled{opacity:.4}
+.fb-game{display:none;border-radius:var(--r);padding:11px 14px;margin-top:.65rem;font-size:13px;line-height:1.6}
+.fb-game.vis{display:block}
+.fb-game.ok{background:var(--green-l);border:1px solid var(--green-b);color:#166534}
+.fb-game.ko{background:var(--red-l);border:1px solid var(--red-b);color:#991B1B}
+.fb-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.next-btn{width:100%;padding:13px;background:var(--faint);color:var(--black);border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer;display:none;margin-top:.5rem}
+.next-btn.vis{display:block}
+
+/* SIMULACRO */
+.sim-type{font-size:11px;padding:3px 10px;border-radius:9px;font-weight:700;margin-bottom:8px;display:inline-block}
+.st-vf{background:var(--blue-l);color:var(--blue)}
+.st-opts{background:var(--green-l);color:var(--green)}
+.st-comp{background:#FFF1F2;color:#E11D48}
+.st-dev{background:var(--purple-l);color:var(--purple)}
+.dev-ta{width:100%;padding:12px 15px;font-size:13px;border:1.5px solid #E0E0E0;border-radius:var(--r);outline:none;font-family:inherit;line-height:1.6;resize:none;min-height:90px;margin-top:.75rem}
+.dev-ta:focus{border-color:var(--purple)}
+.dev-submit{width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;margin-top:7px}
+.dev-submit:disabled{opacity:.4}
+.model-box{background:var(--purple-l);border:1px solid var(--purple-b);border-radius:11px;padding:11px 14px;margin-top:7px;font-size:12px;color:#4C1D95;line-height:1.6;display:none}
+.model-title{font-size:10px;font-weight:700;letter-spacing:.05em;color:var(--purple);margin-bottom:5px}
+
+/* SUM */
+.sum-card{background:var(--white);border-radius:var(--r);padding:1.25rem;border:1.5px solid var(--border);margin-bottom:.75rem;display:none;text-align:center}
+.sum-card.vis{display:block}
+.sum-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:.75rem 0}
+.sg{background:var(--faint);border-radius:var(--r);padding:11px 6px;text-align:center}
+.sg-val{font-size:22px;font-weight:700}.sg-lbl{font-size:11px;color:#888;margin-top:2px}
+
+/* DICTADO */
+.dictado-card{background:var(--white);border-radius:var(--r);padding:1.25rem;border:1.5px solid var(--border);margin-bottom:.75rem}
+.dict-play-btn{width:100%;padding:14px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:.75rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.dict-play-btn:disabled{opacity:.4}
+.dict-ta{width:100%;padding:13px 15px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;font-family:inherit;line-height:1.7;resize:none;min-height:110px;background:#FAFAFA}
+.dict-ta:focus{border-color:var(--black);background:var(--white)}
+.dict-check-btn{width:100%;padding:13px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:.75rem}
+.dict-check-btn:disabled{opacity:.4}
+.dict-result{background:var(--faint);border-radius:var(--r);padding:1rem;margin-top:.75rem;display:none;font-size:13px;line-height:1.9}
+.dict-word{display:inline-block;margin:2px 3px;padding:2px 7px;border-radius:7px}
+.dw-ok{background:var(--green-l);color:#166534}
+.dw-err{background:var(--red-l);color:#991B1B;text-decoration:line-through}
+.dw-fix{background:#FFF3E0;color:var(--orange);font-weight:700}
+
+/* PENALIZACIÓN DICTADO */
+.dict-penalty{background:var(--amber-l);border:1.5px solid var(--amber-b);border-radius:var(--r);padding:1.25rem;margin-top:.75rem;display:none}
+.dict-penalty.vis{display:block}
+.dp-title{font-size:13px;font-weight:700;color:#92400E;margin-bottom:10px}
+.dp-word{font-size:16px;font-weight:700;color:var(--orange);margin-bottom:8px}
+.dp-options{display:flex;gap:8px;margin-bottom:10px}
+.dp-opt{flex:1;padding:10px;border:1.5px solid var(--amber-b);border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;text-align:center;background:var(--white);transition:all .15s}
+.dp-opt.sel{border-color:var(--orange);background:#FFF3E0;color:var(--orange)}
+.dp-practice{display:none}
+.dp-practice.vis{display:block}
+.dp-in{width:100%;padding:10px 13px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;margin-bottom:7px;background:#FAFAFA}
+.dp-submit{width:100%;padding:11px;background:var(--orange);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer}
+.dp-progress{font-size:12px;color:#92400E;margin-bottom:7px;font-weight:600}
+
+/* PADRES */
+.par-back{padding:7px 14px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;color:#666;background:var(--white);margin-bottom:1rem;display:inline-block}
+.set-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:.75rem}
+.sc-t{font-size:10px;font-weight:700;color:#CCC;letter-spacing:.08em;margin-bottom:10px}
+.api-in{width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;background:#FAFAFA;font-family:monospace;margin-top:6px}
+.api-in:focus{border-color:var(--black);background:var(--white)}
+.save-btn{width:100%;padding:13px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
+
+/* TOAST */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--black);color:#fff;padding:11px 22px;border-radius:var(--r);font-size:13px;font-weight:600;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* PIN MODAL */
+.pin-modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:none;align-items:center;justify-content:center}
+.pin-modal.vis{display:flex}
+.pin-box{background:var(--white);border-radius:var(--rl);padding:2rem 1.5rem;width:300px;text-align:center}
+.pin-title{font-size:18px;font-weight:700;margin-bottom:.5rem}
+.pin-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem}
+.pin-in{width:100%;padding:14px;font-size:24px;text-align:center;border:2px solid var(--border);border-radius:var(--r);outline:none;letter-spacing:8px;font-weight:700;margin-bottom:.75rem}
+.pin-in:focus{border-color:var(--black)}
+.pin-enter{width:100%;padding:13px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer}
+.pin-cancel{width:100%;padding:10px;background:transparent;color:var(--muted);border:none;font-size:13px;cursor:pointer;margin-top:6px}
+
+/* GMODE */
+.gmode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.gmode-card{border:1.5px solid var(--border);border-radius:var(--r);padding:13px 15px;cursor:pointer;background:var(--white);transition:all .15s}
+.gmode-card.sel{border-color:var(--black);background:var(--faint)}
+.gm-icon{font-size:24px;margin-bottom:6px}
+.gm-name{font-size:13px;font-weight:700}
+.gm-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.start-game-btn{width:100%;padding:14px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;margin-bottom:.75rem}
+
+/* NO FOTOS WARNING */
+.no-foto-warn{background:var(--amber-l);border:1.5px solid var(--amber-b);border-radius:var(--r);padding:1.25rem;text-align:center}
+.nfw-icon{font-size:36px;margin-bottom:.5rem}
+.nfw-title{font-size:15px;font-weight:700;color:#92400E;margin-bottom:5px}
+.nfw-sub{font-size:13px;color:#92400E;margin-bottom:1rem;line-height:1.5}
+.nfw-btn{width:100%;padding:12px;background:var(--amber);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer}
+
+@media(min-width:600px){
+  .screen{padding:1.5rem 1.5rem 5rem}
+  .stats-row .stat-val{font-size:28px}
+  .chat-box{max-height:380px}
+  .ava-grid{grid-template-columns:repeat(8,1fr)}
+}
+@media(min-width:900px){
+  body{background:#EEEEE8}
+  .screen{padding:2rem 2rem 5rem;box-shadow:0 4px 40px rgba(0,0,0,.08);background:var(--bg);border-radius:24px;margin-top:1rem;margin-bottom:1rem;min-height:calc(100vh - 2rem)}
+  .chat-box{max-height:420px}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- PIN MODAL -->
+<div class="pin-modal" id="pinModal">
+  <div class="pin-box">
+    <div class="pin-title">⚙️ Zona Padres</div>
+    <div class="pin-sub">Introduce el PIN para acceder</div>
+    <input class="pin-in" id="pinInput" type="password" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')checkPin()"/>
+    <button class="pin-enter" onclick="checkPin()">Entrar</button>
+    <button class="pin-cancel" onclick="closePin()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modalTask">
+  <div class="modal-sheet">
+    <div class="modal-title"><span>Añadir tarea</span><button class="modal-close" onclick="closeModal('modalTask')">×</button></div>
+    <input class="modal-in" id="taskNameIn" placeholder="¿Qué tienes que hacer?" oninput="document.getElementById('taskSaveBtn').disabled=!this.value.trim()" onkeydown="if(event.key==='Enter')saveTask()"/>
+    <div class="modal-type-row">
+      <div class="mtype sel" data-type="agent" onclick="selTaskType(this)">💬 Con el agente</div>
+      <div class="mtype" data-type="solo" onclick="selTaskType(this)">✏️ Solo/a</div>
+    </div>
+    <button class="modal-save" id="taskSaveBtn" onclick="saveTask()" disabled>Añadir tarea</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalExam">
+  <div class="modal-sheet">
+    <div class="modal-title"><span>Añadir examen</span><button class="modal-close" onclick="closeModal('modalExam')">×</button></div>
+    <input class="modal-in" id="examNameIn" placeholder="¿De qué asignatura?" oninput="examUpd()"/>
+    <input class="modal-in" id="examDateIn" type="date" oninput="examUpd()" style="margin-top:0"/>
+    <button class="modal-save" id="examSaveBtn" onclick="saveExam()" disabled>Añadir examen</button>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div class="screen active" id="s0">
+  <div class="wc">
+    <span class="wlogo">📚</span>
+    <div class="wname">Lujuji</div>
+    <div class="wsub">Tu agente de estudio personal.<br>Adaptado a ti, siempre.</div>
+    <button class="wbtn" onclick="startOb()">¡Empezamos! 🚀</button>
+    <button class="wbtn2" id="loginBtn" style="display:none" onclick="openDash()">Ya tengo un perfil →</button>
+  </div>
+</div>
+
+<!-- ONBOARDING -->
+<div class="screen" id="s_ob">
+  <div class="ob-top">
+    <button class="ob-back" onclick="show('s0')">← Volver</button>
+    <div class="prog"><div class="prog-fill" id="obF" style="width:0%"></div></div>
+    <div class="prog-num" id="obN">1/7</div>
+  </div>
+  <div id="obArea"></div>
+  <button class="ob-next" id="obBtn" onclick="obNextStep()" disabled>Siguiente →</button>
+</div>
+
+<!-- RESULTADO OB -->
+<div class="screen" id="s_res">
+  <div class="res-wrap">
+    <span class="res-ava" id="rAva"></span>
+    <div class="res-name" id="rName"></div>
+    <div class="res-sub">¡Tu perfil está listo! El agente ya te conoce 🎓</div>
+    <div class="res-card"><div class="rc-lbl">TU PERFIL</div><div id="rItems"></div></div>
+    <button class="ob-next green" onclick="finishOb()">¡Empezar! 🎉</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="screen" id="s_dash">
+  <div class="dash-header">
+    <span class="dash-ava" id="dAva" onclick="openChangeAvatar()"></span>
+    <div>
+      <div class="dash-name" id="dName"></div>
+      <div class="dash-curso" id="dCurso"></div>
+    </div>
+    <div class="settings-tap" id="settingsTap" onclick="handleSettingsTap()">⚙️</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card sc-streak"><div class="stat-val" id="dStreak">0🔥</div><div class="stat-lbl">días seguidos</div></div>
+    <div class="stat-card sc-pts"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
+    <div class="stat-card"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
+  </div>
+  <div class="timer-card">
+    <span style="font-size:20px">⏱️</span>
+    <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:0%"></div></div>
+    <span class="timer-txt" id="timerTxt">0:00 / 20:00</span>
+  </div>
+  <div id="examBanner"></div>
+  <div class="section-title"><span>📋 TAREAS DE HOY</span><button class="add-btn-s" onclick="openModal('modalTask')">+ Añadir</button></div>
+  <div id="taskList"></div>
+  <div class="section-title" style="margin-top:.25rem"><span>📅 MIS EXÁMENES</span><button class="add-btn-s" onclick="openModal('modalExam')">+ Añadir</button></div>
+  <div id="examList" style="margin-bottom:1rem"></div>
+  <button class="main-action" onclick="startStudy()">💬 Empezar a estudiar</button>
+</div>
+
+<!-- AGENDA SETUP -->
+<div class="screen" id="s_agenda">
+  <div class="ob-top">
+    <button class="ob-back" onclick="show('s_dash')">← Volver</button>
+    <div style="font-size:16px;font-weight:700;flex:1;text-align:center">¿Qué tienes hoy?</div>
+  </div>
+  <div class="qcard">
+    <span class="qemoji">📸</span>
+    <div class="qtitle">Foto de tu agenda</div>
+    <div class="qsub">Súbeme una foto para que vea tus tareas</div>
+    <div class="upload-box" id="agendaBox">
+      <input type="file" accept="image/*" capture="environment" onchange="handleAgendaPhoto(this)" onclick="event.stopPropagation()"/>
+      <img class="ub-prev" id="agendaPrev"/>
+      <div id="agendaPlaceholder">
+        <div style="font-size:36px;margin-bottom:6px">📷</div>
+        <div style="font-size:14px;font-weight:600;color:var(--blue)">Toca para hacer foto</div>
+        <div style="font-size:12px;color:var(--muted)">O elige de la galería</div>
+      </div>
+    </div>
+  </div>
+  <div class="qcard" id="agendaStep2" style="display:none">
+    <span class="qemoji">✍️</span>
+    <div class="qtitle">Escribe tus tareas</div>
+    <div class="qsub">Una por línea — el agente compara con tu agenda</div>
+    <textarea class="tasks-input" id="tasksText" placeholder="Ex:&#10;Matemàtiques - exercicis pàg 34&#10;Llengua - llegir capítol 5&#10;Estudiar Medi per al dijous" oninput="checkAgendaBtn()"></textarea>
+  </div>
+  <div class="analyzing-bar" id="agendaAnalyzing">
+    <div class="ldots" style="color:var(--blue)"><span></span><span></span><span></span></div>
+    <span>El agente está leyendo tu agenda...</span>
+  </div>
+  <button class="ob-next" id="agendaBtn" onclick="processAgenda()" disabled>Ver mis tareas de hoy →</button>
+</div>
+
+<!-- CAMBIAR AVATAR -->
+<div class="screen" id="s_avatar">
+  <div class="ob-top">
+    <button class="ob-back" onclick="show('s_dash')">← Volver</button>
+    <div style="font-size:16px;font-weight:700;flex:1;text-align:center">Cambiar mi emoji</div>
+  </div>
+  <div class="qcard">
+    <div class="qsub">Elige tu nuevo emoji</div>
+    <div class="ava-grid" id="avatarGrid"></div>
+  </div>
+  <button class="ob-next green" id="avatarSaveBtn" onclick="saveAvatar()" disabled>Guardar cambio</button>
+</div>
+
+<!-- ZONA ESTUDIO -->
+<div class="screen" id="s_study">
+  <div class="study-header">
+    <button class="sh-back" onclick="show('s_dash')">←</button>
+    <span class="sh-ava" id="shAva"></span>
+    <div style="flex:1"><div class="sh-name" id="shName"></div><div class="sh-sub" id="shSub"></div></div>
+    <span class="sh-lang" id="shLang"></span>
+  </div>
+  <div class="task-banner" id="taskBanner" style="display:none">
+    <span class="tb-icon">📌</span>
+    <span class="tb-text" id="taskBannerText"></span>
+    <span class="task-time-mini" id="taskTimeMini"></span>
+    <button class="tb-done" id="tbDoneBtn" onclick="markTaskDone()" disabled>✓ Hecho</button>
+  </div>
+  <div class="mode-tabs" id="modeTabs"></div>
+
+  <!-- TAB AGENTE -->
+  <div class="tab-pane active" id="tp-agente">
+    <div class="mood-bar"><div class="mood-dot" id="mDot" style="background:#16A34A"></div><span id="mTxt">Listo para empezar 😊</span></div>
+    <div class="chat-box" id="chat"></div>
+    <div class="qrow" id="qrow"></div>
+    <div class="orto-block" id="ortoBlock">
+      <div class="orto-title">📝 ORTOGRAFÍA — confirma antes de continuar</div>
+      <div id="ortoItems"></div>
+      <button class="orto-confirm" onclick="confirmOrto()">✓ Lo he visto, continuar</button>
+    </div>
+    <div class="corr" id="corr">
+      <div class="cs cs-ok" id="cOk"><div class="cs-t">✅ LO QUE HABÍAS HECHO BIEN</div><p id="cOkB"></p></div>
+      <div class="cs cs-err" id="cErr"><div class="cs-t">🔍 DÓNDE TE HAS CONFUNDIDO</div><p id="cErrB"></p></div>
+      <div class="cs cs-tip" id="cTip"><div class="cs-t">💡 PARA RECORDARLO</div><p id="cTipB"></p></div>
+      <div class="cs cs-ver" id="cVer"><div class="cs-t">❓ COMPRUEBA QUE LO HAS ENTENDIDO</div><div class="ver-q" id="vQ"></div><div class="ver-row"><input class="ver-in" id="vIn" onkeydown="if(event.key==='Enter')chkV()"/><button class="ver-btn" onclick="chkV()">✓</button></div><div class="ver-res" id="vRes"></div></div>
+      <div class="reinforce" id="reinforce"></div>
+    </div>
+    <div class="pts-flash" id="ptsFlash"></div>
+    <div class="analyzing-bar" id="analyzingBar"><div class="ldots" style="color:var(--blue)"><span></span><span></span><span></span></div><span>Leyendo las fotos...</span></div>
+    <div class="photos-panel" id="photosPanel">
+      <div class="pp-head"><span class="pp-title">📸 FOTOS (máx. 5)</span><button class="pp-close" onclick="closePhotos()">✕</button></div>
+      <div class="photos-row" id="photosRow"></div>
+      <button class="analyze-foto-btn" id="analyzeBtn" onclick="analyzePhotos()" disabled>🔍 Analizar y practicar</button>
+    </div>
+    <div class="inp-wrap">
+      <button class="photo-btn" title="Pujar foto"><input type="file" accept="image/*" multiple onchange="handlePhotos(this)" onclick="event.stopPropagation()"/>📸</button>
+      <input class="chat-in" id="chatIn" onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="send-btn" id="sendBtn" onclick="sendMsg()">→</button>
+    </div>
+  </div>
+
+  <!-- TAB JUEGO -->
+  <div class="tab-pane" id="tp-juego">
+    <div id="gmodeWrap">
+      <div style="font-size:14px;font-weight:700;margin-bottom:.75rem">Elige el tipo de juego</div>
+      <div class="gmode-grid">
+        <div class="gmode-card sel" data-gm="mix" onclick="selGM(this)"><div class="gm-icon">🎲</div><div class="gm-name">Mezcla</div><div class="gm-sub">Todos los tipos</div></div>
+        <div class="gmode-card" data-gm="vf" onclick="selGM(this)"><div class="gm-icon">⚡</div><div class="gm-name">Verdadero/Falso</div><div class="gm-sub">Ràpid</div></div>
+        <div class="gmode-card" data-gm="opts" onclick="selGM(this)"><div class="gm-icon">🎯</div><div class="gm-name">4 opcions</div><div class="gm-sub">Elige la correcta</div></div>
+        <div class="gmode-card" data-gm="comp" onclick="selGM(this)"><div class="gm-icon">✍️</div><div class="gm-name">Completa</div><div class="gm-sub">Escribe la palabra</div></div>
+      </div>
+      <div id="jocFotoWarn" style="display:none" class="no-foto-warn">
+        <div class="nfw-icon">📸</div>
+        <div class="nfw-title">¡Sube primero el temario!</div>
+        <div class="nfw-sub">Sube las fotos de lo que estás estudiando y el agente generará las preguntas del juego basándose en tu temario real.</div>
+        <button class="nfw-btn" onclick="sTab('agente',document.querySelector('.stab'))">📸 Ir a subir fotos</button>
+      </div>
+      <button class="start-game-btn" id="startGameBtn" onclick="startGame()">🚀 Empezar (10 preguntas)</button>
+    </div>
+    <div id="gameWrap" style="display:none">
+      <div class="score-row"><span id="gCnt">1/10</span><span class="score-pts" id="gPts">0 ✓</span></div>
+      <div class="prog-game"><div class="prog-gfill" id="gProg" style="width:0%"></div></div>
+      <div class="q-card" id="gCard"><div class="q-type" id="gType"></div><div class="q-text" id="gText"></div></div>
+      <div class="vf-row" id="gVf" style="display:none"><button class="vf-btn v" id="gV" onclick="gAnsVF(true)">✓ Verdader</button><button class="vf-btn f" id="gF" onclick="gAnsVF(false)">✗ Fals</button></div>
+      <div class="opts-col" id="gOpts" style="display:none"></div>
+      <div class="ans-row" id="gAns" style="display:none"><input class="ans-in" id="gIn" placeholder="La teua resposta..." onkeydown="if(event.key==='Enter')gAnsT()"/><button class="ans-btn" id="gAnsB" onclick="gAnsT()">✓</button></div>
+      <div class="fb-game" id="gFb"><div class="fb-title" id="gFbT"></div><div id="gFbB"></div></div>
+      <div class="cs cs-ok" id="g5Ok"><div class="cs-t">✅ LO QUE HABÍAS HECHO BIEN</div><p id="g5OkB"></p></div>
+      <div class="cs cs-err" id="g5Err"><div class="cs-t">🔍 DÓNDE TE HAS CONFUNDIDO</div><p id="g5ErrB"></p></div>
+      <div class="cs cs-tip" id="g5Tip"><div class="cs-t">💡 PARA RECORDARLO</div><p id="g5TipB"></p></div>
+      <div class="cs cs-ver" id="g5Ver"><div class="cs-t">❓ COMPRUEBA QUE LO HAS ENTENDIDO</div><div class="ver-q" id="g5VQ"></div><div class="ver-row"><input class="ver-in" id="g5VI" onkeydown="if(event.key==='Enter')g5ChkV()"/><button class="ver-btn" onclick="g5ChkV()">✓</button></div><div class="ver-res" id="g5VR"></div></div>
+      <div class="reinforce" id="g5R"></div>
+      <button class="next-btn" id="gNext" onclick="gNextQ()"></button>
+    </div>
+    <div class="sum-card" id="gSum">
+      <div style="font-size:52px;margin-bottom:8px" id="gSI"></div>
+      <div style="font-size:19px;font-weight:700;margin-bottom:4px" id="gST"></div>
+      <div class="sum-grid"><div class="sg"><div class="sg-val" id="gSC">0</div><div class="sg-lbl">correctas</div></div><div class="sg"><div class="sg-val" id="gSP">0%</div><div class="sg-lbl">aciertos</div></div><div class="sg"><div class="sg-val" id="gSS">0🔥</div><div class="sg-lbl">racha máx.</div></div></div>
+      <button class="start-game-btn" onclick="gReset()">↺ Otra partida</button>
+    </div>
+  </div>
+
+  <!-- TAB SIMULACRO -->
+  <div class="tab-pane" id="tp-simulacro">
+    <div id="simIntro">
+      <div id="simFotoWarn" style="display:none" class="no-foto-warn">
+        <div class="nfw-icon">📸</div>
+        <div class="nfw-title">¡Sube primero el temario!</div>
+        <div class="nfw-sub">Sube las fotos de lo que estás estudiando y el agente generará las preguntas del simulacro basándose en tu temario real.</div>
+        <button class="nfw-btn" onclick="sTab('agente',document.querySelector('.stab'))">📸 Ir a subir fotos</button>
+      </div>
+      <div id="simStartWrap">
+        <div style="background:var(--white);border-radius:var(--r);padding:1.25rem;border:1.5px solid var(--border);margin-bottom:.75rem">
+          <div style="font-size:16px;font-weight:700;margin-bottom:6px">📝 Simulacro d'examen</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem">Como un examen real. Si te equivocas, el agente te explica con los 5 pasos.</div>
+          <button style="width:100%;padding:14px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer" onclick="simStart()">📝 Empezar</button>
+        </div>
+      </div>
+    </div>
+    <div id="simPlay" style="display:none">
+      <div class="score-row"><span id="sCnt">Pregunta 1</span><span class="score-pts" id="sPts" style="color:var(--purple)">0 ✓</span></div>
+      <div class="prog-game"><div class="prog-gfill" id="sProg" style="width:0%;background:var(--purple)"></div></div>
+      <div class="q-card" id="sCard"><span class="sim-type" id="sType"></span><div class="q-text" id="sText" style="margin-top:.5rem"></div></div>
+      <div class="vf-row" id="sVf" style="display:none"><button class="vf-btn v" id="sV" onclick="sAnsVF(true)">✓ Verdader</button><button class="vf-btn f" id="sF" onclick="sAnsVF(false)">✗ Fals</button></div>
+      <div class="opts-col" id="sOpts" style="display:none"></div>
+      <div class="ans-row" id="sAns" style="display:none"><input class="ans-in" id="sIn" onkeydown="if(event.key==='Enter')sAnsT()"/><button class="ans-btn" id="sAnsB" onclick="sAnsT()" style="background:var(--purple)">✓</button></div>
+      <div id="sDevW" style="display:none"><textarea class="dev-ta" id="sDev" placeholder="Explica el procés pas a pas..." rows="4"></textarea><button class="dev-submit" id="sDevB" onclick="sAnsDev()">Enviar</button></div>
+      <div class="cs cs-ok" id="s5Ok" style="margin-top:.65rem"><div class="cs-t">✅ LO QUE HABÍAS HECHO BIEN</div><p id="s5OkB"></p></div>
+      <div class="cs cs-err" id="s5Err" style="margin-top:4px"><div class="cs-t">🔍 DÓNDE TE HAS CONFUNDIDO</div><p id="s5ErrB"></p></div>
+      <div class="cs cs-tip" id="s5Tip" style="margin-top:4px"><div class="cs-t">💡 PARA RECORDARLO</div><p id="s5TipB"></p></div>
+      <div class="cs cs-ver" id="s5Ver" style="margin-top:4px"><div class="cs-t">❓ COMPRUEBA QUE LO HAS ENTENDIDO</div><div class="ver-q" id="s5VQ"></div><div class="ver-row"><input class="ver-in" id="s5VI" onkeydown="if(event.key==='Enter')s5ChkV()"/><button class="ver-btn" onclick="s5ChkV()">✓</button></div><div class="ver-res" id="s5VR"></div></div>
+      <div class="reinforce" id="s5R"></div>
+      <div class="model-box" id="sModel"><div class="model-title">SOLUCIÓ CORRECTA</div><div id="sModelT"></div></div>
+      <button class="next-btn" id="sNext" onclick="sNextQ()"></button>
+    </div>
+    <div class="sum-card" id="simSum">
+      <div style="font-size:52px;margin-bottom:8px" id="sSI"></div>
+      <div style="font-size:19px;font-weight:700;margin-bottom:4px" id="ssST"></div>
+      <div class="sum-grid"><div class="sg"><div class="sg-val" id="sSC">0</div><div class="sg-lbl">correctas</div></div><div class="sg"><div class="sg-val" id="sSN">0</div><div class="sg-lbl">nota /10</div></div><div class="sg"><div class="sg-val" id="sSD">0</div><div class="sg-lbl">desarr. ✓</div></div></div>
+      <button style="width:100%;padding:13px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer" onclick="simReset()">↺ Otro simulacro</button>
+    </div>
+  </div>
+
+  <!-- TAB DICTADO (solo Llengua, Valencià, English) -->
+  <div class="tab-pane" id="tp-dictado">
+    <div class="dictado-card">
+      <div style="font-size:14px;font-weight:700;margin-bottom:5px">🎙️ Dictado</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5">El agente te leerá el texto en voz alta. Escríbelo mientras lo escuchas.</div>
+      <button class="dict-play-btn" id="dictPlayBtn" onclick="playDictado()">🔊 Escuchar el dictado</button>
+      <textarea class="dict-ta" id="dictTa" placeholder="Escribe aquí lo que escuchas..." rows="5" oninput="document.getElementById('dictCheckBtn').disabled=!this.value.trim()"></textarea>
+      <button class="dict-check-btn" id="dictCheckBtn" onclick="checkDictado()" disabled>✓ Corregir</button>
+      <div class="dict-result" id="dictResult"></div>
+      <div class="dict-penalty" id="dictPenalty">
+        <div class="dp-title">📝 Practica las palabras que has fallado</div>
+        <div id="dpWordList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ZONA PADRES -->
+<!-- LECTURA -->
+<div class="screen" id="s_lectura">
+  <div class="ob-top">
+    <button class="ob-back" onclick="show('s_dash')">← Volver</button>
+    <div style="font-size:16px;font-weight:700;flex:1;text-align:center">📖 Lectura en voz alta</div>
+  </div>
+  <div class="qcard">
+    <span class="qemoji">📖</span>
+    <div class="qtitle">¿Qué vas a leer hoy?</div>
+    <div class="qsub">Escribe el título del libro y la página</div>
+    <input class="name-in" id="lecturaTitle" type="text" placeholder="Título del libro..." style="margin-bottom:.75rem;font-size:16px"/>
+    <input class="name-in" id="lecturaPag" type="number" placeholder="Página..." style="font-size:16px"/>
+  </div>
+  <div class="qcard" id="lecturaRecCard" style="display:none">
+    <div style="font-size:14px;font-weight:700;margin-bottom:8px">🎙️ El agente te escucha</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5">Lee en voz alta. Cuando termines toca "He terminado".</div>
+    <div id="lecturaStatus" style="text-align:center;padding:1rem;font-size:32px;margin-bottom:.75rem">🎙️</div>
+    <div id="lecturaTranscript" style="background:#FAFAFA;border-radius:var(--r);padding:1rem;min-height:80px;font-size:13px;color:#555;line-height:1.7;margin-bottom:.75rem;border:1.5px solid var(--border)">El texto aparecerá aquí mientras lees...</div>
+    <button id="lecturaStopBtn" onclick="stopLectura()" style="width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer">✓ He terminado</button>
+  </div>
+  <div class="qcard" id="lecturaQCard" style="display:none">
+    <div style="font-size:14px;font-weight:700;margin-bottom:8px">❓ Preguntas de comprensión</div>
+    <div id="lecturaQContent"></div>
+  </div>
+  <button class="ob-next" id="lecturaStartBtn" onclick="startLecturaRec()">🎙️ Empezar a leer →</button>
+</div>
+
+<div class="screen" id="s_parents">
+  <button class="par-back" onclick="show('s_dash')">← Volver</button>
+  <div style="font-size:19px;font-weight:700;margin-bottom:1rem">⚙️ Zona Padres</div>
+  <div class="set-card">
+    <div class="sc-t">API KEY DE ANTHROPIC</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">Necesaria para que el agente funcione. Consíguela en <strong>console.anthropic.com</strong> → API Keys → Create Key</div>
+    <input class="api-in" id="apiIn" type="password" placeholder="sk-ant-..."/>
+    <button class="save-btn" onclick="saveApi()">Guardar API key</button>
+  </div>
+  <div class="set-card">
+    <div class="sc-t">DATOS DEL ALUMNO</div>
+    <div id="profileEditRows"></div>
+  </div>
+  <div class="set-card">
+    <div class="sc-t">PIN ZONA PADRES</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">PIN actual: <strong id="pinDisplay">1234</strong></div>
+    <input class="api-in" id="newPinIn" type="number" placeholder="Nuevo PIN (4 dígitos)" maxlength="4"/>
+    <button class="save-btn" onclick="savePin()" style="background:#555;margin-top:6px">Cambiar PIN</button>
+  </div>
+  <div class="set-card">
+    <div class="sc-t">PREMIOS</div>
+    <input class="api-in" id="prize7in" placeholder="Premio a los 7 días seguidos..." style="margin-top:0;margin-bottom:7px"/>
+    <input class="api-in" id="prize30in" placeholder="Premio a los 30 días seguidos..." style="margin-top:0"/>
+    <button class="save-btn" onclick="savePrizes()">Guardar premios</button>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════
+// CONFIGURACIÓ
+// ════════════════════════════════════════════
+const SUBJS=[
+  {id:'matematicas',name:'Matemáticas',icon:'🔢',lang:'es',ll:'ES',minMins:10,color:'#2563EB',colorL:'#EFF6FF',colorB:'#BFDBFE'},
+  {id:'lengua',name:'Lengua y Literatura',icon:'📖',lang:'es',ll:'ES',minMins:10,hasDictado:true,color:'#DC2626',colorL:'#FEF2F2',colorB:'#FCA5A5'},
+  {id:'medi',name:'Coneixement del Medi',icon:'🌿',lang:'ca',ll:'VAL',minMins:10,color:'#16A34A',colorL:'#F0FDF4',colorB:'#86EFAC'},
+  {id:'valencia',name:'Valencià',icon:'🌺',lang:'ca',ll:'VAL',minMins:10,hasDictado:true,color:'#D97706',colorL:'#FFFBEB',colorB:'#FDE68A'},
+  {id:'ingles',name:'English',icon:'🇬🇧',lang:'en',ll:'EN',minMins:10,hasDictado:true,color:'#7C3AED',colorL:'#F5F3FF',colorB:'#C4B5FD'},
+];
+
+// Más de 60 emojis para elegir
+const AVAS=['🦁','🌸','🌿','🦊','🐻','🦋','🐸','🦄','🐯','🐼','🦅','🌟','⚡','🎯','🚀','🎮','🎨','🎵','⚽','🏆','🐶','🐱','🐭','🐹','🐰','🐺','🦸','🧙','👩‍🚀','🧑‍🎨','🦩','🦚','🦜','🐝','🌈','🍕','🍦','🎸','🎹','📚','✏️','🔭','🌍','🌊','🏄','🎭','🎪','🎠','🏅','💎','🔮','🧩','🎲','🃏','🎀','🌺','🌻','🌙','☀️','❄️','🔥','🐴','🏇','🐎'];
+
+const CURSOOS=[['1prim','🌱','1º Primaria'],['2prim','🌿','2º Primaria'],['3prim','🌳','3º Primaria'],['4prim','⭐','4º Primaria'],['5prim','🚀','5º Primaria'],['6prim','🏆','6º Primaria'],['1eso','🔥','1º ESO'],['2eso','⚡','2º ESO'],['3eso','💫','3º ESO'],['4eso','🎯','4º ESO']];
+const HOBBIES=[['deporte','⚽','Deporte (fútbol, natación...)'],['videojuegos','🎮','Videojuegos'],['musica','🎵','Música'],['dibujar','🎨','Dibujar o manualidades'],['leer','📚','Leer (libros, cómics...)'],['animales','🐾','Animales y naturaleza'],['cocinar','🍕','Cocinar o repostería'],['series','📺','Series, pelis o YouTube']];
+const STYLES=[['silencio','🤫','En silencio total'],['musica','🎵','Con música de fondo'],['breve','⏱️','Ratos cortos con descansos'],['largo','📖','Un rato largo concentrado'],['voz','🔊','Leyendo en voz alta'],['escribiendo','✏️','Escribiendo a mano']];
+
+const DICTADOS={
+  es:["El sol brillaba sobre el campo verde. Los pájaros cantaban mientras el viento movía las flores del jardín.","María fue al mercado a comprar frutas y verduras frescas. Eligió manzanas rojas, naranjas y algunas zanahorias.","En el colegio aprendemos matemáticas, lengua y ciencias. También hacemos educación física los martes y los jueves."],
+  ca:["El sol brillava sobre el camp verd. Els ocells cantaven als arbres mentre el vent movia les flors del jardí.","La Maria va anar al mercat a comprar fruites i verdures fresques. Va triar pomes roges, taronges i pastanagues.","A l'escola aprenem matemàtiques, llengua i ciències naturals. També fem educació física els dimarts i els dijous."],
+  en:["The sun was shining over the green field. The birds were singing while the wind moved the garden flowers.","Mary went to the market to buy fresh fruits and vegetables. She chose red apples, oranges and carrots."]
+};
+
+// ════════════════════════════════════════════
+// ESTAT
+// ════════════════════════════════════════════
+let apiKey=localStorage.getItem('lujuji_api')||'';
+let profile=JSON.parse(localStorage.getItem('lujuji_profile')||'null');
+let tasks=JSON.parse(localStorage.getItem('lujuji_tasks_'+today())||'[]');
+let exams=JSON.parse(localStorage.getItem('lujuji_exams')||'[]');
+let prizes=JSON.parse(localStorage.getItem('lujuji_prizes')||'{"d7":"","d30":""}');
+let curSubj=null, curTask=null;
+let hist=[], wS=0, loading=false, vA='', ortoBlocked=false;
+let uploadedPhotos=[], temariText='';
+let timerSecs=0, timerInterval=null, timerDone=false;
+let taskTimerSecs=0, taskTimerInterval=null;
+let gMode='mix', gPool=[], gQ=0, gScore=0, gStreak=0, gMaxS=0, gAns=false, g5VA='';
+let sQ=0, sScore=0, sDev=0, sAns=false, sVA='', simPregs=[];
+let dictText='', dictPlaying=false;
+let newTaskType='agent';
+let agendaPhotoB64=null;
+let settingsTapCount=0, settingsTapTimer=null;
+let newAvatarSel='';
+let currentPin='';
+let dpWords=[], dpCurrentWord=0, dpMode='', dpCount=0;
+
+function today(){return new Date().toISOString().split('T')[0];}
+function sv(){localStorage.setItem('lujuji_profile',JSON.stringify(profile));}
+function svTasks(){localStorage.setItem('lujuji_tasks_'+today(),JSON.stringify(tasks));}
+function svExams(){localStorage.setItem('lujuji_exams',JSON.stringify(exams));}
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+// ════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function sTab(id,btn){document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('tp-'+id).classList.add('active');}
+function openModal(id){document.getElementById(id).classList.add('vis');}
+function closeModal(id){document.getElementById(id).classList.remove('vis');}
+
+// ════════════════════════════════════════════
+// ZONA PADRES — 5 toques en ⚙️
+// ════════════════════════════════════════════
+function handleSettingsTap(){
+  settingsTapCount++;
+  if(settingsTapTimer)clearTimeout(settingsTapTimer);
+  settingsTapTimer=setTimeout(()=>{settingsTapCount=0;},2000);
+  if(settingsTapCount>=5){
+    settingsTapCount=0;
+    currentPin=localStorage.getItem('lujuji_pin')||'1234';
+    document.getElementById('pinInput').value='';
+    document.getElementById('pinModal').classList.add('vis');
+    setTimeout(()=>document.getElementById('pinInput').focus(),300);
+  }
+}
+
+function checkPin(){
+  const val=document.getElementById('pinInput').value.trim();
+  if(val===currentPin){
+    document.getElementById('pinModal').classList.remove('vis');
+    renderProfileEdit();
+    document.getElementById('apiIn').value=apiKey?'••••••••••••':'';
+    document.getElementById('pinDisplay').textContent=currentPin;
+    document.getElementById('prize7in').value=prizes.d7||'';
+    document.getElementById('prize30in').value=prizes.d30||'';
+    show('s_parents');
+  } else {
+    document.getElementById('pinInput').value='';
+    toast('PIN incorrecto ❌');
+  }
+}
+function closePin(){document.getElementById('pinModal').classList.remove('vis');}
+
+// ════════════════════════════════════════════
+// CAMBIAR AVATAR
+// ════════════════════════════════════════════
+function openChangeAvatar(){
+  newAvatarSel='';
+  document.getElementById('avatarSaveBtn').disabled=true;
+  const grid=document.getElementById('avatarGrid');grid.innerHTML='';
+  AVAS.forEach(a=>{
+    const btn=document.createElement('button');btn.className='ava-btn'+(profile&&profile.avatar===a?' sel':'');
+    btn.textContent=a;btn.onclick=()=>{newAvatarSel=a;document.querySelectorAll('#avatarGrid .ava-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');document.getElementById('avatarSaveBtn').disabled=false;};
+    grid.appendChild(btn);
+  });
+  show('s_avatar');
+}
+
+function saveAvatar(){
+  if(!newAvatarSel||!profile)return;
+  profile.avatar=newAvatarSel;sv();
+  document.getElementById('dAva').textContent=newAvatarSel;
+  toast('✓ Emoji actualizado!');show('s_dash');
+}
+
+// ════════════════════════════════════════════
+// ONBOARDING
+// ════════════════════════════════════════════
+let obP={curso:'',name:'',avatar:'',subjectFeelings:{},hobbies:[],studyStyle:'',goalSubjects:[]};
+let obStep=0;
+const OB_TOTAL=7;
+
+const OB=[
+  ()=>`<div class="qcard"><span class="qemoji">🎓</span><div class="qtitle">¿En qué curso estás?</div><div class="qsub">El agente se adaptará a tu nivel</div><div class="opt-list">${CURSOOS.map(([id,ic,t])=>`<div class="opt${obP.curso===id?' sel':''}" onclick="obCurso('${id}',this)"><span class="oi">${ic}</span><span class="ot">${t}</span><span class="ochk">${obP.curso===id?'✓':''}</span></div>`).join('')}</div></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">👋</span><div class="qtitle">¿Cómo te llamas?</div><div class="qsub">Escribe tu nombre</div><input class="name-in" id="nameIn" type="text" placeholder="Tu nombre..." maxlength="20" oninput="obP.name=this.value.trim();obU()" onkeydown="if(event.key==='Enter'&&obP.name)obNextStep()"/></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">🎭</span><div class="qtitle">¿Cuál es tu emoji favorito?</div><div class="qsub">Serà el teu icone</div><div class="ava-grid">${AVAS.map(a=>`<button class="ava-btn${obP.avatar===a?' sel':''}" onclick="obAva('${a}')">${a}</button>`).join('')}</div></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">📚</span><div class="qtitle">¿Cómo te van las asignaturas?</div><div class="qsub">Sé sincero/a — el agente lo usará</div><div class="subj-ob">${SUBJS.map(s=>`<div class="sr"><div class="sr-top"><span class="sr-icon">${s.icon}</span><span class="sr-name">${s.name}</span></div><div class="feel-row"><button class="fb${obP.subjectFeelings[s.id]==='love'?' fl':''}" onclick="obFeel('${s.id}','love')">😄 Me mola</button><button class="fb${obP.subjectFeelings[s.id]==='ok'?' fok':''}" onclick="obFeel('${s.id}','ok')">😐 Regular</button><button class="fb${obP.subjectFeelings[s.id]==='hard'?' fh':''}" onclick="obFeel('${s.id}','hard')">😰 Me cuesta</button></div></div>`).join('')}</div></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">🎯</span><div class="qtitle">¿Qué te gusta cuando no estudias?</div><div class="qsub">El agente usará tus gustos para los ejemplos</div><div class="opt-list">${HOBBIES.map(([id,i,t])=>`<div class="opt msel${obP.hobbies.includes(id)?' sel':''}" onclick="obHobby('${id}',this)"><span class="oi">${i}</span><span class="ot">${t}</span><span class="ochk">${obP.hobbies.includes(id)?'✓':''}</span></div>`).join('')}</div></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">🧠</span><div class="qtitle">¿Cómo estudias mejor?</div><div class="qsub">Elige la que más te representa</div><div class="opt-list">${STYLES.map(([id,i,t])=>`<div class="opt${obP.studyStyle===id?' sel':''}" onclick="obStyle('${id}',this)"><span class="oi">${i}</span><span class="ot">${t}</span><span class="ochk">${obP.studyStyle===id?'✓':''}</span></div>`).join('')}</div></div>`,
+  ()=>`<div class="qcard"><span class="qemoji">🏆</span><div class="qtitle">¿Qué quieres mejorar este curso?</div><div class="qsub">Puedes elegir más de una — selecciona las que quieras mejorar</div><div class="opt-list">${SUBJS.map(s=>`<div class="opt msel${obP.goalSubjects.includes(s.id)?' sel':''}" onclick="obGoal('${s.id}',this)"><span class="oi">${s.icon}</span><span class="ot">${s.name}</span><span class="ochk">${obP.goalSubjects.includes(s.id)?'✓':''}</span></div>`).join('')}</div></div>`,
+];
+
+function startOb(){
+  obStep=0;obP={curso:'',name:'',avatar:'',subjectFeelings:{},hobbies:[],studyStyle:'',goalSubjects:[]};
+  show('s_ob');obRender();
+}
+function obRender(){
+  document.getElementById('obArea').innerHTML=OB[obStep]();
+  document.getElementById('obF').style.width=((obStep/OB_TOTAL)*100)+'%';
+  document.getElementById('obN').textContent=`${obStep+1}/${OB_TOTAL}`;
+  obU();
+  if(obStep===1)setTimeout(()=>{const el=document.getElementById('nameIn');if(el){el.focus();if(obP.name)el.value=obP.name;}},100);
+}
+function obU(){
+  const valid=[obP.curso!=='',obP.name.length>0,obP.avatar!=='',Object.keys(obP.subjectFeelings).length>=3,obP.hobbies.length>0,obP.studyStyle!=='',obP.goalSubjects.length>0][obStep];
+  const b=document.getElementById('obBtn');b.disabled=!valid;
+  b.textContent=obStep===OB_TOTAL-1?'¡Crear mi perfil! 🎉':'Siguiente →';
+  b.className='ob-next'+(obStep===OB_TOTAL-1&&valid?' green':'');
+}
+function obNextStep(){if(obStep<OB_TOTAL-1){obStep++;obRender();}else obResult();}
+function obCurso(id,card){obP.curso=id;document.querySelectorAll('.opt:not(.msel)').forEach(c=>{c.classList.remove('sel');c.querySelector('.ochk').textContent='';});card.classList.add('sel');card.querySelector('.ochk').textContent='✓';obU();}
+function obAva(a){obP.avatar=a;obRender();}
+function obFeel(s,f){obP.subjectFeelings[s]=f;document.querySelectorAll('.sr').forEach(row=>{const n=row.querySelector('.sr-name')?.textContent;const subj=SUBJS.find(x=>x.name===n);if(subj&&subj.id===s){const bs=row.querySelectorAll('.fb');bs.forEach(b=>b.className='fb');if(f==='love')bs[0].classList.add('fl');else if(f==='ok')bs[1].classList.add('fok');else bs[2].classList.add('fh');}});obU();}
+function obHobby(id,card){const i=obP.hobbies.indexOf(id);if(i>=0){obP.hobbies.splice(i,1);card.classList.remove('sel');card.querySelector('.ochk').textContent='';}else{obP.hobbies.push(id);card.classList.add('sel');card.querySelector('.ochk').textContent='✓';}obU();}
+function obStyle(id,card){obP.studyStyle=id;document.querySelectorAll('.opt:not(.msel)').forEach(c=>{c.classList.remove('sel');c.querySelector('.ochk').textContent='';});card.classList.add('sel');card.querySelector('.ochk').textContent='✓';obU();}
+function obGoal(id,card){
+  const i=obP.goalSubjects.indexOf(id);
+  if(i>=0){obP.goalSubjects.splice(i,1);card.classList.remove('sel');card.querySelector('.ochk').textContent='';}
+  else{obP.goalSubjects.push(id);card.classList.add('sel');card.querySelector('.ochk').textContent='✓';}
+  obU();
+}
+
+function obResult(){
+  const p=obP;
+  const hm={deporte:'Deporte ⚽',videojuegos:'Videojuegos 🎮',musica:'Música 🎵',dibujar:'Dibujar 🎨',leer:'Leer 📚',animales:'Animales 🐾',cocinar:'Cocinar 🍕',series:'Series 📺'};
+  const sm={silencio:'En silencio 🤫',musica:'Con música 🎵',breve:'Ratos cortos ⏱️',largo:'Concentrado 📖',voz:'En voz alta 🔊',escribiendo:'A mano ✏️'};
+  const lv=SUBJS.filter(s=>p.subjectFeelings[s.id]==='love').map(s=>s.name);
+  const hd=SUBJS.filter(s=>p.subjectFeelings[s.id]==='hard').map(s=>s.name);
+  const goals=SUBJS.filter(s=>p.goalSubjects.includes(s.id)).map(s=>s.name);
+  const cursoLabel=CURSOOS.find(([id])=>id===p.curso)?.[2]||'';
+  document.getElementById('rAva').textContent=p.avatar;
+  document.getElementById('rName').textContent=`Hola, ${p.name}! 👋`;
+  document.getElementById('rItems').innerHTML=[
+    {i:'🎓',t:`Curso: ${cursoLabel}`},
+    lv.length?{i:'😄',t:`Le mola: ${lv.join(', ')}`}:null,
+    hd.length?{i:'💪',t:`A trabajar: ${hd.join(', ')}`}:null,
+    goals.length?{i:'🎯',t:`Objetivo: mejorar en ${goals.join(', ')}`}:null,
+    p.hobbies.length?{i:'🎮',t:`Le mola: ${p.hobbies.slice(0,3).map(h=>hm[h]||h).join(', ')}`}:null,
+    p.studyStyle?{i:'🧠',t:`Estudia mejor: ${sm[p.studyStyle]||p.studyStyle}`}:null,
+  ].filter(Boolean).map(x=>`<div class="rc-item"><span style="font-size:17px;flex-shrink:0">${x.i}</span><span>${x.t}</span></div>`).join('');
+  show('s_res');confetti();
+}
+
+function finishOb(){
+  const cursoLabel=CURSOOS.find(([id])=>id===obP.curso)?.[2]||'';
+  profile={...obP,cursoLabel,pts:0,streak:0,lastDay:'',memoria:{},badges:[],createdAt:new Date().toISOString()};
+  sv();openDash();toast(`¡Bienvenido/a, ${profile.name}! 🎉`);
+}
+
+// ════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════
+function openDash(){
+  if(!profile){show('s0');return;}
+  document.getElementById('dAva').textContent=profile.avatar||'📚';
+  document.getElementById('dName').textContent=profile.name;
+  document.getElementById('dCurso').textContent=profile.cursoLabel||'';
+  document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
+  document.getElementById('dPts').textContent=profile.pts||0;
+  document.getElementById('dBadges').textContent=(profile.badges||[]).length;
+  renderTasks();renderExams();renderExamBanner();
+  // Pausar timer cuando estamos en dashboard
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  updateTimerUI();
+  show('s_dash');
+}
+
+// ════════════════════════════════════════════
+// TIMER GLOBAL 20 MIN (solo con actividad real)
+// ════════════════════════════════════════════
+let lastActivity=Date.now();
+function recordActivity(){lastActivity=Date.now();}
+
+function startTimer(){
+  const saved=parseInt(localStorage.getItem('lujuji_timer_'+today())||'0');
+  timerSecs=saved;timerDone=timerSecs>=1200;
+  updateTimerUI();
+  if(timerInterval)clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    const now=Date.now();
+    const idle=now-lastActivity>120000; // 2 min sin actividad = pausa
+    if(timerDone||idle)return;
+    timerSecs++;
+    localStorage.setItem('lujuji_timer_'+today(),timerSecs);
+    updateTimerUI();
+    if(timerSecs>=1200&&!timerDone){timerDone=true;checkStreak();toast('🔥 20 minutos! 💪 La ratxa d\'avui està confirmada!');}
+  },1000);
+}
+
+function updateTimerUI(){
+  const mins=Math.floor(timerSecs/60);const secs=timerSecs%60;
+  const pct=Math.min(100,(timerSecs/1200)*100);
+  const fill=document.getElementById('timerBar');const txt=document.getElementById('timerTxt');
+  if(fill){fill.style.width=pct+'%';fill.className='timer-bar-fill'+(timerDone?' done':pct>75?' warn':'');}
+  if(txt)txt.textContent=`${mins}:${String(secs).padStart(2,'0')} / 20:00`;
+}
+
+function checkStreak(){
+  const t=today();const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yStr=yesterday.toISOString().split('T')[0];
+  if(profile.lastDay===yStr||profile.lastDay===t){if(profile.lastDay!==t){profile.streak=(profile.streak||0)+1;profile.lastDay=t;}}
+  else{profile.streak=1;profile.lastDay=t;}
+  document.getElementById('dStreak').textContent=profile.streak+'🔥';
+  checkBadges();sv();
+}
+
+function checkBadges(){
+  if(!profile.badges)profile.badges=[];
+  const nb=(id)=>{if(!profile.badges.includes(id)){profile.badges.push(id);document.getElementById('dBadges').textContent=profile.badges.length;toast('🏅 ¡Nueva insignia desbloqueada!');}};
+  if(profile.streak>=1)nb('day1');if(profile.streak>=7)nb('week1');if(profile.streak>=30)nb('month1');
+  if(profile.pts>=100)nb('pts100');if(profile.pts>=500)nb('pts500');
+}
+
+// ════════════════════════════════════════════
+// TASK TIMER (per tarea)
+// ════════════════════════════════════════════
+function startTaskTimer(){
+  taskTimerSecs=0;
+  if(taskTimerInterval)clearInterval(taskTimerInterval);
+  taskTimerInterval=setInterval(()=>{
+    const idle=Date.now()-lastActivity>120000;
+    if(idle)return;
+    taskTimerSecs++;
+    updateTaskTimerUI();
+    const minReq=curSubj?.minMins||10;
+    if(taskTimerSecs>=minReq*60){
+      document.getElementById('tbDoneBtn').disabled=false;
+      document.getElementById('taskTimeMini').textContent='✓ Llest!';
+      document.getElementById('taskTimeMini').style.color='var(--green)';
+    }
+  },1000);
+}
+
+function updateTaskTimerUI(){
+  const taskKey=curTask?'lujuji_task_req_'+curTask.id:null;
+  const minReqSecs=taskKey?parseInt(localStorage.getItem(taskKey)||String((curSubj?.minMins||10)*60)):(curSubj?.minMins||10)*60;
+  const remaining=Math.max(0,minReqSecs-taskTimerSecs);
+  const remMins=Math.floor(remaining/60);const remSecs=remaining%60;
+  const el=document.getElementById('taskTimeMini');
+  if(el&&remaining>0)el.textContent=remMins+':'+String(remSecs).padStart(2,'0')+' restantes';
+}
+
+// ════════════════════════════════════════════
+// TAREAS
+// ════════════════════════════════════════════
+function selTaskType(card){document.querySelectorAll('.mtype').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');newTaskType=card.dataset.type;}
+function examUpd(){const n=document.getElementById('examNameIn').value.trim();const d=document.getElementById('examDateIn').value;document.getElementById('examSaveBtn').disabled=!n||!d;}
+
+function saveTask(){
+  const name=document.getElementById('taskNameIn').value.trim();if(!name)return;
+  // Corrección ortográfica básica
+  const faltas=checkOrtoBasic(name);
+  if(faltas.length>0){
+    const conf=confirm('📝 Revisa la ortografía:\n'+faltas.map(f=>`❌ "${f.w}" → ✅ "${f.c}"`).join('\n')+'\n\n¿Guardar igualmente?');
+    if(!conf)return;
+  }
+  tasks.push({id:Date.now(),name,type:newTaskType,done:false});
+  svTasks();renderTasks();closeModal('modalTask');
+  document.getElementById('taskNameIn').value='';document.getElementById('taskSaveBtn').disabled=true;
+  toast('✓ Tarea añadida');
+}
+
+function checkOrtoBasic(text){
+  const errores=[
+    {w:'matematicas',c:'Matemáticas'},{w:'lengua',c:'Lengua'},{w:'ingles',c:'Inglés'},
+    {w:'ciencias',c:'Ciencias'},{w:'examenes',c:'exámenes'},{w:'examen',c:'examen'},
+    {w:'ejercicios',c:'ejercicios'},{w:'pagina',c:'página'},{w:'leccion',c:'lección'},
+    {w:'lectura',c:'lectura'},{w:'repaso',c:'repaso'}
+  ];
+  const tl=text.toLowerCase();
+  return errores.filter(e=>tl.includes(e.w)&&!text.includes(e.c)&&text.toLowerCase()!==e.w);
+}
+
+function saveExam(){
+  const name=document.getElementById('examNameIn').value.trim();const date=document.getElementById('examDateIn').value;if(!name||!date)return;
+  exams.push({id:Date.now(),name,date});exams.sort((a,b)=>a.date.localeCompare(b.date));
+  svExams();renderExams();renderExamBanner();closeModal('modalExam');
+  document.getElementById('examNameIn').value='';document.getElementById('examDateIn').value='';document.getElementById('examSaveBtn').disabled=true;
+  toast('✓ Examen añadido');
+}
+
+function toggleTask(id){
+  const task=tasks.find(t=>t.id===id);if(!task||task.type==='agent')return;
+  task.done=!task.done;
+  if(task.done&&!task.ptsGiven){task.ptsGiven=true;profile.pts=(profile.pts||0)+20;sv();document.getElementById('dPts').textContent=profile.pts;toast('+20 pts ⭐');}
+  svTasks();renderTasks();
+}
+
+function renderTasks(){
+  const list=document.getElementById('taskList');
+  if(!tasks.length){
+    list.innerHTML=`<div class="agenda-empty"><div class="ae-icon">📋</div><div class="ae-title">Sin tareas de hoy</div><div class="ae-sub">Sube una foto de tu agenda o añade las tareas manualmente</div><button class="main-action" style="margin:0" onclick="show('s_agenda')">📸 Subir agenda</button></div>`;return;
+  }
+  const validTasks=tasks.filter(t=>t&&t.name);list.innerHTML=validTasks.map(t=>`<div class="task-item${t.done?' done':''}" onclick="${t.type==='solo'?`toggleTask(${t.id})`:`openStudyTask(${t.id})`}">
+    <div class="task-check">${t.done?'✓':''}</div>
+    <div style="flex:1"><div class="task-name">${t.name}</div></div>
+    <span class="task-type ${t.type==='agent'?'tt-agent':'tt-solo'}">${t.type==='agent'?'💬 Agente':'✏️ Solo/a'}</span>
+  </div>`).join('');tasks=validTasks;svTasks();
+}
+
+function renderExams(){
+  const list=document.getElementById('examList');const now=today();
+  const upcoming=exams.filter(e=>e.date>=now).slice(0,3);
+  if(!upcoming.length){list.innerHTML=`<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin exámenes próximos — ¡añade los que tengas!</div>`;return;}
+  list.innerHTML=upcoming.map(e=>{
+    const days=Math.ceil((new Date(e.date)-new Date(now))/(1000*60*60*24));
+    const cls=days<=2?'urgent':days<=6?'soon':'ok';
+    const mult=days<=2?'x1.5 ⚠️':days<=6?'x2 🔥':days>=7?'x3 🌟':'';
+    return `<div class="exam-card ${cls}"><div class="exam-days">${days}d</div><div style="flex:1"><div class="exam-name">${e.name}</div><div class="exam-sub">${new Date(e.date+'T12:00:00').toLocaleDateString('ca-ES',{weekday:'long',day:'numeric',month:'long'})}</div></div>${mult?`<span class="exam-badge" style="background:${days<=2?'#FFF3E0':days<=6?'var(--amber-l)':'var(--green-l)'};color:${days<=2?'var(--orange)':days<=6?'var(--amber)':'var(--green)'}">${mult}</span>`:''}</div>`;
+  }).join('');
+}
+
+function renderExamBanner(){
+  const now=today();const next=exams.filter(e=>e.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const banner=document.getElementById('examBanner');
+  if(!next||Math.ceil((new Date(next.date)-new Date(now))/(1000*60*60*24))>7){banner.innerHTML='';return;}
+  const days=Math.ceil((new Date(next.date)-new Date(now))/(1000*60*60*24));
+  const cls=days<=2?'urgent':days<=6?'soon':'ok';
+  banner.innerHTML=`<div class="exam-card ${cls}" style="margin-bottom:1rem"><div class="exam-days">${days}d</div><div style="flex:1"><div class="exam-name">📅 Examen: ${next.name}</div><div class="exam-sub">${days<=2?'¡Repaso urgente!':days<=4?'¡A repasar!':'Empieza a repasar'}</div></div></div>`;
+}
+
+// ════════════════════════════════════════════
+// AGENDA SETUP
+// ════════════════════════════════════════════
+function handleAgendaPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    agendaPhotoB64=e.target.result.split(',')[1];
+    document.getElementById('agendaPrev').src=e.target.result;document.getElementById('agendaPrev').style.display='block';
+    document.getElementById('agendaPlaceholder').style.display='none';document.getElementById('agendaBox').classList.add('filled');
+    document.getElementById('agendaStep2').style.display='block';checkAgendaBtn();
+  };reader.readAsDataURL(input.files[0]);
+}
+
+function checkAgendaBtn(){document.getElementById('agendaBtn').disabled=!(agendaPhotoB64||document.getElementById('tasksText')?.value.trim().length>0);}
+
+async function processAgenda(){
+  const textVal=document.getElementById('tasksText').value.trim();
+  document.getElementById('agendaAnalyzing').classList.add('vis');document.getElementById('agendaBtn').disabled=true;
+  if(textVal){
+    const lines=textVal.split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+    lines.forEach((line,idx)=>{const isAgent=SUBJS.some(s=>line.toLowerCase().includes(s.name.toLowerCase().substring(0,4)));tasks.push({id:Date.now()+idx,name:line,type:isAgent?'agent':'solo',done:false});});
+  }
+  if(agendaPhotoB64&&apiKey){
+    try{
+      const content=[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:agendaPhotoB64}},{type:"text",text:`Ets l'agent de ${profile.name}. Ha escrit aquestes tasques: "${textVal}". Mira l'agenda de la foto. En 1-2 frases molt breus en català: confirma el que coincideix i avisa si falta alguna tasca. Molt breu.`}];
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:150,messages:[{role:"user",content}]})});
+      const data=await res.json();const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
+      if(reply)toast(reply.substring(0,100));
+    }catch(e){}
+  }
+  svTasks();agendaPhotoB64=null;document.getElementById('agendaAnalyzing').classList.remove('vis');openDash();toast('✓ Tareas añadidas!');
+}
+
+// ════════════════════════════════════════════
+// ZONA ESTUDIO
+// ════════════════════════════════════════════
+function startStudy(){
+  const pending=tasks.find(t=>!t.done&&t.type==='agent');
+  if(pending){
+    const subj=SUBJS.find(s=>pending.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)))||SUBJS[0];
+    openStudy(subj,pending);
+  } else {
+    showSubjSelector();
+  }
+}
+
+function showSubjSelector(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  const sheet=document.createElement('div');
+  sheet.style.cssText='background:#fff;border-radius:22px 22px 0 0;padding:1.75rem 1.25rem 3rem;width:100%;max-width:560px';
+  const title=document.createElement('div');title.style.cssText='font-size:18px;font-weight:700;margin-bottom:1.25rem';title.textContent='¿Qué quieres estudiar hoy?';sheet.appendChild(title);
+  SUBJS.forEach(s=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid '+(s.colorB||'#E8E8E8')+';border-radius:14px;cursor:pointer;background:'+(s.colorL||'#FAFAFA')+';margin-bottom:8px';
+    const ico=document.createElement('span');ico.style.fontSize='28px';ico.textContent=s.icon;
+    const info=document.createElement('div');info.style.flex='1';
+    const nm=document.createElement('div');nm.style.cssText='font-size:15px;font-weight:700;color:'+(s.color||'#1a1a1a');nm.textContent=s.name;
+    const lang=document.createElement('div');lang.style.cssText='font-size:12px;color:#999';lang.textContent=s.ll==='ES'?'Español':s.ll==='VAL'?'Valencia':'English';
+    const arr=document.createElement('span');arr.style.cssText='font-size:20px;color:#DDD';arr.textContent='>';
+    info.appendChild(nm);info.appendChild(lang);row.appendChild(ico);row.appendChild(info);row.appendChild(arr);
+    row.onclick=()=>{overlay.remove();openStudy(s,null);};
+    sheet.appendChild(row);
+  });
+  const cancel=document.createElement('button');
+  cancel.style.cssText='width:100%;padding:13px;background:#F0F0EC;color:#666;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px';
+  cancel.textContent='Cancelar';cancel.onclick=()=>overlay.remove();sheet.appendChild(cancel);
+  overlay.appendChild(sheet);document.body.appendChild(overlay);
+}
+
+function openStudyTask(id){const task=tasks.find(t=>t.id===id);if(!task)return;const subj=SUBJS.find(s=>task.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)))||SUBJS[0];openStudy(subj,task);}
+
+function openStudy(subj,task){
+  curSubj=subj;curTask=task||null;
+  uploadedPhotos=[];temariText='';hist=[];wS=0;loading=false;ortoBlocked=false;
+
+  document.getElementById('shAva').textContent=profile.avatar||'📚';
+  document.getElementById('shName').textContent=`${profile.name} · ${subj.name}`;
+  document.getElementById('shSub').textContent=subj.name;
+  const le=document.getElementById('shLang');
+  le.textContent=subj.ll==='ES'?'🇪🇸 ES':subj.ll==='VAL'?'🌺 VAL':'🇬🇧 EN';
+  le.className='sh-lang lp-'+subj.lang;
+  const sc=subj.color||'#1a1a1a';document.getElementById('sendBtn').style.background=sc;document.getElementById('shLang').style.background=subj.colorL||'#F0F0EC';document.getElementById('shLang').style.color=subj.color||'#1a1a1a';
+  document.getElementById('chatIn').placeholder=subj.lang==='es'?'Pregunta lo que quieras...':subj.lang==='ca'?'Pregunta el que vulgues...':'Ask anything...';
+
+  // Task banner
+  if(curTask){
+    // Penalización si ya había empezado esta tarea y salió antes de tiempo
+    const taskKey='lujuji_task_timer_'+curTask.id;
+    const prevSecs=parseInt(localStorage.getItem(taskKey)||'0');
+    const minReq=(subj.minMins||10)*60;
+    if(prevSecs>0&&prevSecs<minReq){
+      // Ya había empezado — añadir 1 min de penalización
+      const penalty=60;
+      const newReq=minReq+penalty;
+      localStorage.setItem('lujuji_task_req_'+curTask.id,newReq);
+      toast('⚠️ Has salido antes de tiempo. +1 minuto de penalización.');
+    }
+    document.getElementById('taskBanner').style.display='flex';
+    document.getElementById('taskBanner').className='task-banner active';
+    document.getElementById('taskBannerText').textContent=curTask.name;
+    const prevDone=prevSecs>=(parseInt(localStorage.getItem('lujuji_task_req_'+curTask.id)||String(minReq)));
+    document.getElementById('tbDoneBtn').disabled=!prevDone;
+    document.getElementById('taskTimeMini').textContent=prevDone?'✓ ¡Listo!':`${subj.minMins} min mínimo`;
+    document.getElementById('taskTimeMini').style.color=prevDone?'var(--green)':'var(--amber)';
+    startTaskTimer();
+  } else {
+    document.getElementById('taskBanner').style.display='none';
+    if(taskTimerInterval)clearInterval(taskTimerInterval);
+  }
+
+  // Tabs — mostrar dictado solo si la asignatura lo tiene
+  const tabs=document.getElementById('modeTabs');tabs.innerHTML='';
+  const tabList=[{id:'agente',label:'💬 Agente'},{id:'juego',label:'🎮 Juego'},{id:'simulacro',label:'📝 Simulacro'}];
+  if(subj.hasDictado)tabList.push({id:'dictado',label:'🎙️ Dictado'});
+  tabList.forEach((t,i)=>{const b=document.createElement('button');b.className='stab'+(i===0?' active':'');b.textContent=t.label;b.onclick=()=>sTab(t.id,b);tabs.appendChild(b);});
+
+  // Juego/Sim — mostrar aviso si no hay temario
+  updateFotoWarnings();
+
+  document.getElementById('chat').innerHTML='';
+  document.getElementById('photosPanel').classList.remove('vis');
+  document.getElementById('ortoBlock').classList.remove('vis');
+  resetCorr();renderQrow(subj);
+  buildDictado(subj);gInit();simPregs=[];
+
+  setTimeout(()=>greet(),300);
+  startTimer(); // Solo cuenta dentro de asignatura
+  show('s_study');recordActivity();
+}
+
+function updateFotoWarnings(){
+  const hasTemari=temariText.length>50;
+  const jWarn=document.getElementById('jocFotoWarn');const sWarn=document.getElementById('simFotoWarn');const sStart=document.getElementById('simStartWrap');const gBtn=document.getElementById('startGameBtn');
+  if(jWarn){jWarn.style.display=hasTemari?'none':'block';if(gBtn)gBtn.style.display=hasTemari?'block':'none';}
+  if(sWarn){sWarn.style.display=hasTemari?'none':'block';if(sStart)sStart.style.display=hasTemari?'block':'none';}
+}
+
+function markTaskDone(){
+  if(!curTask)return;
+  // Solo bloquear si el botón está deshabilitado
+  const btn=document.getElementById('tbDoneBtn');
+  if(btn&&btn.disabled){
+    const minReq=curSubj?.minMins||10;
+    toast('¡Faltan '+Math.ceil((minReq*60-taskTimerSecs)/60)+' minutos! 💪');return;
+  }
+  tasks.find(t=>t.id===curTask.id)&&(tasks.find(t=>t.id===curTask.id).done=true);
+  const taskObj=tasks.find(t=>t.id===curTask.id);
+  if(taskObj&&!taskObj.ptsGiven){taskObj.ptsGiven=true;profile.pts=(profile.pts||0)+20;sv();document.getElementById('dPts').textContent=profile.pts;}
+  svTasks();
+  // Limpiar timer de esta tarea
+  localStorage.removeItem('lujuji_task_timer_'+curTask.id);
+  localStorage.removeItem('lujuji_task_req_'+curTask.id);
+  document.getElementById('taskBanner').style.display='none';
+  if(taskTimerInterval)clearInterval(taskTimerInterval);
+  toast('✓ ¡Tarea hecha! +20 pts ⭐');confetti();
+  const next=tasks.find(t=>!t.done&&t.type==='agent');
+  if(next){curTask=next;const subj=SUBJS.find(s=>next.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)))||curSubj;document.getElementById('taskBanner').style.display='flex';document.getElementById('taskBannerText').textContent=next.name;document.getElementById('tbDoneBtn').disabled=true;startTaskTimer();if(subj.id!==curSubj.id){curSubj=subj;addBot(`Ara passem a ${subj.name}! 😊`);}}
+  else{curTask=null;}
+}
+
+// ════════════════════════════════════════════
+// SYSTEM PROMPT
+// ════════════════════════════════════════════
+function buildSys(){
+  const p=profile;const s=curSubj;
+  const lv=SUBJS.filter(x=>p.subjectFeelings?.[x.id]==='love').map(x=>x.name).join(', ');
+  const hd=SUBJS.filter(x=>p.subjectFeelings?.[x.id]==='hard').map(x=>x.name).join(', ');
+  const hm={deporte:'esport',videojuegos:'videojocs',musica:'música',dibujar:'dibuixar',leer:'llegir',animales:'animals',cocinar:'cuinar',series:'sèries i pelis'};
+  const hbs=(p.hobbies||[]).map(h=>hm[h]||h).join(', ');
+  const li={es:'Responde SIEMPRE en español.',ca:'Respon SEMPRE en català/valencià.',en:'ALWAYS respond in English.'};
+  const otherSubjs=SUBJS.filter(x=>x.id!==s.id).map(x=>x.name).join(', ');
+  const taskCtx=curTask?`TASCA ACTIVA: "${curTask.name}" — ajuda l'alumne amb aquesta tasca específica.`:'';
+  const temariCtx=temariText?`TEMARI PUJAT:\n${temariText.substring(0,2000)}\nUsa aquest contingut per a explicacions, exemples i preguntes.`:'';
+  const pendingExam=exams.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  const examCtx=pendingExam?`EXAMEN PRÒXIM: ${pendingExam.name} en ${Math.ceil((new Date(pendingExam.date)-new Date())/(1000*60*60*24))} dies — inclou mini-repassos del tema.`:'';
+
+  return `Ets l'agent de ${p.name} (${p.cursoLabel||'Primària'}) per a l'assignatura: ${s.name}. ${li[s.lang]}
+PERFIL: Le mola: ${hbs||'variat'}. Le mola: ${lv||'vàries'}. Li costa: ${hd||'no especificat'}.
+USA els seus hobbies per a exemples concrets i analogies. VARIA les analogies — no repeteixis sempre el mateix esport o joc. Alterna entre tots els seus hobbies de forma aleatòria i de vegades usa analogies sorprenents i inesperades que els facin somriure.
+${taskCtx}
+${temariCtx}
+${examCtx}
+${wS>=2?`⚠️ PATRÓ: ${wS} intents fallits → CANVIA estratègia completament.`:''}
+
+REGLA IMPORTANT — ASSIGNATURA ESTRICTA:
+Estàs treballant NOMÉS ${s.name}. Si l'alumne pregunta sobre ${otherSubjs}, respon: "Això és d'una altra assignatura! Ara estem amb ${s.name}. Quan acabes pots obrir-la 😊" NO respongues sobre altres assignatures.
+
+CORRECCIÓ ORTOGRÀFICA OBLIGATÒRIA:
+Si l'alumne escriu paraules amb faltes, AL FINAL de la teua resposta afegeix SEMPRE:
+"📝 Ortografia: ❌ [paraula_mal] → ✅ [paraula_correcta]"
+Per a cada falta. L'alumne haurà de confirmar que ho ha vist abans de poder continuar.
+
+CORRECCIÓ QUAN FALLA (5 PASSOS):
+1.✅ Primer el que SÍ ha fet bé
+2.🔍 Exactament quins dos conceptes ha confós
+3.💡 Una analogia MUY concreta de la seua vida
+4.❓ UNA pregunta de verificació curta
+5.🌟 Reforç positiu quan ho confirme
+TO: MAI "incorrecte". Màxim 2-3 frases. Celebra l'intent.
+VERIFICACIÓ DE CÀLCULS: Si l'alumne dona una resposta matemàtica, COMPROVA sempre si és correcta abans de confirmar-la. Si és incorrecta, aplica els 5 passos de correcció. MAI diguis "exacto" si el resultat és erroni.`;
+}
+
+// ════════════════════════════════════════════
+// GREET
+// ════════════════════════════════════════════
+function greet(){
+  const p=profile;const s=curSubj;const lang=s.lang;
+  const wk=Object.entries(p.memoria?.[s.id]||{}).filter(([,v])=>v.d<50).map(([c])=>c);
+  const g={
+    es:`¡Hola ${p.name}! 😊 ${curTask?`Vamos con "${curTask.name}".`:wk.length?`Recuerdo que ${wk[0]} te costaba — ¿lo trabajamos?`:'¿Por dónde empezamos?'} Puedes subir fotos del libro con el 📸.`,
+    ca:`Hola ${p.name}! 😊 ${curTask?`Anem amb "${curTask.name}".`:wk.length?`Recorde que ${wk[0]} t'estava costant — ho treballem?`:'Per on comencem?'} Pots pujar fotos del llibre amb el 📸.`,
+    en:`Hi ${p.name}! 😊 ${curTask?`Let's work on "${curTask.name}".`:wk.length?`I remember ${wk[0]} was tricky.`:'Where shall we start?'} You can upload book photos with 📸.`
+  };
+  addBot(g[lang]||g.es);updateMood('ok');
+}
+
+// ════════════════════════════════════════════
+// QUICK BUTTONS
+// ════════════════════════════════════════════
+function renderQrow(s){
+  const row=document.getElementById('qrow');row.innerHTML='';
+  const qmap={
+    matematicas:{es:['Explícame las fracciones','No entiendo los decimales','Dame un problema 🔥','¿Qué repaso?']},
+    lengua:{es:['¿Qué es el sujeto?','Los acentos me cuestan','Dame un ejercicio','¿En qué he fallado?']},
+    medi:{ca:["Explica'm els nutrients","No entenc els processats","Fem preguntes del temari","Ajuda'm amb la tasca"]},
+    valencia:{ca:["Explica'm un concepte","Tinc un dubte","Fem una pregunta","Ajuda'm amb la tasca"]},
+    ingles:{en:["Explain the present simple","I don't understand tenses","Give me an exercise","Help me with my task"]},
+  };
+  const btns=(qmap[s.id]?.[s.lang])||['Ajuda\'m','Dame un ejercicio','No entiendo','¿Qué repaso?'];
+  btns.forEach(t=>{const b=document.createElement('button');b.className='qbtn';b.textContent=t;b.onclick=()=>{document.getElementById('chatIn').value=t;sendMsg();};row.appendChild(b);});
+}
+
+// ════════════════════════════════════════════
+// CHAT
+// ════════════════════════════════════════════
+function addBot(text){
+  const chat=document.getElementById('chat');const div=document.createElement('div');div.className='msg bot';
+  // Detectar correccions ortogràfiques en la resposta
+  const ortoPattern=/📝\s*Ortografi[ae]:?\s*(.*?)(?:\n|$)/gi;
+  const ortoMatches=[...text.matchAll(ortoPattern)];
+  if(ortoMatches.length>0)showOrtoBlock(ortoMatches.map(m=>m[1]));
+  const cleanText=text.replace(ortoPattern,'').trim();
+  div.innerHTML=`<div class="bot-av">🎓</div><div class="bub">${cleanText.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')}</div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+  recordActivity();
+}
+
+function showOrtoBlock(corrections){
+  const block=document.getElementById('ortoBlock');const items=document.getElementById('ortoItems');
+  items.innerHTML=corrections.map(c=>{
+    const parts=c.split('→');
+    if(parts.length>=2){const wrong=parts[0].replace(/❌/g,'').trim();const correct=parts[1].replace(/✅/g,'').trim();
+    return `<div class="orto-item"><span class="orto-wrong">${wrong}</span><span class="orto-arrow">→</span><span class="orto-correct">${correct}</span></div>`;}
+    return `<div class="orto-item"><span style="font-size:13px;color:#92400E">${c}</span></div>`;
+  }).join('');
+  block.classList.add('vis');ortoBlocked=true;
+  document.getElementById('chatIn').disabled=true;document.getElementById('sendBtn').disabled=true;
+}
+
+function confirmOrto(){
+  document.getElementById('ortoBlock').classList.remove('vis');ortoBlocked=false;
+  document.getElementById('chatIn').disabled=false;document.getElementById('sendBtn').disabled=false;
+  document.getElementById('chatIn').focus();
+}
+
+function addUser(text){
+  const lang=curSubj?.lang||'es';const chat=document.getElementById('chat');const div=document.createElement('div');div.className='msg u';
+  const clr={es:'#F0F0EC',ca:'#DCFCE7',en:'#EDE9FE'};
+  div.innerHTML=`<div class="bub" style="background:${clr[lang]||'#F0F0EC'}">${text}</div>`;
+  chat.appendChild(div);chat.scrollTop=chat.scrollHeight;recordActivity();
+}
+function addLoad(){const c=document.getElementById('chat');const d=document.createElement('div');d.className='msg bot';d.id='lmsg';d.innerHTML=`<div class="bot-av">🎓</div><div class="bub"><div class="ldots"><span></span><span></span><span></span></div></div>`;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function rmLoad(){const e=document.getElementById('lmsg');if(e)e.remove();}
+function doneSend(){loading=false;document.getElementById('sendBtn').disabled=ortoBlocked;document.getElementById('chatIn').disabled=ortoBlocked;if(!ortoBlocked)document.getElementById('chatIn').focus();}
+
+function updateMood(m){
+  const lang=curSubj?.lang||'es';
+  const st={ok:{c:'#16A34A',t:{es:'Listo 😊',ca:'Listo 😊',en:'Ready 😊'}},curious:{c:'#2563EB',t:{es:'¡Curioso! 🌟',ca:'¡Curioso! 🌟',en:'Curious! 🌟'}},frustrated:{c:'#DC2626',t:{es:'Un poco frustrado/a',ca:'Un poco frustrado/a',en:'A bit frustrated'}},tired:{c:'#9CA3AF',t:{es:'Parece cansado/a',ca:'Parece cansado/a',en:'Seems tired'}}};
+  const s=st[m]||st.ok;document.getElementById('mDot').style.background=s.c;document.getElementById('mTxt').textContent=s.t[lang]||s.t.es;
+}
+
+function resetCorr(){['cOk','cErr','cTip','cVer'].forEach(id=>document.getElementById(id).classList.remove('vis'));document.getElementById('reinforce').style.display='none';document.getElementById('vRes').style.display='none';document.getElementById('vIn').value='';document.getElementById('vIn').disabled=false;}
+
+function chkV(){const ua=document.getElementById('vIn').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(vA)||vA.includes(ua);const res=document.getElementById('vRes');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';const lang=curSubj?.lang||'ca';if(ok){res.textContent=lang==='en'?'✓ Perfect! Got it! 🌟':'✓ ¡Perfecto! Ahora sí lo tienes claro 🌟';document.getElementById('reinforce').textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! Ahora ya no lo confundirás. ¡Seguimos! 💪';document.getElementById('reinforce').style.display='block';document.getElementById('vIn').disabled=true;wS=0;}else res.textContent=lang==='en'?`Almost! The answer is "${vA}" 😊`:`Quasi! La resposta és "${vA}" 😊`;}
+
+function flashPts(n){profile.pts=(profile.pts||0)+(n||10);sv();document.getElementById('dPts').textContent=profile.pts;const f=document.getElementById('ptsFlash');f.textContent=`+${n||10} pts ⭐`;f.style.display='block';setTimeout(()=>f.style.display='none',1500);}
+
+async function sendMsg(){
+  if(loading||ortoBlocked)return;
+  const inp=document.getElementById('chatIn');const text=inp.value.trim();if(!text)return;
+  inp.value='';addUser(text);hist.push({role:'user',content:text});recordActivity();
+  const tl=text.toLowerCase();
+  if(tl.includes('cansad')||tl.includes('cansat'))updateMood('tired');
+  else if(tl.includes('no entiendo')||tl.includes('no entenc')||tl.includes('difícil'))updateMood('frustrated');
+  else if(tl.includes('per qué')||tl.includes('por qué')||tl.includes('cómo')||tl.includes('com'))updateMood('curious');
+  else updateMood('ok');
+  loading=true;document.getElementById('sendBtn').disabled=true;addLoad();
+  if(!apiKey){simResp(text);return;}
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:350,system:buildSys(),messages:hist})});
+    const data=await res.json();if(data.error){rmLoad();addBot('Error de conexión. ¡Inténtalo de nuevo! 😊');doneSend();return;}
+    const reply=data.content?.map(b=>b.text||'').join('').trim()||'';rmLoad();
+    const rl=reply.toLowerCase();
+    if(rl.includes('casi')||rl.includes('quasi')||rl.includes('molt a prop'))wS++;
+    else if(rl.includes('exacto')||rl.includes('perfecte')||rl.includes('correcte')||rl.includes('molt bé')){wS=0;flashPts(10);}
+    addBot(reply);hist.push({role:'assistant',content:reply});
+  }catch(e){rmLoad();addBot('Error de conexión. ¡Seguimos! 😊');}
+  doneSend();
+}
+
+function simResp(text){
+  const s=curSubj;const lang=s.lang;const tl=text.toLowerCase();let r='';
+  // Detectar si pregunta de otra asignatura
+  const otherSubj=SUBJS.find(x=>x.id!==s.id&&(tl.includes(x.name.toLowerCase().substring(0,4))||tl.includes(x.id)));
+  if(otherSubj){r=lang==='ca'?`Això és de ${otherSubj.name}! Ara estem amb ${s.name}. Quan acabes pots obrir-la 😊`:`¡Eso es de ${otherSubj.name}! Ahora estamos con ${s.name}. Cuando acabes puedes abrirla 😊`;}
+  else if(tl.includes('cansad')||tl.includes('cansat'))r=lang==='ca'?`Totalment normal! 😊 Descansa un moment i quan tornes ho veuràs tot més clar.`:`¡Totalmente normal! 😊 Descansa un momento y cuando vuelvas lo verás más claro.`;
+  else if(tl.includes('fraccion')||tl.includes('fracció'))r=lang==='ca'?`Bona pregunta! 😊 Una fracció té **numerador** (a dalt) i **denominador** (a baix). Com 3/4: tens 3 trossos d'una pizza de 4. Ho veus?`:`¡Buena pregunta! 😊 Una fracción tiene **numerador** (arriba) y **denominador** (abajo). Como 3/4: tienes 3 trozos de una pizza de 4. ¿Lo ves?`;
+  else if(tl.includes('sujeto')||tl.includes('subjecte'))r=`El **sujeto** es quien hace la acción! 😊 Truco: pregunta "¿quién?" al verbo. En "${profile.name} estudia" → ¿Quién? ${profile.name} → es el sujeto.`;
+  else if(tl.includes('nutrient')||tl.includes('aliment'))r=`Els nutrients son el que els aliments li donen al cos! 🥗 **Proteïnes** (carn, peix), **greixos** (oli), **hidrats** (pa, arròs) i **vitamines** (fruites). Quin és el més important?`;
+  else if(tl.includes('foto')||tl.includes('subir')||tl.includes('pujar'))r=lang==='ca'?`Per a pujar fotos, toca el botó 📸 al costat del camp de text! Pots pujar fins a 5 fotos.`:`Para subir fotos, toca el botón 📸 junto al campo de texto.`;
+  else r=lang==='ca'?`Clar, ${profile.name}! 😊 Estic aquí per al que necessites de ${s.name}. Pots preguntar el que vulgues o pujar fotos amb el 📸.`:lang==='en'?`Of course, ${profile.name}! 😊 I'm here for ${s.name}. Ask anything or upload photos with 📸.`:`¡Claro, ${profile.name}! 😊 Estoy aquí para ${s.name}. Pregunta lo que quieras o sube fotos con el 📸.`;
+  setTimeout(()=>{rmLoad();addBot(r);hist.push({role:'assistant',content:r});doneSend();},900);
+}
+
+// ════════════════════════════════════════════
+// FOTOS
+// ════════════════════════════════════════════
+function handlePhotos(input){
+  if(!input.files||!input.files.length)return;
+  Array.from(input.files).slice(0,5-uploadedPhotos.length).forEach(file=>{
+    const reader=new FileReader();reader.onload=e=>{uploadedPhotos.push({src:e.target.result,base64:e.target.result.split(',')[1]});renderPhotosPanel();};reader.readAsDataURL(file);
+  });input.value='';recordActivity();
+}
+function renderPhotosPanel(){
+  document.getElementById('photosPanel').classList.add('vis');const row=document.getElementById('photosRow');row.innerHTML='';
+  uploadedPhotos.forEach((p,i)=>{const w=document.createElement('div');w.className='photo-thumb-wrap';w.innerHTML=`<img class="photo-thumb" src="${p.src}"/><div class="photo-rm" onclick="removePhoto(${i})">✕</div>`;row.appendChild(w);});
+  if(uploadedPhotos.length<5){const a=document.createElement('div');a.className='add-slot';a.innerHTML='<input type="file" accept="image/*" multiple onchange="handlePhotos(this)" onclick="event.stopPropagation()"/><span style="font-size:20px;opacity:.4">📷</span><span style="font-size:9px;color:#BBB;margin-top:3px">Añadir</span>';row.appendChild(a);}
+  document.getElementById('analyzeBtn').disabled=uploadedPhotos.length===0;
+}
+function removePhoto(i){uploadedPhotos.splice(i,1);if(!uploadedPhotos.length)closePhotos();else renderPhotosPanel();}
+function closePhotos(){document.getElementById('photosPanel').classList.remove('vis');}
+
+async function analyzePhotos(){
+  if(!uploadedPhotos.length||loading)return;
+  const photosToSend=[...uploadedPhotos];loading=true;document.getElementById('analyzeBtn').disabled=true;closePhotos();document.getElementById('analyzingBar').classList.add('vis');
+  const lang=curSubj?.lang||'ca';
+  if(!apiKey){
+    await delay(1200);document.getElementById('analyzingBar').classList.remove('vis');
+    addBot(lang==='ca'?`He vist ${photosToSend.length} foto/es 📸 Amb API key llegiria el contingut real i generaria les preguntes del joc i el simulacre des del teu temari!`:`He visto ${photosToSend.length} foto/s 📸 Con API key leería el contenido real y generaría preguntas del juego y simulacro desde tu temario.`);
+    uploadedPhotos=[];loading=false;document.getElementById('sendBtn').disabled=false;return;
+  }
+  try{
+    const langTxt={es:'Responde en español, máximo 2 frases.',ca:'Respon en català, màxim 2 frases.',en:'Answer in English, max 2 sentences.'};
+    const content=photosToSend.map(ph=>({type:"image",source:{type:"base64",media_type:"image/jpeg",data:ph.base64}}));
+    content.push({type:"text",text:`Ets l'agent de ${profile.name} per a ${curSubj.name}. ${langTxt[lang]} Primer extreu tot el text visible de les imatges (per a generar preguntes). Després en 2 frases molt breus: di exactament què veus i proposa UNA acció concreta.`});
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:500,messages:[{role:"user",content}]})});
+    const data=await res.json();document.getElementById('analyzingBar').classList.remove('vis');
+    const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
+    // Guardar el temario extraido
+    temariText=reply;updateFotoWarnings();
+    addBot(reply);hist.push({role:'user',content:`[Alumne ha pujat ${photosToSend.length} foto(s) del temari]`});hist.push({role:'assistant',content:reply});
+    uploadedPhotos=[];
+  }catch(e){document.getElementById('analyzingBar').classList.remove('vis');addBot('Error leyendo las fotos. ¡Inténtalo de nuevo! 😊');}
+  loading=false;document.getElementById('sendBtn').disabled=ortoBlocked;recordActivity();
+}
+
+// ════════════════════════════════════════════
+// JUEGO
+// ════════════════════════════════════════════
+function useTemaManualGame(){
+  const tema=document.getElementById('temaManualGame')?.value.trim();
+  if(!tema){toast('Escribe el tema primero');return;}
+  temariText=tema;updateFotoWarnings();toast('✓ Tema cargado: '+tema.substring(0,40));
+}
+function selGM(card){document.querySelectorAll('.gmode-card').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');gMode=card.dataset.gm;}
+function gInit(){gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;document.getElementById('gSum').classList.remove('vis');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';}
+
+async function startGame(){
+  if(!temariText){toast('¡Sube primero las fotos del temario! 📸');return;}
+  document.getElementById('gmodeWrap').style.display='none';document.getElementById('gameWrap').style.display='block';document.getElementById('gSum').classList.remove('vis');
+  gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;
+
+  // Generar preguntas desde el temario con API
+  if(apiKey&&temariText){
+    document.getElementById('gCard').innerHTML='<div class="q-type">Generando preguntas del temario...</div><div class="ldots" style="color:var(--black);margin-top:10px"><span></span><span></span><span></span></div>';
+    try{
+      const lang=curSubj?.lang||'ca';
+      const langInstr={es:'Genera las preguntas en español.',ca:'Genera les preguntes en català/valencià.',en:'Generate questions in English.'};
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content:`Genera 10 preguntes de joc basades en aquest temari de ${curSubj.name}. ${langInstr[lang]} Mezcla tipus: vf (verdader/fals), opts (4 opcions), completa (completar frase). JSON sense markdown:\n[{"type":"vf|opts|completa","q":"pregunta","ans":true/false/1/0/2/3/"paraula","opts":["a","b","c","d"],"ok":"feedback positiu","err":"feedback negatiu si falla","analogy":"analogia per recordar","verifyQ":"pregunta verificació","verifyA":"resposta 1-3 paraules"}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
+      const data=await res.json();const raw=data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+      gPool=JSON.parse(raw)||[];
+    }catch(e){gPool=[];}
+  }
+
+  if(!gPool.length){toast('Error generando preguntas. Inténtalo de nuevo.');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';return;}
+  gShowQ();recordActivity();
+}
+function gReset(){gInit();}
+
+function gShowQ(){
+  if(gQ>=gPool.length){gSummary();return;}
+  gAns=false;const q=gPool[gQ];const total=gPool.length;
+  document.getElementById('gCnt').textContent=`${gQ+1}/${total}`;document.getElementById('gProg').style.width=((gQ/total)*100)+'%';document.getElementById('gPts').textContent=gScore+' ✓';
+  document.getElementById('gCard').className='q-card';document.getElementById('gFb').classList.remove('vis','ok','ko');
+  ['g5Ok','g5Err','g5Tip','g5Ver','g5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});
+  document.getElementById('g5VR').style.display='none';document.getElementById('g5VI').value='';document.getElementById('g5VI').disabled=false;document.getElementById('gNext').classList.remove('vis');
+  const types={vf:'⚡ Verdader o Fals',opts:'🎯 Tria la resposta',completa:'✍️ Completa la frase'};
+  document.getElementById('gType').textContent=types[q.type]||'Pregunta';document.getElementById('gText').textContent=q.q;
+  ['gVf','gOpts','gAns'].forEach(id=>document.getElementById(id).style.display='none');
+  if(q.type==='vf'){document.getElementById('gVf').style.display='flex';document.getElementById('gV').disabled=false;document.getElementById('gF').disabled=false;}
+  else if(q.type==='opts'){const col=document.getElementById('gOpts');col.style.display='flex';col.innerHTML='';(q.opts||[]).forEach((o,i)=>{const b=document.createElement('button');b.className='opt-g';b.textContent=o;b.onclick=()=>gAnsO(i);col.appendChild(b);});}
+  else{document.getElementById('gAns').style.display='flex';document.getElementById('gIn').value='';document.getElementById('gAnsB').disabled=false;setTimeout(()=>document.getElementById('gIn').focus(),100);}
+}
+
+function gAnsVF(v){if(gAns)return;gAns=true;document.getElementById('gV').disabled=true;document.getElementById('gF').disabled=true;gShowFb(v===gPool[gQ].ans,gPool[gQ]);}
+function gAnsO(idx){if(gAns)return;gAns=true;document.querySelectorAll('#gOpts .opt-g').forEach(b=>b.disabled=true);const q=gPool[gQ];const ok=idx===q.ans;document.querySelectorAll('#gOpts .opt-g').forEach((b,i)=>{if(i===q.ans)b.classList.add('correct');else if(i===idx&&!ok)b.classList.add('wrong');});gShowFb(ok,q);}
+function gAnsT(){if(gAns)return;const ua=document.getElementById('gIn').value.trim().toLowerCase();if(!ua)return;gAns=true;document.getElementById('gAnsB').disabled=true;const q=gPool[gQ];const ans=String(q.ans).toLowerCase();gShowFb(ua.includes(ans)||ans.includes(ua),q);}
+
+function gShowFb(ok,q){
+  document.getElementById('gCard').className='q-card '+(ok?'ok':'ko');
+  if(ok){gScore++;gStreak++;gMaxS=Math.max(gMaxS,gStreak);flashPts(10);}else gStreak=0;
+  document.getElementById('gPts').textContent=gScore+' ✓';
+  const okMs=['¡Muy bien! 🎉','¡Correcto! ⭐','¡Exacto! 🌟','¡Lo tienes! 💪'];const koMs=['¡Casi! 😊','Muy cerca 💪','Tiene truco 🔄','¡Bien por intentarlo! 💪'];
+  const fb=document.getElementById('gFb');fb.classList.add('vis',ok?'ok':'ko');
+  document.getElementById('gFbT').textContent=ok?okMs[Math.floor(Math.random()*okMs.length)]:koMs[Math.floor(Math.random()*koMs.length)];
+  document.getElementById('gFbB').textContent=ok?q.ok:'';
+  if(!ok){
+    if(q.ok){const e=document.getElementById('g5Ok');e.style.display='block';e.classList.add('vis');document.getElementById('g5OkB').textContent=q.ok;}
+    if(q.err){const e=document.getElementById('g5Err');e.style.display='block';e.classList.add('vis');document.getElementById('g5ErrB').textContent=q.err;}
+    if(q.analogy){const e=document.getElementById('g5Tip');e.style.display='block';e.classList.add('vis');document.getElementById('g5TipB').textContent=q.analogy;}
+    if(q.verifyQ&&q.verifyA){const e=document.getElementById('g5Ver');e.style.display='block';e.classList.add('vis');document.getElementById('g5VQ').textContent=q.verifyQ;g5VA=String(q.verifyA).toLowerCase();}
+    else setGNext();
+  }else setGNext();
+  recordActivity();
+}
+function g5ChkV(){const ua=document.getElementById('g5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(g5VA)||g5VA.includes(ua);const res=document.getElementById('g5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ ¡Perfecto! 🌟';const r=document.getElementById('g5R');r.style.display='block';r.textContent='🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('g5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${g5VA}" 😊`;setGNext();}
+function setGNext(){const nb=document.getElementById('gNext');nb.textContent=gQ<gPool.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
+function gNextQ(){gQ++;gShowQ();recordActivity();}
+function gSummary(){
+  document.getElementById('gameWrap').style.display='none';document.getElementById('gSum').classList.add('vis');
+  const pct=Math.round(gScore/gPool.length*100);
+  const icons={90:'🏆',70:'🌟',50:'😊',0:'💪'};const msgs={90:'¡Increíble! 🔥',70:'¡Muy bien! 🌟',50:'¡Bien! 😊',0:'¡Buen intento! 💪'};
+  const lvl=pct>=90?90:pct>=70?70:pct>=50?50:0;
+  document.getElementById('gSI').textContent=icons[lvl];document.getElementById('gST').textContent=msgs[lvl];
+  document.getElementById('gSC').textContent=gScore+'/'+gPool.length;document.getElementById('gSP').textContent=pct+'%';document.getElementById('gSS').textContent=gMaxS+'🔥';
+  // Si 100% -> desbloquear tarea
+  if(pct===100&&curTask){document.getElementById('tbDoneBtn').disabled=false;document.getElementById('taskTimeMini').textContent='✓ 100%!';document.getElementById('taskTimeMini').style.color='var(--green)';}
+}
+
+// ════════════════════════════════════════════
+// SIMULACRO (desde temario)
+// ════════════════════════════════════════════
+function useTemaManualSim(){
+  const tema=document.getElementById('temaManualSim')?.value.trim();
+  if(!tema){toast('Escribe el tema primero');return;}
+  temariText=tema;updateFotoWarnings();toast('✓ Tema cargado: '+tema.substring(0,40));
+}
+async function simStart(){
+  if(!temariText){toast('¡Sube primero las fotos del temario! 📸');return;}
+  document.getElementById('simIntro').style.display='none';document.getElementById('simPlay').style.display='block';document.getElementById('simSum').classList.remove('vis');
+  sQ=0;sScore=0;sDev=0;sAns=false;
+
+  // Generar preguntas de simulacro desde el temario
+  if(apiKey&&temariText){
+    document.getElementById('sCard').innerHTML='<span class="sim-type st-dev">Generando simulacro...</span><div class="ldots" style="color:var(--purple);margin-top:10px"><span></span><span></span><span></span></div>';
+    try{
+      const lang=curSubj?.lang||'ca';
+      const langInstr={es:'Genera en español.',ca:'Genera en català/valencià.',en:'Generate in English.'};
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,messages:[{role:"user",content:`Genera 5 preguntes de simulacre d'examen basades en aquest temari de ${curSubj.name}. ${langInstr[lang]} Mezcla: vf, opts (4 opcions), completa, dev (desenvolupament). Per a cada error inclou els 5 passos de correcció. JSON sense markdown:\n[{"type":"vf|opts|completa|dev","q":"pregunta","ans":true/false/1/0/"paraula","opts":["a","b","c","d"],"ok":"feedback si encerta","err":"feedback si falla","analogy":"analogia","verifyQ":"pregunta verificació","verifyA":"resposta","model":"resposta model completa","punts":["paraula1","paraula2"]}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
+      const data=await res.json();const raw=data.content?.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+      simPregs=JSON.parse(raw)||[];
+    }catch(e){simPregs=[];}
+  }
+  if(!simPregs.length){toast('Error generando el simulacro.');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
+  sSimShowQ();recordActivity();
+}
+function simReset(){document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.remove('vis');simPregs=[];}
+function sReset5(){['s5Ok','s5Err','s5Tip','s5Ver','s5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});document.getElementById('s5VR').style.display='none';document.getElementById('s5VI').value='';document.getElementById('s5VI').disabled=false;document.getElementById('sModel').style.display='none';document.getElementById('sNext').classList.remove('vis');}
+
+function sSimShowQ(){
+  if(sQ>=simPregs.length){sSimResults();return;}
+  sAns=false;const q=simPregs[sQ];const total=simPregs.length;
+  document.getElementById('sCnt').textContent=`${sQ+1}/${total}`;document.getElementById('sProg').style.width=((sQ/total)*100)+'%';document.getElementById('sPts').textContent=sScore+' ✓';
+  document.getElementById('sCard').className='q-card';sReset5();
+  const types={vf:'⚡ Verdader o Fals',opts:'🎯 Opcions',completa:'✍️ Completa',dev:'✏️ Desenvolupament'};const cls={vf:'st-vf',opts:'st-opts',completa:'st-comp',dev:'st-dev'};
+  const tp=document.getElementById('sType');tp.textContent=types[q.type];tp.className='sim-type '+cls[q.type];
+  document.getElementById('sText').textContent=q.q;
+  ['sVf','sOpts','sAns','sDevW'].forEach(id=>document.getElementById(id).style.display='none');
+  if(q.type==='vf'){document.getElementById('sVf').style.display='flex';document.getElementById('sV').disabled=false;document.getElementById('sF').disabled=false;}
+  else if(q.type==='opts'){const col=document.getElementById('sOpts');col.style.display='flex';col.innerHTML='';q.opts.forEach((o,i)=>{const b=document.createElement('button');b.className='opt-g';b.textContent=o;b.onclick=()=>sAnsO(i);col.appendChild(b);});}
+  else if(q.type==='completa'){document.getElementById('sAns').style.display='flex';document.getElementById('sIn').value='';document.getElementById('sAnsB').disabled=false;setTimeout(()=>document.getElementById('sIn').focus(),100);}
+  else{document.getElementById('sCard').style.borderColor='#C4B5FD';document.getElementById('sCard').style.background='#F5F3FF';document.getElementById('sDevW').style.display='block';document.getElementById('sDev').value='';document.getElementById('sDevB').disabled=false;}
+}
+function sAnsVF(v){if(sAns)return;sAns=true;document.getElementById('sV').disabled=true;document.getElementById('sF').disabled=true;sShowFb(v===simPregs[sQ].ans,simPregs[sQ]);}
+function sAnsO(idx){if(sAns)return;sAns=true;document.querySelectorAll('#sOpts .opt-g').forEach(b=>b.disabled=true);const q=simPregs[sQ];const ok=idx===q.ans;document.querySelectorAll('#sOpts .opt-g').forEach((b,i)=>{if(i===q.ans)b.classList.add('correct');else if(i===idx&&!ok)b.classList.add('wrong');});sShowFb(ok,q);}
+function sAnsT(){if(sAns)return;const ua=document.getElementById('sIn').value.trim().toLowerCase();if(!ua)return;sAns=true;document.getElementById('sAnsB').disabled=true;const q=simPregs[sQ];const ans=String(q.ans).toLowerCase();sShowFb(ua.includes(ans)||ans.includes(ua),q);}
+function sAnsDev(){
+  const ua=document.getElementById('sDev').value.trim();if(!ua||sAns)return;sAns=true;document.getElementById('sDevB').disabled=true;const q=simPregs[sQ];
+  setTimeout(()=>{
+    const present=(q.punts||[]).filter(p=>ua.toLowerCase().includes(p.toLowerCase()));
+    const ok=present.length>=(q.punts?.length||1)*0.5;
+    if(ok){sScore++;sDev++;flashPts(15);}
+    document.getElementById('sCard').style.borderColor=ok?'#86EFAC':'#FCA5A5';document.getElementById('sCard').style.background=ok?'#F0FDF4':'#FEF2F2';
+    document.getElementById('sPts').textContent=sScore+' ✓';
+    const e5Ok=document.getElementById('s5Ok');e5Ok.style.display='block';e5Ok.classList.add('vis');
+    document.getElementById('s5OkB').textContent=ok?`Molt bé! Has inclòs ${present.length}/${q.punts?.length||'?'} punts clau.`:`Has mencionat ${present.length}/${q.punts?.length||'?'} punts. Revisa la solució model.`;
+    document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model||'';
+    const nb=document.getElementById('sNext');nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');
+  },800);
+}
+function sShowFb(ok,q){
+  document.getElementById('sCard').className='q-card '+(ok?'ok':'ko');
+  if(ok){sScore++;flashPts(10);}
+  document.getElementById('sPts').textContent=sScore+' ✓';
+  const okMs=['¡Muy bien! 🎉','¡Correcto! ⭐','¡Exacto! 🌟','¡Lo tienes! 💪'];const koMs=['¡Casi! 😊','Muy cerca 💪','Tiene truco 🔄','¡Bien por intentarlo! 💪'];
+  if(ok){const e=document.getElementById('s5Ok');e.style.display='block';e.classList.add('vis');document.getElementById('s5OkB').textContent=okMs[Math.floor(Math.random()*okMs.length)]+' '+(q.ok||'');}
+  else{
+    if(q.ok){const e=document.getElementById('s5Ok');e.style.display='block';e.classList.add('vis');document.getElementById('s5OkB').textContent=q.ok;}
+    if(q.err){const e=document.getElementById('s5Err');e.style.display='block';e.classList.add('vis');document.getElementById('s5ErrB').textContent=q.err;}
+    if(q.analogy){const e=document.getElementById('s5Tip');e.style.display='block';e.classList.add('vis');document.getElementById('s5TipB').textContent=q.analogy;}
+    if(q.verifyQ&&q.verifyA){const e=document.getElementById('s5Ver');e.style.display='block';e.classList.add('vis');document.getElementById('s5VQ').textContent=q.verifyQ;sVA=String(q.verifyA).toLowerCase();}
+    else{if(q.model){document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model;}setSnext();}
+  }
+  if(ok){if(q.model){document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model;}setSnext();}
+  recordActivity();
+}
+function s5ChkV(){const ua=document.getElementById('s5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(sVA)||sVA.includes(ua);const res=document.getElementById('s5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ ¡Perfecto! 🌟';const r=document.getElementById('s5R');r.style.display='block';r.textContent='🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('s5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${sVA}" 😊`;setSnext();}
+function setSnext(){const nb=document.getElementById('sNext');nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
+function sNextQ(){sQ++;sSimShowQ();recordActivity();}
+function sSimResults(){
+  document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.add('vis');
+  const total=simPregs.length;const pct=Math.round(sScore/total*100);const nota=pct>=90?10:pct>=80?9:pct>=70?7:pct>=60?6:pct>=50?5:4;
+  const msgs={10:'¡Increíble! 🏆',9:"¡Excelente! 🌟",7:'¡Muy bien! 🌿',6:'¡Bien! 💪',5:'Aprobado 📚',4:'¡Sigue practicando! 💪'};
+  document.getElementById('sSI').textContent=nota>=7?'🏆':nota>=5?'🌟':'💪';document.getElementById('ssST').textContent=msgs[nota]||msgs[5];
+  document.getElementById('sSC').textContent=sScore+'/'+total;document.getElementById('sSN').textContent=nota+'/10';document.getElementById('sSD').textContent=sDev+'✓';
+  if(pct===100&&curTask){document.getElementById('tbDoneBtn').disabled=false;document.getElementById('taskTimeMini').textContent='✓ 100%!';document.getElementById('taskTimeMini').style.color='var(--green)';}
+}
+
+// ════════════════════════════════════════════
+// DICTADO
+// ════════════════════════════════════════════
+function buildDictado(subj){
+  if(!subj.hasDictado)return;
+  const lang=subj.lang;const pool=DICTADOS[lang]||DICTADOS.ca;
+  dictText=pool[Math.floor(Math.random()*pool.length)];
+  document.getElementById('dictTa').value='';document.getElementById('dictResult').style.display='none';
+  document.getElementById('dictCheckBtn').disabled=true;document.getElementById('dictPlayBtn').disabled=false;
+  document.getElementById('dictPlayBtn').textContent='🔊 Escuchar el dictado';
+  document.getElementById('dictPenalty').classList.remove('vis');
+}
+
+function playDictado(){
+  if(!dictText)return;const btn=document.getElementById('dictPlayBtn');
+  if(dictPlaying){window.speechSynthesis.cancel();dictPlaying=false;btn.textContent='🔊 Escuchar el dictado';return;}
+  dictPlaying=true;btn.textContent='⏸ Pausar';
+  const u=new SpeechSynthesisUtterance(dictText);u.lang=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';u.rate=0.8;
+  u.onend=()=>{dictPlaying=false;btn.textContent='🔊 Escuchar de nuevo';};
+  window.speechSynthesis.speak(u);recordActivity();
+}
+
+function checkDictado(){
+  const userText=document.getElementById('dictTa').value.trim();if(!userText||!dictText)return;
+  const orig=dictText.toLowerCase().replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
+  const user=userText.toLowerCase().replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
+  let correct=0;let html='';const wrongWords=[];
+  orig.forEach((word,i)=>{const userWord=user[i]||'___';const isOk=word===userWord;if(isOk)correct++;else wrongWords.push({wrong:userWord,correct:word});
+    html+=`<span class="dict-word ${isOk?'dw-ok':'dw-err'}">${isOk?word:userWord}</span>`;
+    if(!isOk&&userWord!=='___')html+=`<span class="dict-word dw-fix">${word}</span>`;html+=' ';
+  });
+  const pct=Math.round(correct/orig.length*100);
+  const result=document.getElementById('dictResult');result.style.display='block';
+  result.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:.75rem;color:${pct>=80?'#166534':pct>=50?'#92400E':'#991B1B'}">${pct>=80?'🌟 Molt bé!':pct>=50?'💪 Quasi!':'📝 Practica més!'} ${correct}/${orig.length} correctas (${pct}%)</div>${html}`;
+  if(pct>=80)flashPts(15);else if(pct>=50)flashPts(5);
+  // Penalización si hay errores
+  if(wrongWords.length>0)startDictPenalty(wrongWords);
+  recordActivity();
+}
+
+function startDictPenalty(words){
+  dpWords=words;dpCurrentWord=0;dpMode='';dpCount=0;
+  const penalty=document.getElementById('dictPenalty');penalty.classList.add('vis');
+  renderDpWord();
+}
+
+function renderDpWord(){
+  if(dpCurrentWord>=dpWords.length){document.getElementById('dictPenalty').classList.remove('vis');toast('✓ ¡Práctica completada! 🌟');flashPts(20);return;}
+  const w=dpWords[dpCurrentWord];
+  document.getElementById('dpWordList').innerHTML=`
+    <div class="dp-title">Palabra ${dpCurrentWord+1}/${dpWords.length}: practica "<span style="color:var(--green);font-weight:700">${w.correct}</span>"</div>
+    <div class="dp-options">
+      <div class="dp-opt${dpMode==='5x'?' sel':''}" onclick="selDpMode('5x',this)">✏️ Escribirla 5 veces</div>
+      <div class="dp-opt${dpMode==='frase'?' sel':''}" onclick="selDpMode('frase',this)">📝 Hacer 3 frases</div>
+    </div>
+    <div class="dp-practice" id="dpPractice">
+      <div class="dp-progress" id="dpProgress"></div>
+      <input class="dp-in" id="dpIn" placeholder="${dpMode==='5x'?`Escriu "${w.correct}"...`:`Escriu una frase amb "${w.correct}"...`}" onkeydown="if(event.key==='Enter')submitDp()"/>
+      <button class="dp-submit" onclick="submitDp()">✓ Enviar</button>
+    </div>
+  `;
+}
+
+function selDpMode(mode,card){
+  dpMode=mode;dpCount=0;
+  document.querySelectorAll('.dp-opt').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');
+  document.getElementById('dpPractice').classList.add('vis');
+  const target=mode==='5x'?5:3;
+  document.getElementById('dpProgress').textContent=`${dpCount}/${target} ${mode==='5x'?'veces':'frases'}`;
+  document.getElementById('dpIn').placeholder=mode==='5x'?`Escriu "${dpWords[dpCurrentWord].correct}"...`:`Escriu una frase amb "${dpWords[dpCurrentWord].correct}"...`;
+  document.getElementById('dpIn').focus();
+}
+
+function submitDp(){
+  if(!dpMode)return;
+  const val=document.getElementById('dpIn').value.trim();if(!val)return;
+  const w=dpWords[dpCurrentWord];const target=dpMode==='5x'?5:3;
+  const isOk=dpMode==='5x'?val.toLowerCase()===w.correct.toLowerCase():val.toLowerCase().includes(w.correct.toLowerCase());
+  if(!isOk){toast(`Tienes que escribir "${w.correct}" correctamente!`);return;}
+  dpCount++;document.getElementById('dpIn').value='';
+  document.getElementById('dpProgress').textContent=`${dpCount}/${target} ${dpMode==='5x'?'veces':'frases'}`;
+  if(dpCount>=target){dpCurrentWord++;dpMode='';dpCount=0;renderDpWord();}
+  recordActivity();
+}
+
+// ════════════════════════════════════════════
+// ZONA PADRES
+// ════════════════════════════════════════════
+function saveApi(){
+  const val=document.getElementById('apiIn').value.trim();
+  if(!val||val.includes('•')){toast('Introdueix l\'API key');return;}
+  if(!val.startsWith('sk-ant-')){toast('Debe empezar por sk-ant-');return;}
+  apiKey=val;localStorage.setItem('lujuji_api',apiKey);toast('✓ API key guardada!');
+}
+function savePin(){const v=document.getElementById('newPinIn').value.trim();if(v.length!==4||isNaN(v)){toast('El PIN debe tener 4 dígitos');return;}localStorage.setItem('lujuji_pin',v);currentPin=v;document.getElementById('pinDisplay').textContent=v;toast('✓ PIN actualizado');}
+function savePrizes(){prizes.d7=document.getElementById('prize7in').value.trim();prizes.d30=document.getElementById('prize30in').value.trim();localStorage.setItem('lujuji_prizes',JSON.stringify(prizes));toast('✓ Premios guardados');}
+
+function renderProfileEdit(){
+  const rows=document.getElementById('profileEditRows');
+  if(!profile){rows.innerHTML='<div style="font-size:13px;color:var(--muted)">Crea primero un perfil.</div>';return;}
+  const cursoSel=CURSOOS.map(([id,,t])=>`<option value="${id}"${profile.curso===id?' selected':''}>${t}</option>`).join('');
+  rows.innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:1rem"><span style="font-size:30px">${profile.avatar||'📚'}</span><div><div style="font-size:15px;font-weight:700">${profile.name}</div><div style="font-size:12px;color:var(--muted)">${profile.cursoLabel||''}</div></div></div>
+  <div style="font-size:11px;color:#BBB;font-weight:700;margin-bottom:6px">CURSO</div>
+  <select id="editCurso" style="width:100%;padding:11px 13px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;background:#FAFAFA;margin-bottom:8px">${cursoSel}</select>
+  <button class="save-btn" onclick="saveProfileEdit()">Guardar cambios</button>`;
+}
+
+function saveProfileEdit(){
+  const id=document.getElementById('editCurso')?.value;
+  if(id){profile.curso=id;profile.cursoLabel=CURSOOS.find(([cid])=>cid===id)?.[2]||'';sv();document.getElementById('dCurso').textContent=profile.cursoLabel;toast('✓ Cambios guardados');}
+}
+
+// ════════════════════════════════════════════
+// CONFETTI
+// ════════════════════════════════════════════
+
+// ════════════════════════════════════════════
+// LECTURA EN VOZ ALTA
+// ════════════════════════════════════════════
+let lecturaRecognition=null;let lecturaTranscriptText='';
+
+function startLectura(){show('s_lectura');document.getElementById('lecturaTitle').value='';document.getElementById('lecturaPag').value='';document.getElementById('lecturaRecCard').style.display='none';document.getElementById('lecturaQCard').style.display='none';document.getElementById('lecturaStartBtn').style.display='block';}
+
+function startLecturaRec(){
+  const title=document.getElementById('lecturaTitle').value.trim();
+  if(!title){toast('Escribe el título del libro primero');return;}
+  document.getElementById('lecturaRecCard').style.display='block';document.getElementById('lecturaStartBtn').style.display='none';
+  lecturaTranscriptText='';document.getElementById('lecturaTranscript').textContent='Escuchando...';document.getElementById('lecturaStatus').textContent='🎙️';
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    document.getElementById('lecturaTranscript').textContent='Tu navegador no soporta el micrófono. Prueba en Safari o Chrome.';return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  lecturaRecognition=new SR();lecturaRecognition.continuous=true;lecturaRecognition.interimResults=true;
+  lecturaRecognition.lang=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';
+  lecturaRecognition.onresult=e=>{let interim='';let final='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal){final+=e.results[i][0].transcript;lecturaTranscriptText+=final;}else interim+=e.results[i][0].transcript;}document.getElementById('lecturaTranscript').textContent=lecturaTranscriptText+interim||'Escuchando...';recordActivity();};
+  lecturaRecognition.onerror=()=>{document.getElementById('lecturaStatus').textContent='❌';};
+  lecturaRecognition.start();document.getElementById('lecturaStatus').textContent='🔴';
+}
+
+async function stopLectura(){
+  if(lecturaRecognition)lecturaRecognition.stop();
+  document.getElementById('lecturaStatus').textContent='✅';document.getElementById('lecturaStopBtn').disabled=true;
+  const title=document.getElementById('lecturaTitle').value.trim();const pag=document.getElementById('lecturaPag').value;
+  const text=lecturaTranscriptText.trim();
+  document.getElementById('lecturaQCard').style.display='block';
+  document.getElementById('lecturaQContent').innerHTML='<div class="ldots" style="color:var(--purple);padding:1rem;text-align:center"><span></span><span></span><span></span></div>';
+  if(apiKey&&text.length>20){
+    try{
+      const lang=curSubj&&curSubj.lang||'es';
+      const langTxt={es:'Responde en espanol.',ca:'Respon en catala.',en:'Answer in English.'};
+      const prompt='El alumno '+profile.name+' acaba de leer en voz alta del libro "'+title+'" pagina '+(pag||'?')+'. Esto es lo que ha leido: "'+text.substring(0,500)+'". '+langTxt[lang]+' Haz exactamente 3 preguntas de comprension cortas y directas sobre el texto. Enumeralas 1, 2, 3. Solo las preguntas, sin introduccion.';
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:prompt}]})});
+      const data=await res.json();const q=data.content&&data.content.map(function(b){return b.text||'';}).join('').trim()||'';
+      const qDiv=document.createElement('div');qDiv.style.cssText='font-size:13px;line-height:2;color:#333';qDiv.innerHTML=q.split('\n').join('<br>');
+      const qTA=document.createElement('textarea');qTA.className='tasks-input';qTA.id='lecturaAns';qTA.placeholder='Escribe tus respuestas aqui...';qTA.style.cssText='margin-top:.75rem;min-height:80px';
+      const qBtn=document.createElement('button');qBtn.style.cssText='width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:7px';qBtn.textContent='Enviar respuestas';
+      qBtn.onclick=function(){submitLecturaAns(title,q);};
+      const qCont=document.getElementById('lecturaQContent');qCont.innerHTML='';qCont.appendChild(qDiv);qCont.appendChild(qTA);qCont.appendChild(qBtn);
+    }catch(e){document.getElementById('lecturaQContent').innerHTML='<div style="font-size:13px;color:var(--muted)">Error generando preguntas. Muy bien por leer! </div>';}
+  } else {
+    document.getElementById('lecturaQContent').innerHTML='<div style="font-size:14px;font-weight:600;color:var(--green)">Muy bien por leer hoy! La lectura cuenta para tu racha.</div>';
+    flashPts(15);
+  }
+}
+
+async function submitLecturaAns(title,questions){
+  const ans=document.getElementById('lecturaAns')?.value.trim();if(!ans)return;
+  document.getElementById('lecturaQContent').innerHTML='<div class="ldots" style="color:var(--purple);padding:1rem;text-align:center"><span></span><span></span><span></span></div>';
+  if(apiKey){
+    try{
+      const lang=curSubj?.lang||'es';const langTxt={es:'Responde en español.',ca:'Respon en català.',en:'Answer in English.'};
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,messages:[{role:"user",content:`Las preguntas eran: ${questions}. El alumno respondió: "${ans}". ${langTxt[lang]} Evalúa las respuestas en 2-3 frases. Si está bien → celebra. Si falta algo → explícalo brevemente.`}]})});
+      const data=await res.json();const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
+      const rDiv=document.createElement('div');rDiv.style.cssText='font-size:13px;line-height:1.7;color:#333';rDiv.textContent=reply;
+      const rBtn=document.createElement('button');rBtn.style.cssText='width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:.75rem';rBtn.textContent='Volver al inicio';rBtn.onclick=()=>show('s_dash');
+      const rCont=document.getElementById('lecturaQContent');rCont.innerHTML='';rCont.appendChild(rDiv);rCont.appendChild(rBtn);
+      flashPts(20);confetti();
+    }catch(e){document.getElementById('lecturaQContent').innerHTML='<div style="font-size:13px;color:var(--green)">🌟 ¡Muy bien por leer! +20 pts</div>';}
+  }
+}
+function confetti(){
+  const c=document.createElement('canvas');c.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';document.body.appendChild(c);
+  const ctx=c.getContext('2d');c.width=window.innerWidth;c.height=window.innerHeight;
+  const pieces=Array.from({length:80},()=>({x:Math.random()*c.width,y:-10,r:Math.random()*7+3,color:['#1a1a1a','#16A34A','#2563EB','#7C3AED','#E11D48','#D97706'][Math.floor(Math.random()*6)],rot:Math.random()*360,vx:(Math.random()-.5)*3,vy:Math.random()*4+2,vr:Math.random()*5-2.5}));
+  let f=0;const go=()=>{ctx.clearRect(0,0,c.width,c.height);pieces.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-f/70);ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.restore();p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;});f++;if(f<90)requestAnimationFrame(go);else{ctx.clearRect(0,0,c.width,c.height);c.remove();}};go();
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+if(profile){document.getElementById('loginBtn').style.display='block';}
+currentPin=localStorage.getItem('lujuji_pin')||'1234';
+</script>
+</body>
+</html>
