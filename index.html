@@ -595,7 +595,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
       <div style="font-size:14px;font-weight:700;margin-bottom:.75rem">Elige el tipo de juego</div>
       <div class="gmode-grid">
         <div class="gmode-card sel" data-gm="mix" onclick="selGM(this)"><div class="gm-icon">🎲</div><div class="gm-name">Mezcla</div><div class="gm-sub">Todos los tipos</div></div>
-        <div class="gmode-card" data-gm="vf" onclick="selGM(this)"><div class="gm-icon">⚡</div><div class="gm-name">Verdadero/Falso</div><div class="gm-sub">Ràpid</div></div>
+        <div class="gmode-card" data-gm="vf" onclick="selGM(this)"><div class="gm-icon">⚡</div><div class="gm-name">Verdadero/Falso</div><div class="gm-sub">Rápido</div></div>
         <div class="gmode-card" data-gm="opts" onclick="selGM(this)"><div class="gm-icon">🎯</div><div class="gm-name">4 opcions</div><div class="gm-sub">Elige la correcta</div></div>
         <div class="gmode-card" data-gm="comp" onclick="selGM(this)"><div class="gm-icon">✍️</div><div class="gm-name">Completa</div><div class="gm-sub">Escribe la palabra</div></div>
       </div>
@@ -670,7 +670,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
       <div class="cs cs-tip" id="s5Tip" style="margin-top:4px"><div class="cs-t">💡 PARA RECORDARLO</div><p id="s5TipB"></p></div>
       <div class="cs cs-ver" id="s5Ver" style="margin-top:4px"><div class="cs-t">❓ COMPRUEBA QUE LO HAS ENTENDIDO</div><div class="ver-q" id="s5VQ"></div><div class="ver-row"><input class="ver-in" id="s5VI" onkeydown="if(event.key==='Enter')s5ChkV()"/><button class="ver-btn" onclick="s5ChkV()">✓</button></div><div class="ver-res" id="s5VR"></div></div>
       <div class="reinforce" id="s5R"></div>
-      <div class="model-box" id="sModel"><div class="model-title">SOLUCIÓ CORRECTA</div><div id="sModelT"></div></div>
+      <div class="model-box" id="sModel"><div class="model-title" id="sModelTitle">SOLUCIÓN CORRECTA</div><div id="sModelT"></div></div>
       <button class="next-btn" id="sNext" onclick="sNextQ()"></button>
     </div>
     <div class="sum-card" id="simSum">
@@ -1401,7 +1401,7 @@ function updateMood(m){
 
 function resetCorr(){['cOk','cErr','cTip','cVer'].forEach(id=>document.getElementById(id).classList.remove('vis'));document.getElementById('reinforce').style.display='none';document.getElementById('vRes').style.display='none';document.getElementById('vIn').value='';document.getElementById('vIn').disabled=false;}
 
-function chkV(){const ua=document.getElementById('vIn').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(vA)||vA.includes(ua);const res=document.getElementById('vRes');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';const lang=curSubj?.lang||'ca';if(ok){res.textContent=lang==='en'?'✓ Perfect! Got it! 🌟':'✓ ¡Perfecto! Ahora sí lo tienes claro 🌟';document.getElementById('reinforce').textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! Ahora ya no lo confundirás. ¡Seguimos! 💪';document.getElementById('reinforce').style.display='block';document.getElementById('vIn').disabled=true;wS=0;}else res.textContent=lang==='en'?`Almost! The answer is "${vA}" 😊`:`Quasi! La resposta és "${vA}" 😊`;}
+function chkV(){const ua=document.getElementById('vIn').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(vA)||vA.includes(ua);const res=document.getElementById('vRes');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';const lang=curSubj?.lang||'es';if(ok){res.textContent=lang==='en'?'✓ Perfect! Got it! 🌟':'✓ ¡Perfecto! Ahora sí lo tienes claro 🌟';document.getElementById('reinforce').textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! Ahora ya no lo confundirás. ¡Seguimos! 💪';document.getElementById('reinforce').style.display='block';document.getElementById('vIn').disabled=true;wS=0;}else res.textContent=lang==='en'?`Almost! The answer is "${vA}" 😊`:lang==='ca'?`Quasi! La resposta és "${vA}" 😊`:`¡Casi! La respuesta es "${vA}" 😊`;}
 
 function flashPts(n){profile.pts=(profile.pts||0)+(n||10);sv();document.getElementById('dPts').textContent=profile.pts;const f=document.getElementById('ptsFlash');f.textContent=`+${n||10} pts ⭐`;f.style.display='block';setTimeout(()=>f.style.display='none',1500);}
 
@@ -1507,7 +1507,7 @@ async function startGame(){
   if(apiKey&&temariText){
     document.getElementById('gCard').style.display='none';
       document.getElementById('gCard').className='q-card';
-      ['gVf','gOpts','gAns','gFb','gNext'].forEach(id=>document.getElementById(id).style.display='none');
+      ['gVf','gOpts','gAns','gFb'].forEach(id=>document.getElementById(id).style.display='none');
       const loadingDiv=document.createElement('div');loadingDiv.id='gLoading';loadingDiv.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';loadingDiv.innerHTML='Generando preguntas del temario...<br><br><div class="ldots" style="display:inline-flex"><span></span><span></span><span></span></div>';
       document.getElementById('gameWrap').insertBefore(loadingDiv,document.getElementById('gCard'));
     try{
@@ -1549,7 +1549,7 @@ function gShowQ(){
   document.getElementById('gCnt').textContent=`${gQ+1}/${total}`;document.getElementById('gProg').style.width=((gQ/total)*100)+'%';document.getElementById('gPts').textContent=gScore+' ✓';
   document.getElementById('gCard').className='q-card';document.getElementById('gFb').classList.remove('vis','ok','ko');
   ['g5Ok','g5Err','g5Tip','g5Ver','g5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});
-  document.getElementById('g5VR').style.display='none';document.getElementById('g5VI').value='';document.getElementById('g5VI').disabled=false;document.getElementById('gNext').classList.remove('vis');
+  document.getElementById('g5VR').style.display='none';document.getElementById('g5VI').value='';document.getElementById('g5VI').disabled=false;document.getElementById('gNext').classList.remove('vis');document.getElementById('gNext').style.display='';
   const lang=curSubj?.lang||'es';
   const types={vf:{es:'⚡ Verdadero o Falso',ca:'⚡ Verdader o Fals',en:'⚡ True or False'},opts:{es:'🎯 Elige la respuesta',ca:'🎯 Tria la resposta',en:'🎯 Pick the answer'},completa:{es:'✍️ Completa la frase',ca:'✍️ Completa la frase',en:'✍️ Complete the sentence'}};
   document.getElementById('gType').textContent=(types[q.type]?.[lang])||'Pregunta';document.getElementById('gText').textContent=q.q;
@@ -1580,8 +1580,8 @@ function gShowFb(ok,q){
   }else setGNext();
   recordActivity();
 }
-function g5ChkV(){const ua=document.getElementById('g5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(g5VA)||g5VA.includes(ua);const res=document.getElementById('g5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ ¡Perfecto! 🌟';const r=document.getElementById('g5R');r.style.display='block';r.textContent='🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('g5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${g5VA}" 😊`;setGNext();}
-function setGNext(){const nb=document.getElementById('gNext');nb.textContent=gQ<gPool.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
+function g5ChkV(){const ua=document.getElementById('g5VI').value.trim().toLowerCase();if(!ua)return;const lang=curSubj?.lang||'es';const ok=ua.includes(g5VA)||g5VA.includes(ua);const res=document.getElementById('g5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent=lang==='en'?'✓ Perfect! 🌟':'✓ ¡Perfecto! 🌟';const r=document.getElementById('g5R');r.style.display='block';r.textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('g5VI').disabled=true;}else res.textContent=lang==='en'?`Almost! The answer is "${g5VA}" 😊`:lang==='ca'?`Quasi! La resposta és "${g5VA}" 😊`:`¡Casi! La respuesta es "${g5VA}" 😊`;setGNext();}
+function setGNext(){const nb=document.getElementById('gNext');nb.style.display='';nb.textContent=gQ<gPool.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
 function gNextQ(){gQ++;gShowQ();recordActivity();}
 function gSummary(){
   document.getElementById('gameWrap').style.display='none';document.getElementById('gSum').classList.add('vis');
@@ -1613,7 +1613,7 @@ async function simStart(){
   // Generar preguntas de simulacro desde el temario
   if(apiKey&&temariText){
     document.getElementById('sCard').style.display='none';
-      ['sVf','sOpts','sAns','sDevW','sNext'].forEach(id=>document.getElementById(id).style.display='none');
+      ['sVf','sOpts','sAns','sDevW'].forEach(id=>document.getElementById(id).style.display='none');
       const sLoadingDiv=document.createElement('div');sLoadingDiv.id='sLoading';sLoadingDiv.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';sLoadingDiv.innerHTML='Generando simulacro...<br><br><div class="ldots" style="display:inline-flex;color:var(--purple)"><span></span><span></span><span></span></div>';
       document.getElementById('simPlay').insertBefore(sLoadingDiv,document.getElementById('sCard'));
     try{
@@ -1642,7 +1642,7 @@ async function simStart(){
   sSimShowQ();recordActivity();
 }
 function simReset(){document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.remove('vis');simPregs=[];}
-function sReset5(){['s5Ok','s5Err','s5Tip','s5Ver','s5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});document.getElementById('s5VR').style.display='none';document.getElementById('s5VI').value='';document.getElementById('s5VI').disabled=false;document.getElementById('sModel').style.display='none';document.getElementById('sNext').classList.remove('vis');}
+function sReset5(){['s5Ok','s5Err','s5Tip','s5Ver','s5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});document.getElementById('s5VR').style.display='none';document.getElementById('s5VI').value='';document.getElementById('s5VI').disabled=false;document.getElementById('sModel').style.display='none';document.getElementById('sNext').classList.remove('vis');document.getElementById('sNext').style.display='';}
 
 function sSimShowQ(){
   if(sQ>=simPregs.length){sSimResults();return;}
@@ -1664,6 +1664,7 @@ function sAnsO(idx){if(sAns)return;sAns=true;document.querySelectorAll('#sOpts .
 function sAnsT(){if(sAns)return;const ua=document.getElementById('sIn').value.trim().toLowerCase();if(!ua)return;sAns=true;document.getElementById('sAnsB').disabled=true;const q=simPregs[sQ];const ans=String(q.ans).toLowerCase();sShowFb(ua.includes(ans)||ans.includes(ua),q);}
 function sAnsDev(){
   const ua=document.getElementById('sDev').value.trim();if(!ua||sAns)return;sAns=true;document.getElementById('sDevB').disabled=true;const q=simPregs[sQ];
+  const lang=curSubj?.lang||'es';
   setTimeout(()=>{
     const present=(q.punts||[]).filter(p=>ua.toLowerCase().includes(p.toLowerCase()));
     const ok=present.length>=(q.punts?.length||1)*0.5;
@@ -1671,9 +1672,11 @@ function sAnsDev(){
     document.getElementById('sCard').style.borderColor=ok?'#86EFAC':'#FCA5A5';document.getElementById('sCard').style.background=ok?'#F0FDF4':'#FEF2F2';
     document.getElementById('sPts').textContent=sScore+' ✓';
     const e5Ok=document.getElementById('s5Ok');e5Ok.style.display='block';e5Ok.classList.add('vis');
-    document.getElementById('s5OkB').textContent=ok?`Molt bé! Has inclòs ${present.length}/${q.punts?.length||'?'} punts clau.`:`Has mencionat ${present.length}/${q.punts?.length||'?'} punts. Revisa la solució model.`;
-    document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model||'';
-    const nb=document.getElementById('sNext');nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');
+    const okMsg=lang==='en'?`Great! You included ${present.length}/${q.punts?.length||'?'} key points.`:lang==='ca'?`Molt bé! Has inclòs ${present.length}/${q.punts?.length||'?'} punts clau.`:`¡Muy bien! Has incluido ${present.length}/${q.punts?.length||'?'} puntos clave.`;
+    const koMsg=lang==='en'?`You mentioned ${present.length}/${q.punts?.length||'?'} points. Check the model answer.`:lang==='ca'?`Has mencionat ${present.length}/${q.punts?.length||'?'} punts. Revisa la solució model.`:`Has mencionado ${present.length}/${q.punts?.length||'?'} puntos. Revisa la solución modelo.`;
+    document.getElementById('s5OkB').textContent=ok?okMsg:koMsg;
+    showSModel(q.model);
+    setSnext();
   },800);
 }
 function sShowFb(ok,q){
@@ -1687,13 +1690,14 @@ function sShowFb(ok,q){
     if(q.err){const e=document.getElementById('s5Err');e.style.display='block';e.classList.add('vis');document.getElementById('s5ErrB').textContent=q.err;}
     if(q.analogy){const e=document.getElementById('s5Tip');e.style.display='block';e.classList.add('vis');document.getElementById('s5TipB').textContent=q.analogy;}
     if(q.verifyQ&&q.verifyA){const e=document.getElementById('s5Ver');e.style.display='block';e.classList.add('vis');document.getElementById('s5VQ').textContent=q.verifyQ;sVA=String(q.verifyA).toLowerCase();}
-    else{if(q.model){document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model;}setSnext();}
+    else{if(q.model){showSModel(q.model);}setSnext();}
   }
-  if(ok){if(q.model){document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=q.model;}setSnext();}
+  if(ok){if(q.model){showSModel(q.model);}setSnext();}
   recordActivity();
 }
-function s5ChkV(){const ua=document.getElementById('s5VI').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(sVA)||sVA.includes(ua);const res=document.getElementById('s5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent='✓ ¡Perfecto! 🌟';const r=document.getElementById('s5R');r.style.display='block';r.textContent='🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('s5VI').disabled=true;}else res.textContent=`Quasi! La resposta és "${sVA}" 😊`;setSnext();}
-function setSnext(){const nb=document.getElementById('sNext');nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
+function s5ChkV(){const ua=document.getElementById('s5VI').value.trim().toLowerCase();if(!ua)return;const lang=curSubj?.lang||'es';const ok=ua.includes(sVA)||sVA.includes(ua);const res=document.getElementById('s5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent=lang==='en'?'✓ Perfect! 🌟':'✓ ¡Perfecto! 🌟';const r=document.getElementById('s5R');r.style.display='block';r.textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('s5VI').disabled=true;}else res.textContent=lang==='en'?`Almost! The answer is "${sVA}" 😊`:lang==='ca'?`Quasi! La resposta és "${sVA}" 😊`:`¡Casi! La respuesta es "${sVA}" 😊`;setSnext();}
+function setSnext(){const nb=document.getElementById('sNext');nb.style.display='';nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
+function showSModel(text){const lang=curSubj?.lang||'es';document.getElementById('sModelTitle').textContent=lang==='en'?'CORRECT ANSWER':lang==='ca'?'SOLUCIÓ CORRECTA':'SOLUCIÓN CORRECTA';document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=text||'';}
 function sNextQ(){sQ++;sSimShowQ();recordActivity();}
 function sSimResults(){
   document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.add('vis');
@@ -1737,7 +1741,12 @@ function checkDictado(){
   });
   const pct=Math.round(correct/orig.length*100);
   const result=document.getElementById('dictResult');result.style.display='block';
-  result.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:.75rem;color:${pct>=80?'#166534':pct>=50?'#92400E':'#991B1B'}">${pct>=80?'🌟 Molt bé!':pct>=50?'💪 Quasi!':'📝 Practica més!'} ${correct}/${orig.length} correctas (${pct}%)</div>${html}`;
+  const lang=curSubj?.lang||'es';
+  const dMsg80=lang==='en'?'🌟 Great job!':lang==='ca'?'🌟 Molt bé!':'🌟 ¡Muy bien!';
+  const dMsg50=lang==='en'?'💪 Almost!':lang==='ca'?'💪 Quasi!':'💪 ¡Casi!';
+  const dMsg0=lang==='en'?'📝 Keep practicing!':lang==='ca'?'📝 Practica més!':'📝 ¡Sigue practicando!';
+  const dCorr=lang==='en'?'correct':lang==='ca'?'correctes':'correctas';
+  result.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:.75rem;color:${pct>=80?'#166534':pct>=50?'#92400E':'#991B1B'}">${pct>=80?dMsg80:pct>=50?dMsg50:dMsg0} ${correct}/${orig.length} ${dCorr} (${pct}%)</div>${html}`;
   if(pct>=80)flashPts(15);else if(pct>=50)flashPts(5);
   // Penalización si hay errores
   if(wrongWords.length>0)startDictPenalty(wrongWords);
