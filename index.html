@@ -606,7 +606,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
           <textarea id="temaManualGame" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--amber-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:70px;background:#fff;margin-bottom:8px" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado&#10;Ej: Present simple and past simple"></textarea>
           <div style="display:flex;gap:8px">
             <button onclick="useTemaManualGame()" style="flex:1;padding:11px;background:#92400E;color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer">✍️ Usar este tema</button>
-            <button onclick="sTab('agente',document.querySelector('.stab'))" style="flex:1;padding:11px;background:var(--faint);color:#555;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
+            <button onclick="document.querySelector('#tp-agente .photo-btn input').click()" style="flex:1;padding:11px;background:var(--faint);color:#555;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
           </div>
         </div>
       </div>
@@ -645,13 +645,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
           <textarea id="temaManualSim" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--purple-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:70px;background:#fff;margin-bottom:8px" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado&#10;Ej: Present simple and past simple"></textarea>
           <div style="display:flex;gap:8px">
             <button onclick="useTemaManualSim()" style="flex:1;padding:11px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer">✍️ Usar este tema</button>
-            <button onclick="sTab('agente',document.querySelector('.stab'))" style="flex:1;padding:11px;background:var(--faint);color:#555;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
+            <button onclick="document.querySelector('#tp-agente .photo-btn input').click()" style="flex:1;padding:11px;background:var(--faint);color:#555;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
           </div>
         </div>
       </div>
       <div id="simStartWrap">
         <div style="background:var(--white);border-radius:var(--r);padding:1.25rem;border:1.5px solid var(--border);margin-bottom:.75rem">
-          <div style="font-size:16px;font-weight:700;margin-bottom:6px">📝 Simulacro d'examen</div>
+          <div style="font-size:16px;font-weight:700;margin-bottom:6px">📝 Simulacro de examen</div>
           <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem">Como un examen real. Si te equivocas, el agente te explica con los 5 pasos.</div>
           <button style="width:100%;padding:14px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer" onclick="simStart()">📝 Empezar</button>
         </div>
@@ -1249,10 +1249,12 @@ function openStudy(subj,task){
 }
 
 function updateFotoWarnings(){
-  const hasTemari=temariText.length>50;
+  const hasTemari=temariText.length>10;
   const jWarn=document.getElementById('jocFotoWarn');const sWarn=document.getElementById('simFotoWarn');const sStart=document.getElementById('simStartWrap');const gBtn=document.getElementById('startGameBtn');
-  if(jWarn){jWarn.style.display=hasTemari?'none':'block';if(gBtn)gBtn.style.display=hasTemari?'block':'none';}
-  if(sWarn){sWarn.style.display=hasTemari?'none':'block';if(sStart)sStart.style.display=hasTemari?'block':'none';}
+  if(jWarn)jWarn.style.display=hasTemari?'none':'block';
+  if(gBtn){gBtn.style.display='block';gBtn.disabled=!hasTemari;gBtn.style.opacity=hasTemari?'1':'0.35';}
+  if(sWarn)sWarn.style.display=hasTemari?'none':'block';
+  if(sStart){sStart.style.display='block';const simBtn=sStart.querySelector('button');if(simBtn){simBtn.disabled=!hasTemari;simBtn.style.opacity=hasTemari?'1':'0.35';}}
 }
 
 function markTaskDone(){
@@ -1499,7 +1501,7 @@ function selGM(card){document.querySelectorAll('.gmode-card').forEach(c=>c.class
 function gInit(){gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;document.getElementById('gSum').classList.remove('vis');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';}
 
 async function startGame(){
-  if(!temariText){toast('¡Sube primero las fotos del temario! 📸');return;}
+  if(!temariText||temariText.length<10){toast('Primero escribe el tema o sube una foto 📸');return;}
   document.getElementById('gmodeWrap').style.display='none';document.getElementById('gameWrap').style.display='block';document.getElementById('gSum').classList.remove('vis');
   gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;
 
@@ -1513,7 +1515,7 @@ async function startGame(){
     try{
       const lang=curSubj?.lang||'ca';
       const langInstr={es:'Genera las preguntas en español.',ca:'Genera les preguntes en català/valencià.',en:'Generate questions in English.'};
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:"Eres un generador de preguntas educativas. Respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown, sin explicaciones. Solo el array JSON.",messages:[{role:"user",content:`Genera 5 preguntas de juego sobre: "${temariText.substring(0,400)}". ${langInstr[lang]} Devuelve un array JSON con exactamente este formato por cada pregunta: {"type":"vf|opts|completa","q":"pregunta","ans":true/false/0/1/2/3/"palabra","opts":["a","b","c","d"],"ok":"feedback correcto","err":"feedback incorrecto","analogy":"analogia","verifyQ":"pregunta verificacion","verifyA":"respuesta corta"}`}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:"Eres un generador de preguntas educativas. Respondes ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown, sin explicaciones. Solo el array JSON.",messages:[{role:"user",content:`Genera 5 preguntas de juego sobre: "${temariText.substring(0,400)}". ${langInstr[lang]} NIVEL DEL ALUMNO: ${profile.cursoLabel||'Primaria'} — adapta la dificultad a este nivel, preguntas sencillas y claras. Asignatura: ${curSubj.name}. Devuelve un array JSON con exactamente este formato por cada pregunta: {"type":"vf|opts|completa","q":"pregunta","ans":true/false/0/1/2/3/"palabra","opts":["a","b","c","d"],"ok":"feedback correcto","err":"feedback incorrecto","analogy":"analogia","verifyQ":"pregunta verificacion","verifyA":"respuesta corta"}`}]})});
       const data=await res.json();
       let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
       console.log('RAW API response:',raw.substring(0,500));
@@ -1606,7 +1608,7 @@ function useTemaManualSim(){
   toast('✓ Tema cargado. ¡Ahora toca Empezar!');
 }
 async function simStart(){
-  if(!temariText){toast('¡Sube primero las fotos del temario! 📸');return;}
+  if(!temariText||temariText.length<10){toast('Primero escribe el tema o sube una foto 📸');return;}
   document.getElementById('simIntro').style.display='none';document.getElementById('simPlay').style.display='block';document.getElementById('simSum').classList.remove('vis');
   sQ=0;sScore=0;sDev=0;sAns=false;
 
@@ -1619,7 +1621,7 @@ async function simStart(){
     try{
       const lang=curSubj?.lang||'ca';
       const langInstr={es:'Genera en español.',ca:'Genera en català/valencià.',en:'Generate in English.'};
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,messages:[{role:"user",content:`Genera 5 preguntes de simulacre d'examen basades en aquest temari de ${curSubj.name}. ${langInstr[lang]} Mezcla: vf, opts (4 opcions), completa, dev (desenvolupament). Per a cada error inclou els 5 passos de correcció. JSON sense markdown:\n[{"type":"vf|opts|completa|dev","q":"pregunta","ans":true/false/1/0/"paraula","opts":["a","b","c","d"],"ok":"feedback si encerta","err":"feedback si falla","analogy":"analogia","verifyQ":"pregunta verificació","verifyA":"resposta","model":"resposta model completa","punts":["paraula1","paraula2"]}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,messages:[{role:"user",content:`Genera 5 preguntes de simulacre d'examen basades en aquest temari de ${curSubj.name}. ${langInstr[lang]} NIVEL DEL ALUMNO: ${profile.cursoLabel||'Primaria'} — adapta la dificultad a este nivel, preguntas claras y adecuadas a su edad. Mezcla: vf, opts (4 opcions), completa, dev (desenvolupament). Per a cada error inclou els 5 passos de correcció. JSON sense markdown:\n[{"type":"vf|opts|completa|dev","q":"pregunta","ans":true/false/1/0/"paraula","opts":["a","b","c","d"],"ok":"feedback si encerta","err":"feedback si falla","analogy":"analogia","verifyQ":"pregunta verificació","verifyA":"resposta","model":"resposta model completa","punts":["paraula1","paraula2"]}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
       const data=await res.json();
       let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
       raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
