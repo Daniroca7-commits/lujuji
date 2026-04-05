@@ -1512,13 +1512,16 @@ async function startGame(){
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:4000,messages:[{role:"user",content:`Genera exactamente 5 preguntas de juego sobre: "${temariText.substring(0,300)}". ${langInstr[lang]} Responde SOLO con JSON valido sin texto extra. Array de objetos con campos: type(vf/opts/completa), q(pregunta), ans(true/false o indice 0-3 o palabra), opts(array 4 opciones si type=opts), ok, err, analogy, verifyQ, verifyA. Ejemplo minimo: [{"type":"vf","q":"2+2=4?","ans":true,"ok":"Correcto","err":"Incorrecto","analogy":"Como contar dedos","verifyQ":"Cuanto es 2+2?","verifyA":"4"},{"type":"opts","q":"Capital de España?","ans":0,"opts":["Madrid","Barcelona","Valencia","Sevilla"],"ok":"Correcto","err":"Incorrecto","analogy":"La mas grande","verifyQ":"Cual es la capital?","verifyA":"Madrid"}]`}]})});
       const data=await res.json();
       let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
+      console.log('RAW API response:',raw.substring(0,500));
       raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
       const arrStart=raw.indexOf('[');const arrEnd=raw.lastIndexOf(']');
       if(arrStart>=0&&arrEnd>arrStart)raw=raw.substring(arrStart,arrEnd+1);
+      console.log('Parsed JSON:',raw.substring(0,300));
       try{
         gPool=JSON.parse(raw)||[];
+        console.log('gPool length:',gPool.length);
       }catch(e2){
-        console.error('Parse error:',e2);
+        console.error('Parse error:',e2,raw.substring(0,200));
         // Intentar extraer preguntas individualmente
         try{
           const matches=raw.match(/\{[^{}]+\}/g)||[];
@@ -1528,12 +1531,13 @@ async function startGame(){
     }catch(e){gPool=[];}
   }
 
-  if(!gPool.length){toast('Error generando preguntas. Inténtalo de nuevo.');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';return;}
+  if(!gPool||gPool.length===0){toast('Error generando preguntas. Inténtalo de nuevo.');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';return;}
   gShowQ();recordActivity();
 }
 function gReset(){gInit();}
 
 function gShowQ(){
+  if(!gPool||gPool.length===0){toast('Error cargando preguntas. Inténtalo de nuevo.');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';return;}
   if(gQ>=gPool.length){gSummary();return;}
   gAns=false;const q=gPool[gQ];const total=gPool.length;
   document.getElementById('gCnt').textContent=`${gQ+1}/${total}`;document.getElementById('gProg').style.width=((gQ/total)*100)+'%';document.getElementById('gPts').textContent=gScore+' ✓';
