@@ -1507,6 +1507,7 @@ async function startGame(){
   if(apiKey&&temariText){
     document.getElementById('gCard').style.display='none';
       document.getElementById('gCard').className='q-card';
+      ['gVf','gOpts','gAns','gFb','gNext'].forEach(id=>document.getElementById(id).style.display='none');
       const loadingDiv=document.createElement('div');loadingDiv.id='gLoading';loadingDiv.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';loadingDiv.innerHTML='Generando preguntas del temario...<br><br><div class="ldots" style="display:inline-flex"><span></span><span></span><span></span></div>';
       document.getElementById('gameWrap').insertBefore(loadingDiv,document.getElementById('gCard'));
     try{
@@ -1549,12 +1550,13 @@ function gShowQ(){
   document.getElementById('gCard').className='q-card';document.getElementById('gFb').classList.remove('vis','ok','ko');
   ['g5Ok','g5Err','g5Tip','g5Ver','g5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});
   document.getElementById('g5VR').style.display='none';document.getElementById('g5VI').value='';document.getElementById('g5VI').disabled=false;document.getElementById('gNext').classList.remove('vis');
-  const types={vf:'⚡ Verdader o Fals',opts:'🎯 Tria la resposta',completa:'✍️ Completa la frase'};
-  document.getElementById('gType').textContent=types[q.type]||'Pregunta';document.getElementById('gText').textContent=q.q;
+  const lang=curSubj?.lang||'es';
+  const types={vf:{es:'⚡ Verdadero o Falso',ca:'⚡ Verdader o Fals',en:'⚡ True or False'},opts:{es:'🎯 Elige la respuesta',ca:'🎯 Tria la resposta',en:'🎯 Pick the answer'},completa:{es:'✍️ Completa la frase',ca:'✍️ Completa la frase',en:'✍️ Complete the sentence'}};
+  document.getElementById('gType').textContent=(types[q.type]?.[lang])||'Pregunta';document.getElementById('gText').textContent=q.q;
   ['gVf','gOpts','gAns'].forEach(id=>document.getElementById(id).style.display='none');
-  if(q.type==='vf'){document.getElementById('gVf').style.display='flex';document.getElementById('gV').disabled=false;document.getElementById('gF').disabled=false;}
+  if(q.type==='vf'){document.getElementById('gVf').style.display='flex';document.getElementById('gV').disabled=false;document.getElementById('gF').disabled=false;document.getElementById('gV').textContent=lang==='ca'?'✓ Verdader':lang==='en'?'✓ True':'✓ Verdadero';document.getElementById('gF').textContent=lang==='ca'?'✗ Fals':lang==='en'?'✗ False':'✗ Falso';}
   else if(q.type==='opts'){const col=document.getElementById('gOpts');col.style.display='flex';col.innerHTML='';(q.opts||[]).forEach((o,i)=>{const b=document.createElement('button');b.className='opt-g';b.textContent=o;b.onclick=()=>gAnsO(i);col.appendChild(b);});}
-  else{document.getElementById('gAns').style.display='flex';document.getElementById('gIn').value='';document.getElementById('gAnsB').disabled=false;setTimeout(()=>document.getElementById('gIn').focus(),100);}
+  else{document.getElementById('gAns').style.display='flex';document.getElementById('gIn').value='';document.getElementById('gIn').placeholder=lang==='ca'?'La teua resposta...':lang==='en'?'Your answer...':'Tu respuesta...';document.getElementById('gAnsB').disabled=false;setTimeout(()=>document.getElementById('gIn').focus(),100);}
 }
 
 function gAnsVF(v){if(gAns)return;gAns=true;document.getElementById('gV').disabled=true;document.getElementById('gF').disabled=true;gShowFb(v===gPool[gQ].ans,gPool[gQ]);}
@@ -1610,7 +1612,10 @@ async function simStart(){
 
   // Generar preguntas de simulacro desde el temario
   if(apiKey&&temariText){
-    document.getElementById('sCard').innerHTML='<span class="sim-type st-dev">Generando simulacro...</span><div class="ldots" style="color:var(--purple);margin-top:10px"><span></span><span></span><span></span></div>';
+    document.getElementById('sCard').style.display='none';
+      ['sVf','sOpts','sAns','sDevW','sNext'].forEach(id=>document.getElementById(id).style.display='none');
+      const sLoadingDiv=document.createElement('div');sLoadingDiv.id='sLoading';sLoadingDiv.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';sLoadingDiv.innerHTML='Generando simulacro...<br><br><div class="ldots" style="display:inline-flex;color:var(--purple)"><span></span><span></span><span></span></div>';
+      document.getElementById('simPlay').insertBefore(sLoadingDiv,document.getElementById('sCard'));
     try{
       const lang=curSubj?.lang||'ca';
       const langInstr={es:'Genera en español.',ca:'Genera en català/valencià.',en:'Generate in English.'};
@@ -1631,6 +1636,8 @@ async function simStart(){
       }
     }catch(e){simPregs=[];}
   }
+  const sLoadEl=document.getElementById('sLoading');if(sLoadEl)sLoadEl.remove();
+  document.getElementById('sCard').style.display='block';
   if(!simPregs.length){toast('Error generando el simulacro.');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
   sSimShowQ();recordActivity();
 }
@@ -1642,14 +1649,15 @@ function sSimShowQ(){
   sAns=false;const q=simPregs[sQ];const total=simPregs.length;
   document.getElementById('sCnt').textContent=`${sQ+1}/${total}`;document.getElementById('sProg').style.width=((sQ/total)*100)+'%';document.getElementById('sPts').textContent=sScore+' ✓';
   document.getElementById('sCard').className='q-card';sReset5();
-  const types={vf:'⚡ Verdader o Fals',opts:'🎯 Opcions',completa:'✍️ Completa',dev:'✏️ Desenvolupament'};const cls={vf:'st-vf',opts:'st-opts',completa:'st-comp',dev:'st-dev'};
-  const tp=document.getElementById('sType');tp.textContent=types[q.type];tp.className='sim-type '+cls[q.type];
+  const lang=curSubj?.lang||'es';
+  const types={vf:{es:'⚡ Verdadero o Falso',ca:'⚡ Verdader o Fals',en:'⚡ True or False'},opts:{es:'🎯 Opciones',ca:'🎯 Opcions',en:'🎯 Options'},completa:{es:'✍️ Completa',ca:'✍️ Completa',en:'✍️ Complete'},dev:{es:'✏️ Desarrollo',ca:'✏️ Desenvolupament',en:'✏️ Extended answer'}};const cls={vf:'st-vf',opts:'st-opts',completa:'st-comp',dev:'st-dev'};
+  const tp=document.getElementById('sType');tp.textContent=types[q.type]?.[lang]||'Pregunta';tp.className='sim-type '+cls[q.type];
   document.getElementById('sText').textContent=q.q;
   ['sVf','sOpts','sAns','sDevW'].forEach(id=>document.getElementById(id).style.display='none');
-  if(q.type==='vf'){document.getElementById('sVf').style.display='flex';document.getElementById('sV').disabled=false;document.getElementById('sF').disabled=false;}
+  if(q.type==='vf'){document.getElementById('sVf').style.display='flex';document.getElementById('sV').disabled=false;document.getElementById('sF').disabled=false;document.getElementById('sV').textContent=lang==='ca'?'✓ Verdader':lang==='en'?'✓ True':'✓ Verdadero';document.getElementById('sF').textContent=lang==='ca'?'✗ Fals':lang==='en'?'✗ False':'✗ Falso';}
   else if(q.type==='opts'){const col=document.getElementById('sOpts');col.style.display='flex';col.innerHTML='';q.opts.forEach((o,i)=>{const b=document.createElement('button');b.className='opt-g';b.textContent=o;b.onclick=()=>sAnsO(i);col.appendChild(b);});}
-  else if(q.type==='completa'){document.getElementById('sAns').style.display='flex';document.getElementById('sIn').value='';document.getElementById('sAnsB').disabled=false;setTimeout(()=>document.getElementById('sIn').focus(),100);}
-  else{document.getElementById('sCard').style.borderColor='#C4B5FD';document.getElementById('sCard').style.background='#F5F3FF';document.getElementById('sDevW').style.display='block';document.getElementById('sDev').value='';document.getElementById('sDevB').disabled=false;}
+  else if(q.type==='completa'){document.getElementById('sAns').style.display='flex';document.getElementById('sIn').value='';document.getElementById('sIn').placeholder=lang==='ca'?'La teua resposta...':lang==='en'?'Your answer...':'Tu respuesta...';document.getElementById('sAnsB').disabled=false;setTimeout(()=>document.getElementById('sIn').focus(),100);}
+  else{document.getElementById('sCard').style.borderColor='#C4B5FD';document.getElementById('sCard').style.background='#F5F3FF';document.getElementById('sDevW').style.display='block';document.getElementById('sDev').value='';document.getElementById('sDev').placeholder=lang==='ca'?'Explica el procés pas a pas...':lang==='en'?'Explain step by step...':'Explica el proceso paso a paso...';document.getElementById('sDevB').disabled=false;document.getElementById('sDevB').textContent=lang==='en'?'Submit':'Enviar';}
 }
 function sAnsVF(v){if(sAns)return;sAns=true;document.getElementById('sV').disabled=true;document.getElementById('sF').disabled=true;sShowFb(v===simPregs[sQ].ans,simPregs[sQ]);}
 function sAnsO(idx){if(sAns)return;sAns=true;document.querySelectorAll('#sOpts .opt-g').forEach(b=>b.disabled=true);const q=simPregs[sQ];const ok=idx===q.ans;document.querySelectorAll('#sOpts .opt-g').forEach((b,i)=>{if(i===q.ans)b.classList.add('correct');else if(i===idx&&!ok)b.classList.add('wrong');});sShowFb(ok,q);}
