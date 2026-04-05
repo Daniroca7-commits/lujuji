@@ -613,7 +613,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
       <button class="start-game-btn" id="startGameBtn" onclick="startGame()">🚀 Empezar (5 preguntas)</button>
     </div>
     <div id="gameWrap" style="display:none">
-      <div class="score-row"><span id="gCnt">1/10</span><span class="score-pts" id="gPts">0 ✓</span></div>
+      <div class="score-row"><span id="gCnt">1/5</span><span class="score-pts" id="gPts">0 ✓</span></div>
       <div class="prog-game"><div class="prog-gfill" id="gProg" style="width:0%"></div></div>
       <div class="q-card" id="gCard"><div class="q-type" id="gType"></div><div class="q-text" id="gText"></div></div>
       <div class="vf-row" id="gVf" style="display:none"><button class="vf-btn v" id="gV" onclick="gAnsVF(true)">✓ Verdader</button><button class="vf-btn f" id="gF" onclick="gAnsVF(false)">✗ Fals</button></div>
@@ -1505,7 +1505,10 @@ async function startGame(){
 
   // Generar preguntas desde el temario con API
   if(apiKey&&temariText){
-    document.getElementById('gCard').innerHTML='<div class="q-type">Generando preguntas del temario...</div><div class="ldots" style="color:var(--black);margin-top:10px"><span></span><span></span><span></span></div>';
+    document.getElementById('gCard').style.display='none';
+      document.getElementById('gCard').className='q-card';
+      const loadingDiv=document.createElement('div');loadingDiv.id='gLoading';loadingDiv.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';loadingDiv.innerHTML='Generando preguntas del temario...<br><br><div class="ldots" style="display:inline-flex"><span></span><span></span><span></span></div>';
+      document.getElementById('gameWrap').insertBefore(loadingDiv,document.getElementById('gCard'));
     try{
       const lang=curSubj?.lang||'ca';
       const langInstr={es:'Genera las preguntas en español.',ca:'Genera les preguntes en català/valencià.',en:'Generate questions in English.'};
@@ -1531,6 +1534,8 @@ async function startGame(){
     }catch(e){gPool=[];}
   }
 
+  const gl=document.getElementById('gLoading');if(gl)gl.remove();
+  document.getElementById('gCard').style.display='block';
   if(!gPool||gPool.length===0){toast('Error generando preguntas. Inténtalo de nuevo.');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';return;}
   gShowQ();recordActivity();
 }
