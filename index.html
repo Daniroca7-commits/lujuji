@@ -1798,15 +1798,23 @@ function playDictado(){
   if(!dictText)return;const btn=document.getElementById('dictPlayBtn');
   if(dictPlaying){window.speechSynthesis.cancel();dictPlaying=false;btn.textContent='🔊 Escuchar el dictado';return;}
   dictPlaying=true;btn.textContent='⏸ Pausar';
-  const u=new SpeechSynthesisUtterance(dictText);u.lang=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';u.rate=0.8;
+  const u=new SpeechSynthesisUtterance(dictText);
+  const langCode=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';
+  u.lang=langCode;u.rate=0.75;u.pitch=1.1;
+  // Buscar voz femenina del idioma
+  const voices=window.speechSynthesis.getVoices();
+  const femVoice=voices.find(v=>v.lang.startsWith(langCode.substring(0,2))&&/female|femenin|mujer|mónica|paulina|helena|jorge|microsoft.*es/i.test(v.name))||voices.find(v=>v.lang.startsWith(langCode.substring(0,2))&&!/male/i.test(v.name))||voices.find(v=>v.lang.startsWith(langCode.substring(0,2)));
+  if(femVoice)u.voice=femVoice;
   u.onend=()=>{dictPlaying=false;btn.textContent='🔊 Escuchar de nuevo';};
   window.speechSynthesis.speak(u);recordActivity();
 }
+// Precargar voces
+if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{};
 
 function checkDictado(){
   const userText=document.getElementById('dictTa').value.trim();if(!userText||!dictText)return;
-  const orig=dictText.toLowerCase().replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
-  const user=userText.toLowerCase().replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
+  const orig=dictText.replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
+  const user=userText.replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
   let correct=0;let html='';const wrongWords=[];
   orig.forEach((word,i)=>{const userWord=user[i]||'___';const isOk=word===userWord;if(isOk)correct++;else wrongWords.push({wrong:userWord,correct:word});
     html+=`<span class="dict-word ${isOk?'dw-ok':'dw-err'}">${isOk?word:userWord}</span>`;
@@ -1872,7 +1880,7 @@ function submitDp5x(){
   const val=document.getElementById('dpIn').value.trim();if(!val)return;
   const w=dpWords[dpCurrentWord];
   const lang=curSubj?.lang||'es';
-  if(val.toLowerCase()!==w.correct.toLowerCase()){
+  if(val!==w.correct){
     const msg={es:`Escribe "${w.correct}" correctamente`,ca:`Escriu "${w.correct}" correctament`,en:`Write "${w.correct}" correctly`};
     toast(msg[lang]);return;
   }
@@ -1901,9 +1909,9 @@ function startDpFrase(){
 }
 
 function submitDpFrase(){
-  const val=document.getElementById('dpIn').value.trim().toLowerCase();if(!val)return;
+  const val=document.getElementById('dpIn').value.trim();if(!val)return;
   const lang=curSubj?.lang||'es';
-  const missing=dpWords.filter(w=>!val.includes(w.correct.toLowerCase()));
+  const missing=dpWords.filter(w=>!val.includes(w.correct));
   if(missing.length>0){
     const msg={es:`Falta: ${missing.map(w=>'"'+w.correct+'"').join(', ')}`,ca:`Falta: ${missing.map(w=>'"'+w.correct+'"').join(', ')}`,en:`Missing: ${missing.map(w=>'"'+w.correct+'"').join(', ')}`};
     toast(msg[lang]);return;
