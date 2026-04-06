@@ -1829,46 +1829,93 @@ function checkDictado(){
 function startDictPenalty(words){
   dpWords=words;dpCurrentWord=0;dpMode='';dpCount=0;
   const penalty=document.getElementById('dictPenalty');penalty.classList.add('vis');
-  renderDpWord();
+  renderDpChoice();
 }
 
-function renderDpWord(){
-  if(dpCurrentWord>=dpWords.length){document.getElementById('dictPenalty').classList.remove('vis');toast('✓ ¡Práctica completada! 🌟');flashPts(20);return;}
-  const w=dpWords[dpCurrentWord];
+function renderDpChoice(){
+  const lang=curSubj?.lang||'es';
+  const allWords=dpWords.map(w=>`<span style="color:var(--green);font-weight:700">${w.correct}</span>`).join(', ');
+  const title={es:'📝 Practica las palabras que has fallado',ca:'📝 Practica les paraules que has fallat',en:'📝 Practice the words you got wrong'};
+  const opt5={es:'✏️ Escribir cada palabra 5 veces',ca:'✏️ Escriure cada paraula 5 vegades',en:'✏️ Write each word 5 times'};
+  const optFrase={es:'📝 Una frase con TODAS las palabras',ca:'📝 Una frase amb TOTES les paraules',en:'📝 One sentence with ALL the words'};
   document.getElementById('dpWordList').innerHTML=`
-    <div class="dp-title">Palabra ${dpCurrentWord+1}/${dpWords.length}: practica "<span style="color:var(--green);font-weight:700">${w.correct}</span>"</div>
+    <div class="dp-title">${title[lang]}: ${allWords}</div>
     <div class="dp-options">
-      <div class="dp-opt${dpMode==='5x'?' sel':''}" onclick="selDpMode('5x',this)">✏️ Escribirla 5 veces</div>
-      <div class="dp-opt${dpMode==='frase'?' sel':''}" onclick="selDpMode('frase',this)">📝 Hacer 3 frases</div>
-    </div>
-    <div class="dp-practice" id="dpPractice">
-      <div class="dp-progress" id="dpProgress"></div>
-      <input class="dp-in" id="dpIn" placeholder="${dpMode==='5x'?`Escriu "${w.correct}"...`:`Escriu una frase amb "${w.correct}"...`}" onkeydown="if(event.key==='Enter')submitDp()"/>
-      <button class="dp-submit" onclick="submitDp()">✓ Enviar</button>
+      <div class="dp-opt" onclick="startDp5x()">  ${opt5[lang]}</div>
+      <div class="dp-opt" onclick="startDpFrase()">${optFrase[lang]}</div>
     </div>
   `;
 }
 
-function selDpMode(mode,card){
-  dpMode=mode;dpCount=0;
-  document.querySelectorAll('.dp-opt').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');
-  document.getElementById('dpPractice').classList.add('vis');
-  const target=mode==='5x'?5:3;
-  document.getElementById('dpProgress').textContent=`${dpCount}/${target} ${mode==='5x'?'veces':'frases'}`;
-  document.getElementById('dpIn').placeholder=mode==='5x'?`Escriu "${dpWords[dpCurrentWord].correct}"...`:`Escriu una frase amb "${dpWords[dpCurrentWord].correct}"...`;
+function startDp5x(){
+  dpMode='5x';dpCurrentWord=0;dpCount=0;
+  renderDp5xWord();
+}
+
+function renderDp5xWord(){
+  if(dpCurrentWord>=dpWords.length){finishDp();return;}
+  const lang=curSubj?.lang||'es';
+  const w=dpWords[dpCurrentWord];
+  const wordLabel={es:`Palabra ${dpCurrentWord+1}/${dpWords.length}`,ca:`Paraula ${dpCurrentWord+1}/${dpWords.length}`,en:`Word ${dpCurrentWord+1}/${dpWords.length}`};
+  const placeholder={es:`Escribe "${w.correct}"...`,ca:`Escriu "${w.correct}"...`,en:`Write "${w.correct}"...`};
+  const times={es:'veces',ca:'vegades',en:'times'};
+  document.getElementById('dpWordList').innerHTML=`
+    <div class="dp-title">${wordLabel[lang]}: <span style="color:var(--green);font-weight:700">${w.correct}</span></div>
+    <div class="dp-progress" id="dpProgress">${dpCount}/5 ${times[lang]}</div>
+    <input class="dp-in" id="dpIn" placeholder="${placeholder[lang]}" onkeydown="if(event.key==='Enter')submitDp5x()"/>
+    <button class="dp-submit" onclick="submitDp5x()">✓</button>
+  `;
   document.getElementById('dpIn').focus();
 }
 
-function submitDp(){
-  if(!dpMode)return;
+function submitDp5x(){
   const val=document.getElementById('dpIn').value.trim();if(!val)return;
-  const w=dpWords[dpCurrentWord];const target=dpMode==='5x'?5:3;
-  const isOk=dpMode==='5x'?val.toLowerCase()===w.correct.toLowerCase():val.toLowerCase().includes(w.correct.toLowerCase());
-  if(!isOk){toast(`Tienes que escribir "${w.correct}" correctamente!`);return;}
+  const w=dpWords[dpCurrentWord];
+  const lang=curSubj?.lang||'es';
+  if(val.toLowerCase()!==w.correct.toLowerCase()){
+    const msg={es:`Escribe "${w.correct}" correctamente`,ca:`Escriu "${w.correct}" correctament`,en:`Write "${w.correct}" correctly`};
+    toast(msg[lang]);return;
+  }
   dpCount++;document.getElementById('dpIn').value='';
-  document.getElementById('dpProgress').textContent=`${dpCount}/${target} ${dpMode==='5x'?'veces':'frases'}`;
-  if(dpCount>=target){dpCurrentWord++;dpMode='';dpCount=0;renderDpWord();}
+  const times={es:'veces',ca:'vegades',en:'times'};
+  document.getElementById('dpProgress').textContent=`${dpCount}/5 ${times[lang]}`;
+  if(dpCount>=5){dpCurrentWord++;dpCount=0;renderDp5xWord();}
+  else document.getElementById('dpIn').focus();
   recordActivity();
+}
+
+function startDpFrase(){
+  dpMode='frase';
+  const lang=curSubj?.lang||'es';
+  const allWordsText=dpWords.map(w=>w.correct).join(', ');
+  const title={es:'Escribe UNA frase que contenga todas estas palabras:',ca:'Escriu UNA frase que contingui totes aquestes paraules:',en:'Write ONE sentence containing all these words:'};
+  const placeholder={es:'Tu frase aquí...',ca:'La teua frase aquí...',en:'Your sentence here...'};
+  const submit={es:'✓ Enviar frase',ca:'✓ Enviar frase',en:'✓ Submit sentence'};
+  document.getElementById('dpWordList').innerHTML=`
+    <div class="dp-title">${title[lang]}</div>
+    <div style="font-size:16px;font-weight:700;color:var(--green);margin:8px 0">${allWordsText}</div>
+    <input class="dp-in" id="dpIn" placeholder="${placeholder[lang]}" onkeydown="if(event.key==='Enter')submitDpFrase()"/>
+    <button class="dp-submit" onclick="submitDpFrase()">${submit[lang]}</button>
+  `;
+  document.getElementById('dpIn').focus();
+}
+
+function submitDpFrase(){
+  const val=document.getElementById('dpIn').value.trim().toLowerCase();if(!val)return;
+  const lang=curSubj?.lang||'es';
+  const missing=dpWords.filter(w=>!val.includes(w.correct.toLowerCase()));
+  if(missing.length>0){
+    const msg={es:`Falta: ${missing.map(w=>'"'+w.correct+'"').join(', ')}`,ca:`Falta: ${missing.map(w=>'"'+w.correct+'"').join(', ')}`,en:`Missing: ${missing.map(w=>'"'+w.correct+'"').join(', ')}`};
+    toast(msg[lang]);return;
+  }
+  finishDp();
+}
+
+function finishDp(){
+  document.getElementById('dictPenalty').classList.remove('vis');
+  const lang=curSubj?.lang||'es';
+  const msg={es:'✓ ¡Práctica completada! 🌟',ca:'✓ Pràctica completada! 🌟',en:'✓ Practice completed! 🌟'};
+  toast(msg[lang]);flashPts(20);
 }
 
 // ════════════════════════════════════════════
