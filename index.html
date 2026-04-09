@@ -504,10 +504,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <div class="settings-tap" id="settingsTap" onclick="handleSettingsTap()">⚙️</div>
   </div>
   <div class="stats-row">
-    <div class="stat-card sc-streak"><div class="stat-val" id="dStreak">0🔥</div><div class="stat-lbl">días seguidos</div></div>
-    <div class="stat-card sc-pts"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
-    <div class="stat-card"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
+    <div class="stat-card sc-streak" style="cursor:pointer" onclick="showLogros()"><div class="stat-val" id="dStreak">0🔥</div><div class="stat-lbl">días seguidos</div></div>
+    <div class="stat-card sc-pts" style="cursor:pointer" onclick="showPremios()"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
+    <div class="stat-card" style="cursor:pointer" onclick="showLogros()"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
   </div>
+  <div id="streakBanner"></div>
   <div class="timer-card">
     <span style="font-size:20px">⏱️</span>
     <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:0%"></div></div>
@@ -839,21 +840,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
         </select>
       </div>
       <div style="background:#FAFAFA;border:1px solid var(--border);border-radius:var(--r);padding:10px 12px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <span style="font-size:12px;font-weight:600;color:var(--black)">Cada</span>
-          <input class="api-in" id="newRuleRatio" type="number" value="1" style="width:45px;margin:0;text-align:center;padding:8px 4px"/>
-          <span style="font-size:12px;color:var(--muted)">min de lectura/estudio</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-          <span style="font-size:12px;font-weight:600;color:var(--black)">=</span>
-          <input class="api-in" id="newRuleResult" type="number" value="2" style="width:45px;margin:0;text-align:center;padding:8px 4px"/>
-          <span style="font-size:12px;color:var(--muted)">min de pantalla</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:12px;font-weight:600;color:var(--black)">Máximo diario:</span>
-          <input class="api-in" id="newRuleMax" type="number" value="60" style="width:55px;margin:0;text-align:center;padding:8px 4px"/>
-          <span style="font-size:12px;color:var(--muted)">min</span>
-        </div>
+          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:600">Cada</span>
+            <input class="api-in" id="newRuleRatio" type="number" value="1" style="width:40px;margin:0;text-align:center;padding:7px 2px"/>
+            <span style="font-size:12px;color:var(--muted)">min =</span>
+            <input class="api-in" id="newRuleResult" type="number" value="2" style="width:40px;margin:0;text-align:center;padding:7px 2px"/>
+            <span style="font-size:12px;color:var(--muted)">min pantalla</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:5px">
+            <span style="font-size:12px;font-weight:600">Máximo diario:</span>
+            <input class="api-in" id="newRuleMax" type="number" value="60" style="width:45px;margin:0;text-align:center;padding:7px 2px"/>
+            <span style="font-size:12px;color:var(--muted)">min</span>
+          </div>
       </div>
     </div>
     <button class="save-btn" onclick="addTimeRule()">+ Añadir regla</button>
@@ -1073,7 +1071,7 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();
+  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();
   // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   updateTimerUI();
@@ -2205,6 +2203,8 @@ function addTimeRule(){
   const ratio=parseInt(document.getElementById('newRuleRatio').value)||1;
   const result=parseInt(document.getElementById('newRuleResult').value)||2;
   const max=parseInt(document.getElementById('newRuleMax').value)||60;
+  const existing=timeRules.find(r=>r.source===source&&r.target===target);
+  if(existing){toast('Ya existe una regla de '+source+' → '+target+'. Bórrala primero.');return;}
   timeRules.push({id:Date.now(),source,target,ratio,result,max});
   svTimeRules();renderParentTimeRules();toast('✓ Regla añadida');
 }
@@ -2395,7 +2395,32 @@ function renderTimeBanner(){
   banner.innerHTML=html;
 }
 
-function renderProfileEdit(){
+function renderStreakBanner(){
+  const banner=document.getElementById('streakBanner');if(!banner)return;
+  const streak=profile?.streak||0;
+  const streakMilestones=[3,7,14,30,60,100];
+  const nextStreak=streakMilestones.find(m=>m>streak);
+  if(!nextStreak&&streak>=100){
+    banner.innerHTML=`<div style="border-radius:var(--r);padding:10px 14px;margin-bottom:.75rem;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FDE68A;cursor:pointer" onclick="showLogros()">
+      <span style="font-size:20px">👑</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#92400E">${streak} días seguidos — ¡Eres una leyenda!</div></div>
+    </div>`;
+  } else if(nextStreak){
+    const pct=Math.round((streak/nextStreak)*100);
+    const remaining=nextStreak-streak;
+    const msgs={3:'¡Empieza la racha!',7:'¡Una semana entera!',14:'¡Dos semanas!',30:'¡Un mes!',60:'¡Imparable!',100:'¡Leyenda!'};
+    banner.innerHTML=`<div style="border-radius:var(--r);padding:10px 14px;margin-bottom:.75rem;display:flex;align-items:center;gap:10px;background:var(--amber-l);border:1.5px solid var(--amber-b);cursor:pointer" onclick="showLogros()">
+      <span style="font-size:20px">🔥</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:#92400E">Racha: ${streak} días — ${msgs[nextStreak]||'Siguiente: '+nextStreak+' días'}</div>
+        <div style="height:5px;background:var(--amber-b);border-radius:3px;margin-top:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--orange);border-radius:3px"></div></div>
+        <div style="font-size:11px;color:#B45309;margin-top:3px">${remaining===1?'¡Mañana lo consigues!':'Faltan '+remaining+' días'}</div>
+      </div>
+    </div>`;
+  } else {
+    banner.innerHTML='';
+  }
+}
   const rows=document.getElementById('profileEditRows');
   if(!profile){rows.innerHTML='<div style="font-size:13px;color:var(--muted)">Crea primero un perfil.</div>';return;}
   const cursoSel=CURSOOS.map(([id,,t])=>`<option value="${id}"${profile.curso===id?' selected':''}>${t}</option>`).join('');
