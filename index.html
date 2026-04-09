@@ -444,6 +444,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 .cal-day.missed{background:var(--red-l);color:#991B1B}
 .cal-day.exam{background:var(--amber-l);color:#92400E}
 .cal-day.exam::after{content:'';position:absolute;bottom:2px;width:3px;height:3px;border-radius:50%;background:var(--amber)}
+
+/* MINI HITO */
+.mini-hito{margin-bottom:.5rem}
 </style>
 </head>
 <body>
@@ -560,6 +563,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <button class="ob-back" onclick="show('s_dash')">← Volver</button>
     <div style="font-size:16px;font-weight:700;flex:1;text-align:center">🎁 Mis Premios</div>
   </div>
+  <div class="mini-hito" id="hitoPremios"></div>
   <div style="text-align:center;margin-bottom:1rem">
     <div style="font-size:36px;font-weight:800;color:var(--blue)" id="premiosPts">0</div>
     <div style="font-size:12px;color:var(--muted)">puntos disponibles</div>
@@ -577,6 +581,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <button class="ob-back" onclick="show('s_dash')">← Volver</button>
     <div style="font-size:16px;font-weight:700;flex:1;text-align:center">🏆 Mis Logros</div>
   </div>
+  <div class="mini-hito" id="hitoLogros"></div>
   <div id="logrosContent"></div>
 </div>
 
@@ -634,6 +639,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <div style="flex:1"><div class="sh-name" id="shName"></div><div class="sh-sub" id="shSub"></div></div>
     <span class="sh-lang" id="shLang"></span>
   </div>
+  <div class="mini-hito" id="hitoStudy"></div>
   <div class="task-banner" id="taskBanner" style="display:none">
     <span class="tb-icon">📌</span>
     <span class="tb-text" id="taskBannerText"></span>
@@ -792,6 +798,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <button class="ob-back" onclick="show('s_dash')">← Volver</button>
     <div style="font-size:16px;font-weight:700;flex:1;text-align:center">📖 Lectura en voz alta</div>
   </div>
+  <div class="mini-hito" id="hitoLectura"></div>
   <div id="lecturaMotivBanner"></div>
   <div class="qcard">
     <span class="qemoji">📖</span>
@@ -1096,7 +1103,7 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();renderBonusIndicator();renderCalendar();
+  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();renderBonusIndicator();renderCalendar();renderAllMiniHitos();
   // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   updateTimerUI();
@@ -1500,7 +1507,7 @@ function openStudy(subj,task){
 
   setTimeout(()=>greet(),300);
   startTimer(); // Solo cuenta dentro de asignatura
-  show('s_study');recordActivity();
+  show('s_study');recordActivity();renderAllMiniHitos();
 }
 
 function updateFotoWarnings(){
@@ -2491,6 +2498,58 @@ function renderBonusIndicator(){
   }
 }
 
+function getMiniHitoHTML(){
+  const streak=profile?.streak||0;
+  const pts=profile?.pts||0;
+  const available=pts-redeemed.reduce((s,r)=>s+r.pts,0);
+  const{mult,reason}=getBonus();
+  
+  // Find the closest thing to achieve
+  let best=null;
+  
+  // Check closest prize
+  const closestPrize=prizes.filter(p=>p.pts>available).sort((a,b)=>(a.pts-available)-(b.pts-available))[0];
+  if(closestPrize){
+    const remaining=closestPrize.pts-available;
+    const pct=Math.round((available/closestPrize.pts)*100);
+    best={icon:closestPrize.emoji,text:`${closestPrize.name} — faltan ${remaining.toLocaleString()} pts`,pct,color:'var(--amber)'};
+  }
+  
+  // Check streak milestone (prioritize if very close)
+  const streakMilestones=[3,7,14,30,60,100];
+  const nextStreak=streakMilestones.find(m=>m>streak);
+  if(nextStreak&&(nextStreak-streak)<=3){
+    const remaining=nextStreak-streak;
+    const pct=Math.round((streak/nextStreak)*100);
+    best={icon:'🔥',text:`Racha ${nextStreak} días — ${remaining===1?'¡mañana!':'faltan '+remaining}`,pct,color:'var(--orange)'};
+  }
+  
+  // Check canRedeem prize
+  const canRedeem=prizes.filter(p=>p.pts<=available);
+  if(canRedeem.length>0){
+    best={icon:'🎁',text:`¡Puedes canjear ${canRedeem.length} premio${canRedeem.length>1?'s':''}!`,pct:100,color:'var(--green)'};
+  }
+  
+  // Bonus active
+  if(mult>1&&!best){
+    best={icon:'⚡',text:`${reason} — ¡puntos x${mult}!`,pct:100,color:'var(--green)'};
+  }
+  
+  if(!best)return'';
+  return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--faint);border:1px solid var(--border);border-radius:10px;font-size:11px">
+    <span style="font-size:14px">${best.icon}</span>
+    <span style="flex:1;font-weight:600;color:var(--black)">${best.text}</span>
+    <div style="width:40px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${best.pct}%;background:${best.color};border-radius:2px"></div></div>
+  </div>`;
+}
+
+function renderAllMiniHitos(){
+  const html=getMiniHitoHTML();
+  ['hitoStudy','hitoLectura','hitoPremios','hitoLogros'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.innerHTML=html;
+  });
+}
+
 function renderCalendar(){
   const wrap=document.getElementById('calendarWrap');if(!wrap)return;
   const t=today();const todayDate=new Date(t+'T12:00:00');
@@ -2597,7 +2656,7 @@ function saveProfileEdit(){
 let lecturaRecognition=null;let lecturaTranscriptText='';
 let lecturaStartTime=null;let lecturaTimerInterval=null;let lecturaWordCount=0;
 
-function startLectura(){show('s_lectura');document.getElementById('lecturaTitle').value='';document.getElementById('lecturaPag').value='';document.getElementById('lecturaRecCard').style.display='none';document.getElementById('lecturaQCard').style.display='none';document.getElementById('lecturaStartBtn').style.display='block';renderLecturaMotiv();}
+function startLectura(){show('s_lectura');document.getElementById('lecturaTitle').value='';document.getElementById('lecturaPag').value='';document.getElementById('lecturaRecCard').style.display='none';document.getElementById('lecturaQCard').style.display='none';document.getElementById('lecturaStartBtn').style.display='block';renderLecturaMotiv();renderAllMiniHitos();}
 
 function renderLecturaMotiv(){
   const banner=document.getElementById('lecturaMotivBanner');if(!banner)return;
