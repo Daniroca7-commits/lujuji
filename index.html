@@ -509,6 +509,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <div class="stat-card" style="cursor:pointer" onclick="showLogros()"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
   </div>
   <div id="streakBanner"></div>
+  <div id="bonusIndicator"></div>
   <div class="timer-card">
     <span style="font-size:20px">⏱️</span>
     <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:0%"></div></div>
@@ -1071,7 +1072,7 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();
+  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();renderBonusIndicator();
   // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   updateTimerUI();
@@ -1631,7 +1632,36 @@ function resetCorr(){['cOk','cErr','cTip','cVer'].forEach(id=>document.getElemen
 
 function chkV(){const ua=document.getElementById('vIn').value.trim().toLowerCase();if(!ua)return;const ok=ua.includes(vA)||vA.includes(ua);const res=document.getElementById('vRes');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';const lang=curSubj?.lang||'es';if(ok){res.textContent=lang==='en'?'✓ Perfect! Got it! 🌟':'✓ ¡Perfecto! Ahora sí lo tienes claro 🌟';document.getElementById('reinforce').textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! Ahora ya no lo confundirás. ¡Seguimos! 💪';document.getElementById('reinforce').style.display='block';document.getElementById('vIn').disabled=true;wS=0;}else res.textContent=lang==='en'?`Almost! The answer is "${vA}" 😊`:lang==='ca'?`Quasi! La resposta és "${vA}" 😊`:`¡Casi! La respuesta es "${vA}" 😊`;}
 
-function flashPts(n){profile.pts=(profile.pts||0)+(n||10);sv();document.getElementById('dPts').textContent=profile.pts;const f=document.getElementById('ptsFlash');f.textContent=`+${n||10} pts ⭐`;f.style.display='block';setTimeout(()=>f.style.display='none',1500);}
+function getBonus(){
+  const now=new Date();const hour=now.getHours();const day=now.getDay();
+  let mult=1;let reason='';
+  // Bonus horario: 13-15h x2
+  if(hour>=13&&hour<15){mult=Math.max(mult,2);reason='🕐 Mediodía x2';}
+  // Bonus fin de semana: sábado x3, domingo x1.5
+  if(day===6){mult=Math.max(mult,3);reason='🗓️ Sábado x3';}
+  else if(day===0){mult=Math.max(mult,1.5);reason='🗓️ Domingo x1.5';}
+  // Bonus anticipación examen
+  const t=today();const nextExam=exams.filter(e=>e.date>=t).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  if(nextExam){
+    const daysUntil=Math.ceil((new Date(nextExam.date)-new Date(t))/(1000*60*60*24));
+    if(daysUntil>=7){const m=3;if(m>mult){mult=m;reason='📅 +7 días antes del examen x3';}}
+    else if(daysUntil>=3){const m=2;if(m>mult){mult=m;reason='📅 3-6 días antes del examen x2';}}
+    else if(daysUntil>=1){const m=1.5;if(m>mult){mult=m;reason='📅 Examen pronto x1.5';}}
+  }
+  return{mult,reason};
+}
+
+function flashPts(n){
+  const base=n||10;
+  const{mult,reason}=getBonus();
+  const total=Math.round(base*mult);
+  profile.pts=(profile.pts||0)+total;sv();
+  document.getElementById('dPts').textContent=profile.pts;
+  const f=document.getElementById('ptsFlash');
+  f.textContent=mult>1?`+${total} pts ⭐ (${reason})`:(`+${total} pts ⭐`);
+  f.style.display='block';setTimeout(()=>f.style.display='none',2000);
+  checkBadges();
+}
 
 async function sendMsg(){
   if(loading||ortoBlocked)return;
@@ -2421,6 +2451,22 @@ function renderStreakBanner(){
     banner.innerHTML='';
   }
 }
+
+function renderBonusIndicator(){
+  const el=document.getElementById('bonusIndicator');if(!el)return;
+  const{mult,reason}=getBonus();
+  if(mult>1){
+    el.innerHTML=`<div style="border-radius:var(--r);padding:9px 14px;margin-bottom:.75rem;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border:1.5px solid var(--green-b)">
+      <span style="font-size:18px">⚡</span>
+      <div style="flex:1;font-size:13px;font-weight:700;color:#166534">${reason} — ¡Puntos multiplicados!</div>
+      <span style="font-size:14px;font-weight:800;color:var(--green)">x${mult}</span>
+    </div>`;
+  } else {
+    el.innerHTML='';
+  }
+}
+
+function renderProfileEdit(){
   const rows=document.getElementById('profileEditRows');
   if(!profile){rows.innerHTML='<div style="font-size:13px;color:var(--muted)">Crea primero un perfil.</div>';return;}
   const cursoSel=CURSOOS.map(([id,,t])=>`<option value="${id}"${profile.curso===id?' selected':''}>${t}</option>`).join('');
