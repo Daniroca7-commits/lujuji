@@ -1635,11 +1635,12 @@ function chkV(){const ua=document.getElementById('vIn').value.trim().toLowerCase
 function getBonus(){
   const now=new Date();const hour=now.getHours();const day=now.getDay();
   let mult=1;let reason='';
-  // Bonus horario: 13-15h x2
-  if(hour>=13&&hour<15){mult=Math.max(mult,2);reason='🕐 Mediodía x2';}
-  // Bonus fin de semana: sábado x3, domingo x1.5
-  if(day===6){mult=Math.max(mult,3);reason='🗓️ Sábado x3';}
-  else if(day===0){mult=Math.max(mult,1.5);reason='🗓️ Domingo x1.5';}
+  // Bonus horario: 13-15h de lunes a viernes x2
+  if(hour>=13&&hour<15&&day>=1&&day<=5){mult=Math.max(mult,2);reason='🕐 Mediodía x2';}
+  // Bonus fin de semana: viernes tarde x3, sábado x3, domingo x1 (normal)
+  if(day===5&&hour>=17&&hour<21){mult=Math.max(mult,3);reason='🗓️ Viernes tarde x3';}
+  else if(day===6){mult=Math.max(mult,3);reason='🗓️ Sábado x3';}
+  // Domingo = x1, no hay bonus
   // Bonus anticipación examen
   const t=today();const nextExam=exams.filter(e=>e.date>=t).sort((a,b)=>a.date.localeCompare(b.date))[0];
   if(nextExam){
