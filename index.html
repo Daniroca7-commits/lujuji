@@ -515,6 +515,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
   </div>
   <div id="examBanner"></div>
   <div id="prizeBanner"></div>
+  <div id="timeBanner"></div>
   <div class="section-title"><span>📋 TAREAS DE HOY</span><button class="add-btn-s" onclick="openModal('modalTask')">+ Añadir</button></div>
   <div id="taskList"></div>
   <div class="section-title" style="margin-top:.25rem"><span>📅 MIS EXÁMENES</span><button class="add-btn-s" onclick="openModal('modalExam')">+ Añadir</button></div>
@@ -1072,7 +1073,7 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();
+  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();
   // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   updateTimerUI();
@@ -2369,6 +2370,31 @@ function renderPrizeBanner(){
   }
 }
 
+function renderTimeBanner(){
+  const banner=document.getElementById('timeBanner');if(!banner)return;
+  if(!timeRules.length){banner.innerHTML='';return;}
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const studyMins=Math.floor((parseInt(localStorage.getItem('lujuji_timer_'+today())||'0'))/60);
+  const icons={youtube:'▶️',videojuegos:'🎮',tablet:'📱',tv:'📺'};
+  const names={youtube:'YouTube',videojuegos:'Videojuegos',tablet:'Tablet',tv:'TV'};
+  let html='';
+  timeRules.forEach(r=>{
+    const sourceMins=r.source==='lectura'?readMins:studyMins;
+    const earned=Math.min(Math.floor(sourceMins/r.ratio)*r.result,r.max);
+    if(earned<=0)return;
+    const pct=Math.round((earned/r.max)*100);
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--blue-l);border:1px solid var(--blue-b);border-radius:var(--r);margin-bottom:8px;cursor:pointer" onclick="showPremios()">
+      <span style="font-size:18px">${icons[r.target]||'📱'}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:700;color:var(--blue)">${earned} min ${names[r.target]||r.target} ganados hoy</div>
+        <div style="height:4px;background:var(--blue-b);border-radius:2px;margin-top:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--blue);border-radius:2px"></div></div>
+      </div>
+      <span style="font-size:11px;color:var(--blue);font-weight:600">${earned}/${r.max}</span>
+    </div>`;
+  });
+  banner.innerHTML=html;
+}
+
 function renderProfileEdit(){
   const rows=document.getElementById('profileEditRows');
   if(!profile){rows.innerHTML='<div style="font-size:13px;color:var(--muted)">Crea primero un perfil.</div>';return;}
@@ -2539,9 +2565,24 @@ async function submitLecturaAns(title,questions){
       const lang=curSubj?.lang||'es';const langTxt={es:'Responde en español.',ca:'Respon en català.',en:'Answer in English.'};
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:300,messages:[{role:"user",content:`Las preguntas eran: ${questions}. El alumno respondió: "${ans}". ${langTxt[lang]} Evalúa las respuestas en 2-3 frases. Si está bien → celebra. Si falta algo → explícalo brevemente.`}]})});
       const data=await res.json();const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
-      const rDiv=document.createElement('div');rDiv.style.cssText='font-size:13px;line-height:1.7;color:#333';rDiv.textContent=reply;
-      const rBtn=document.createElement('button');rBtn.style.cssText='width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:.75rem';rBtn.textContent='Volver al inicio';rBtn.onclick=()=>show('s_dash');
-      const rCont=document.getElementById('lecturaQContent');rCont.innerHTML='';rCont.appendChild(rDiv);rCont.appendChild(rBtn);
+      const rDiv=document.createElement('div');rDiv.style.cssText='font-size:13px;line-height:1.7;color:#333;margin-bottom:.75rem';rDiv.textContent=reply;
+      // Time earned summary
+      const timeDiv=document.createElement('div');
+      const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+      const lectRules=timeRules.filter(r=>r.source==='lectura');
+      if(lectRules.length>0){
+        const icons={youtube:'▶️ YouTube',videojuegos:'🎮 Videojuegos',tablet:'📱 Tablet',tv:'📺 TV'};
+        let timeHtml='<div style="background:var(--blue-l);border:1px solid var(--blue-b);border-radius:var(--r);padding:10px 14px;margin-bottom:.75rem">';
+        timeHtml+='<div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:4px">⏱️ Tiempo de pantalla ganado hoy:</div>';
+        lectRules.forEach(r=>{
+          const earned=Math.min(Math.floor(readMins/r.ratio)*r.result,r.max);
+          timeHtml+=`<div style="font-size:13px;color:#1D4ED8;font-weight:600">${icons[r.target]||r.target}: ${earned} min (de ${r.max} máx)</div>`;
+        });
+        timeHtml+='</div>';
+        timeDiv.innerHTML=timeHtml;
+      }
+      const rBtn=document.createElement('button');rBtn.style.cssText='width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer';rBtn.textContent='Volver al inicio';rBtn.onclick=()=>show('s_dash');
+      const rCont=document.getElementById('lecturaQContent');rCont.innerHTML='';rCont.appendChild(rDiv);if(timeDiv.innerHTML)rCont.appendChild(timeDiv);rCont.appendChild(rBtn);
       flashPts(20);confetti();
     }catch(e){document.getElementById('lecturaQContent').innerHTML='<div style="font-size:13px;color:var(--green)">🌟 ¡Muy bien por leer! +20 pts</div>';}
   }
