@@ -2378,6 +2378,7 @@ function saveProfileEdit(){
 // LECTURA EN VOZ ALTA
 // ════════════════════════════════════════════
 let lecturaRecognition=null;let lecturaTranscriptText='';
+let lecturaStartTime=null;let lecturaTimerInterval=null;let lecturaWordCount=0;
 
 function startLectura(){show('s_lectura');document.getElementById('lecturaTitle').value='';document.getElementById('lecturaPag').value='';document.getElementById('lecturaRecCard').style.display='none';document.getElementById('lecturaQCard').style.display='none';document.getElementById('lecturaStartBtn').style.display='block';}
 
@@ -2385,7 +2386,17 @@ function startLecturaRec(){
   const title=document.getElementById('lecturaTitle').value.trim();
   if(!title){toast('Escribe el título del libro primero');return;}
   document.getElementById('lecturaRecCard').style.display='block';document.getElementById('lecturaStartBtn').style.display='none';
-  lecturaTranscriptText='';document.getElementById('lecturaTranscript').textContent='Escuchando...';document.getElementById('lecturaStatus').textContent='🎙️';
+  lecturaTranscriptText='';lecturaWordCount=0;lecturaStartTime=Date.now();
+  document.getElementById('lecturaTranscript').textContent='Escuchando...';document.getElementById('lecturaStatus').textContent='🎙️';
+  // Timer display
+  if(lecturaTimerInterval)clearInterval(lecturaTimerInterval);
+  lecturaTimerInterval=setInterval(()=>{
+    const secs=Math.floor((Date.now()-lecturaStartTime)/1000);
+    const m=Math.floor(secs/60);const s=secs%60;
+    document.getElementById('lecturaStatus').textContent=`🔴 ${m}:${String(s).padStart(2,'0')}`;
+    // Count words in real time
+    lecturaWordCount=lecturaTranscriptText.trim().split(/\s+/).filter(w=>w.length>0).length;
+  },1000);
   if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
     document.getElementById('lecturaTranscript').textContent='Tu navegador no soporta el micrófono. Prueba en Safari o Chrome.';return;
   }
@@ -2393,32 +2404,85 @@ function startLecturaRec(){
   lecturaRecognition=new SR();lecturaRecognition.continuous=true;lecturaRecognition.interimResults=true;
   lecturaRecognition.lang=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';
   lecturaRecognition.onresult=e=>{let interim='';let final='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal){final+=e.results[i][0].transcript;lecturaTranscriptText+=final;}else interim+=e.results[i][0].transcript;}document.getElementById('lecturaTranscript').textContent=lecturaTranscriptText+interim||'Escuchando...';recordActivity();};
-  lecturaRecognition.onerror=()=>{document.getElementById('lecturaStatus').textContent='❌';};
-  lecturaRecognition.start();document.getElementById('lecturaStatus').textContent='🔴';
+  lecturaRecognition.onerror=()=>{};
+  lecturaRecognition.start();
 }
 
 async function stopLectura(){
   if(lecturaRecognition)lecturaRecognition.stop();
-  document.getElementById('lecturaStatus').textContent='✅';document.getElementById('lecturaStopBtn').disabled=true;
+  if(lecturaTimerInterval){clearInterval(lecturaTimerInterval);lecturaTimerInterval=null;}
+  document.getElementById('lecturaStopBtn').disabled=true;
   const title=document.getElementById('lecturaTitle').value.trim();const pag=document.getElementById('lecturaPag').value;
   const text=lecturaTranscriptText.trim();
+  const readSecs=lecturaStartTime?Math.floor((Date.now()-lecturaStartTime)/1000):0;
+  const readMins=Math.floor(readSecs/60);
+  const words=text.split(/\s+/).filter(w=>w.length>0).length;
+  const pags=parseInt(pag)||0;
+
+  // Validar mínimo: 10 minutos O 10 páginas
+  const minOk=readMins>=10||pags>=10;
+
+  if(!minOk){
+    document.getElementById('lecturaStatus').textContent='⚠️';
+    document.getElementById('lecturaQCard').style.display='block';
+    const needed=readMins<10?`${10-readMins} minutos más`:'10 páginas';
+    document.getElementById('lecturaQContent').innerHTML=`<div style="text-align:center;padding:1rem">
+      <div style="font-size:36px;margin-bottom:8px">⏱️</div>
+      <div style="font-size:15px;font-weight:700;color:var(--amber);margin-bottom:6px">Lectura demasiado corta</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem">Has leído ${readMins} minutos y ${words} palabras.<br>Necesitas mínimo <strong>10 minutos</strong> o indicar <strong>10 páginas</strong> para que cuente.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:1rem">Te faltan ${needed}</div>
+      <button onclick="show('s_dash')" style="width:100%;padding:12px;background:var(--faint);color:var(--black);border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer">Volver al inicio</button>
+    </div>`;
+    return;
+  }
+
+  // Verificar que hay texto real (anti-trampas)
+  const wpm=readMins>0?Math.round(words/readMins):0;
+  if(words<30){
+    document.getElementById('lecturaStatus').textContent='⚠️';
+    document.getElementById('lecturaQCard').style.display='block';
+    document.getElementById('lecturaQContent').innerHTML=`<div style="text-align:center;padding:1rem">
+      <div style="font-size:36px;margin-bottom:8px">🎙️</div>
+      <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:6px">No se ha detectado lectura</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1rem">El micrófono solo ha captado ${words} palabras. Tienes que leer en voz alta para que cuente.</div>
+      <button onclick="show('s_dash')" style="width:100%;padding:12px;background:var(--faint);color:var(--black);border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-weight:600;cursor:pointer">Volver al inicio</button>
+    </div>`;
+    return;
+  }
+
+  // ¡Lectura válida! Guardar minutos verificados
+  document.getElementById('lecturaStatus').textContent='✅';
+  const prevMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  localStorage.setItem('lujuji_read_mins_'+today(),prevMins+readMins);
+  profile.lecturas=(profile.lecturas||0)+1;
+  checkBadges();sv();
+
   document.getElementById('lecturaQCard').style.display='block';
   document.getElementById('lecturaQContent').innerHTML='<div class="ldots" style="color:var(--purple);padding:1rem;text-align:center"><span></span><span></span><span></span></div>';
+
+  // Mensaje de éxito + preguntas de comprensión
   if(apiKey&&text.length>20){
     try{
       const lang=curSubj&&curSubj.lang||'es';
       const langTxt={es:'Responde en espanol.',ca:'Respon en catala.',en:'Answer in English.'};
-      const prompt='El alumno '+profile.name+' acaba de leer en voz alta del libro "'+title+'" pagina '+(pag||'?')+'. Esto es lo que ha leido: "'+text.substring(0,500)+'". '+langTxt[lang]+' Haz exactamente 3 preguntas de comprension cortas y directas sobre el texto. Enumeralas 1, 2, 3. Solo las preguntas, sin introduccion.';
+      const prompt='El alumno '+profile.name+' acaba de leer en voz alta del libro "'+title+'" pagina '+(pag||'?')+'. Ha leído '+readMins+' minutos y '+words+' palabras ('+wpm+' palabras/min). Esto es lo que ha leido: "'+text.substring(0,500)+'". '+langTxt[lang]+' Haz exactamente 3 preguntas de comprension cortas y directas sobre el texto. Enumeralas 1, 2, 3. Solo las preguntas, sin introduccion.';
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:400,messages:[{role:"user",content:prompt}]})});
       const data=await res.json();const q=data.content&&data.content.map(function(b){return b.text||'';}).join('').trim()||'';
+      const successDiv=document.createElement('div');successDiv.style.cssText='background:var(--green-l);border:1px solid var(--green-b);border-radius:var(--r);padding:10px 14px;margin-bottom:.75rem;text-align:center';
+      successDiv.innerHTML=`<div style="font-size:14px;font-weight:700;color:#166534">✅ ¡${readMins} minutos de lectura verificados!</div><div style="font-size:12px;color:#166534;margin-top:2px">${words} palabras · ${wpm} palabras/min · +15 pts</div>`;
       const qDiv=document.createElement('div');qDiv.style.cssText='font-size:13px;line-height:2;color:#333';qDiv.innerHTML=q.split('\n').join('<br>');
       const qTA=document.createElement('textarea');qTA.className='tasks-input';qTA.id='lecturaAns';qTA.placeholder='Escribe tus respuestas aqui...';qTA.style.cssText='margin-top:.75rem;min-height:80px';
       const qBtn=document.createElement('button');qBtn.style.cssText='width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:7px';qBtn.textContent='Enviar respuestas';
       qBtn.onclick=function(){submitLecturaAns(title,q);};
-      const qCont=document.getElementById('lecturaQContent');qCont.innerHTML='';qCont.appendChild(qDiv);qCont.appendChild(qTA);qCont.appendChild(qBtn);
-    }catch(e){document.getElementById('lecturaQContent').innerHTML='<div style="font-size:13px;color:var(--muted)">Error generando preguntas. Muy bien por leer! </div>';}
+      const qCont=document.getElementById('lecturaQContent');qCont.innerHTML='';qCont.appendChild(successDiv);qCont.appendChild(qDiv);qCont.appendChild(qTA);qCont.appendChild(qBtn);
+    }catch(e){document.getElementById('lecturaQContent').innerHTML='<div style="font-size:13px;color:var(--muted)">Error generando preguntas. ¡Muy bien por leer!</div>';}
   } else {
-    document.getElementById('lecturaQContent').innerHTML='<div style="font-size:14px;font-weight:600;color:var(--green)">Muy bien por leer hoy! La lectura cuenta para tu racha.</div>';
+    document.getElementById('lecturaQContent').innerHTML=`<div style="text-align:center;padding:1rem">
+      <div style="font-size:36px;margin-bottom:8px">📖</div>
+      <div style="font-size:15px;font-weight:700;color:var(--green);margin-bottom:6px">¡${readMins} minutos de lectura verificados!</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:1rem">${words} palabras leídas · +15 pts</div>
+      <button onclick="show('s_dash')" style="width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer">Volver al inicio</button>
+    </div>`;
     flashPts(15);
   }
 }
