@@ -386,15 +386,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 .nfw-btn{width:100%;padding:12px;background:var(--amber);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer}
 
 @media(min-width:600px){
-  .screen{padding:1.5rem 1.5rem 5rem}
+  .screen{padding:1.5rem 1.5rem 5rem;max-width:640px}
   .stats-row .stat-val{font-size:28px}
   .chat-box{max-height:380px}
   .ava-grid{grid-template-columns:repeat(8,1fr)}
+  .badge-grid{grid-template-columns:repeat(4,1fr)}
 }
 @media(min-width:900px){
   body{background:#EEEEE8}
-  .screen{padding:2rem 2rem 5rem;box-shadow:0 4px 40px rgba(0,0,0,.08);background:var(--bg);border-radius:24px;margin-top:1rem;margin-bottom:1rem;min-height:calc(100vh - 2rem)}
+  .screen{padding:2rem 2rem 5rem;max-width:720px;box-shadow:0 4px 40px rgba(0,0,0,.08);background:var(--bg);border-radius:24px;margin-top:1rem;margin-bottom:1rem;min-height:calc(100vh - 2rem)}
   .chat-box{max-height:420px}
+  .stats-row .stat-val{font-size:32px}
+  .badge-grid{grid-template-columns:repeat(5,1fr)}
+}
+@media(min-width:1200px){
+  .screen{max-width:800px}
 }
 
 /* LOGROS */
