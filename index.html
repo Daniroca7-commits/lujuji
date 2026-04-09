@@ -765,6 +765,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <button class="ob-back" onclick="show('s_dash')">← Volver</button>
     <div style="font-size:16px;font-weight:700;flex:1;text-align:center">📖 Lectura en voz alta</div>
   </div>
+  <div id="lecturaMotivBanner"></div>
   <div class="qcard">
     <span class="qemoji">📖</span>
     <div class="qtitle">¿Qué vas a leer hoy?</div>
@@ -809,10 +810,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <div class="sc-t">🎁 PREMIOS POR PUNTOS</div>
     <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">El niño canjea puntos por premios. Añade los que quieras.</div>
     <div id="parentPrizeList"></div>
-    <div style="display:flex;gap:6px;margin-top:8px">
-      <input class="api-in" id="newPrizeEmoji" placeholder="🎁" style="width:50px;text-align:center;margin:0"/>
-      <input class="api-in" id="newPrizeName" placeholder="Nombre del premio..." style="flex:1;margin:0"/>
-      <input class="api-in" id="newPrizePts" type="number" placeholder="Puntos" style="width:80px;margin:0"/>
+    <div style="margin-top:8px">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input class="api-in" id="newPrizeEmoji" placeholder="🎁" style="width:50px;text-align:center;margin:0;font-size:18px"/>
+        <input class="api-in" id="newPrizeName" placeholder="Nombre del premio..." style="flex:1;margin:0"/>
+      </div>
+      <input class="api-in" id="newPrizePts" type="number" placeholder="Puntos necesarios (ej: 500, 5000, 20000)" style="width:100%;margin:0"/>
     </div>
     <button class="save-btn" onclick="addPrize()">+ Añadir premio</button>
   </div>
@@ -820,26 +823,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <div class="sc-t">⏱️ REGLAS DE TIEMPO DE PANTALLA</div>
     <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">Cada minuto de lectura/estudio verificado se convierte en tiempo de pantalla.</div>
     <div id="parentTimeRules"></div>
-    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-      <select class="api-in" id="newRuleSource" style="flex:1;min-width:100px;margin:0">
-        <option value="lectura">📖 Lectura</option>
-        <option value="estudio">📚 Estudio</option>
-      </select>
-      <select class="api-in" id="newRuleTarget" style="flex:1;min-width:100px;margin:0">
-        <option value="youtube">▶️ YouTube</option>
-        <option value="videojuegos">🎮 Videojuegos</option>
-        <option value="tablet">📱 Tablet</option>
-        <option value="tv">📺 TV</option>
-      </select>
-    </div>
-    <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
-      <input class="api-in" id="newRuleRatio" type="number" placeholder="1" style="width:50px;margin:0;text-align:center" value="1"/>
-      <span style="font-size:12px;color:var(--muted)">min estudio =</span>
-      <input class="api-in" id="newRuleResult" type="number" placeholder="2" style="width:50px;margin:0;text-align:center" value="2"/>
-      <span style="font-size:12px;color:var(--muted)">min pantalla</span>
-      <span style="font-size:12px;color:var(--muted);margin-left:4px">Máx:</span>
-      <input class="api-in" id="newRuleMax" type="number" placeholder="60" style="width:55px;margin:0;text-align:center" value="60"/>
-      <span style="font-size:12px;color:var(--muted)">min</span>
+    <div style="margin-top:8px">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <select class="api-in" id="newRuleSource" style="flex:1;margin:0">
+          <option value="lectura">📖 Lectura</option>
+          <option value="estudio">📚 Estudio</option>
+        </select>
+        <span style="font-size:16px;color:var(--muted);align-self:center">→</span>
+        <select class="api-in" id="newRuleTarget" style="flex:1;margin:0">
+          <option value="youtube">▶️ YouTube</option>
+          <option value="videojuegos">🎮 Videojuegos</option>
+          <option value="tablet">📱 Tablet</option>
+          <option value="tv">📺 TV</option>
+        </select>
+      </div>
+      <div style="background:#FAFAFA;border:1px solid var(--border);border-radius:var(--r);padding:10px 12px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--black)">Cada</span>
+          <input class="api-in" id="newRuleRatio" type="number" value="1" style="width:45px;margin:0;text-align:center;padding:8px 4px"/>
+          <span style="font-size:12px;color:var(--muted)">min de lectura/estudio</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--black)">=</span>
+          <input class="api-in" id="newRuleResult" type="number" value="2" style="width:45px;margin:0;text-align:center;padding:8px 4px"/>
+          <span style="font-size:12px;color:var(--muted)">min de pantalla</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;font-weight:600;color:var(--black)">Máximo diario:</span>
+          <input class="api-in" id="newRuleMax" type="number" value="60" style="width:55px;margin:0;text-align:center;padding:8px 4px"/>
+          <span style="font-size:12px;color:var(--muted)">min</span>
+        </div>
+      </div>
     </div>
     <button class="save-btn" onclick="addTimeRule()">+ Añadir regla</button>
   </div>
@@ -881,9 +895,9 @@ let apiKey=localStorage.getItem('lujuji_api')||'';
 let profile=JSON.parse(localStorage.getItem('lujuji_profile')||'null');
 let tasks=JSON.parse(localStorage.getItem('lujuji_tasks_'+today())||'[]');
 let exams=JSON.parse(localStorage.getItem('lujuji_exams')||'[]');
-let prizes=JSON.parse(localStorage.getItem('lujuji_prizes')||'[]');
-let timeRules=JSON.parse(localStorage.getItem('lujuji_timerules')||'[]');
-let redeemed=JSON.parse(localStorage.getItem('lujuji_redeemed')||'[]');
+let prizes=(()=>{try{const p=JSON.parse(localStorage.getItem('lujuji_prizes')||'[]');return Array.isArray(p)?p:[];}catch(e){return[];}})();
+let timeRules=(()=>{try{const r=JSON.parse(localStorage.getItem('lujuji_timerules')||'[]');return Array.isArray(r)?r:[];}catch(e){return[];}})();
+let redeemed=(()=>{try{const r=JSON.parse(localStorage.getItem('lujuji_redeemed')||'[]');return Array.isArray(r)?r:[];}catch(e){return[];}})();
 let curSubj=null, curTask=null;
 let hist=[], wS=0, loading=false, vA='', ortoBlocked=false;
 let uploadedPhotos=[], temariText='';
@@ -2380,7 +2394,37 @@ function saveProfileEdit(){
 let lecturaRecognition=null;let lecturaTranscriptText='';
 let lecturaStartTime=null;let lecturaTimerInterval=null;let lecturaWordCount=0;
 
-function startLectura(){show('s_lectura');document.getElementById('lecturaTitle').value='';document.getElementById('lecturaPag').value='';document.getElementById('lecturaRecCard').style.display='none';document.getElementById('lecturaQCard').style.display='none';document.getElementById('lecturaStartBtn').style.display='block';}
+function startLectura(){show('s_lectura');document.getElementById('lecturaTitle').value='';document.getElementById('lecturaPag').value='';document.getElementById('lecturaRecCard').style.display='none';document.getElementById('lecturaQCard').style.display='none';document.getElementById('lecturaStartBtn').style.display='block';renderLecturaMotiv();}
+
+function renderLecturaMotiv(){
+  const banner=document.getElementById('lecturaMotivBanner');if(!banner)return;
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const lectRules=timeRules.filter(r=>r.source==='lectura');
+  if(!lectRules.length){
+    banner.innerHTML=`<div style="background:var(--purple-l);border:1.5px solid var(--purple-b);border-radius:var(--r);padding:12px 15px;margin-bottom:.75rem">
+      <div style="font-size:13px;font-weight:700;color:var(--purple)">📖 Lee mínimo 10 minutos en voz alta</div>
+      <div style="font-size:12px;color:#4C1D95;margin-top:3px">Ganarás 15 puntos + cuenta para tu racha</div>
+      ${readMins>0?`<div style="font-size:12px;color:var(--purple);font-weight:600;margin-top:6px">Hoy ya llevas ${readMins} min leídos ✓</div>`:''}
+    </div>`;
+    return;
+  }
+  let html='';
+  lectRules.forEach(r=>{
+    const icons={youtube:'▶️ YouTube',videojuegos:'🎮 Videojuegos',tablet:'📱 Tablet',tv:'📺 TV'};
+    const earned=Math.min(Math.floor(readMins/r.ratio)*r.result,r.max);
+    const maxSourceForMax=Math.ceil(r.max/r.result)*r.ratio;
+    const remaining=Math.max(0,maxSourceForMax-readMins);
+    const tenMinEarns=Math.min(Math.floor(10/r.ratio)*r.result,r.max);
+    html+=`<div style="background:var(--purple-l);border:1.5px solid var(--purple-b);border-radius:var(--r);padding:12px 15px;margin-bottom:.75rem">
+      <div style="font-size:14px;font-weight:700;color:var(--purple)">📖 Si lees 10 min → ${tenMinEarns} min ${icons[r.target]||r.target}</div>
+      <div style="font-size:12px;color:#4C1D95;margin-top:3px">${readMins>0?`Hoy llevas ${readMins} min leídos = ${earned} min ${icons[r.target]||r.target} ganados`:'Lee en voz alta para ganar tiempo de pantalla'}</div>
+      ${remaining>0?`<div style="font-size:12px;color:var(--purple);font-weight:600;margin-top:4px">Lee ${remaining} min más para llegar al máximo (${r.max} min)</div>`:`<div style="font-size:12px;color:var(--green);font-weight:600;margin-top:4px">¡Máximo de ${r.max} min alcanzado hoy! 🎉</div>`}
+      <div style="height:5px;background:var(--purple-b);border-radius:3px;margin-top:6px;overflow:hidden"><div style="height:100%;width:${Math.round((earned/r.max)*100)}%;background:var(--purple);border-radius:3px"></div></div>
+    </div>`;
+  });
+  html+=`<div style="font-size:11px;color:var(--muted);margin-bottom:.75rem;text-align:center">Mínimo 10 minutos leyendo en voz alta para que cuente</div>`;
+  banner.innerHTML=html;
+}
 
 function startLecturaRec(){
   const title=document.getElementById('lecturaTitle').value.trim();
