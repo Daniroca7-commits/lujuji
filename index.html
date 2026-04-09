@@ -396,6 +396,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
   .screen{padding:2rem 2rem 5rem;box-shadow:0 4px 40px rgba(0,0,0,.08);background:var(--bg);border-radius:24px;margin-top:1rem;margin-bottom:1rem;min-height:calc(100vh - 2rem)}
   .chat-box{max-height:420px}
 }
+
+/* LOGROS */
+.logro-section{margin-bottom:1.25rem}
+.logro-title{font-size:11px;font-weight:700;color:#BBB;letter-spacing:.07em;margin-bottom:9px}
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.badge-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 8px;text-align:center;transition:all .2s}
+.badge-card.earned{border-color:var(--amber-b);background:var(--amber-l)}
+.badge-card.locked{opacity:.4;filter:grayscale(1)}
+.badge-icon{font-size:32px;display:block;margin-bottom:6px}
+.badge-name{font-size:11px;font-weight:700;color:var(--black)}
+.badge-desc{font-size:10px;color:var(--muted);margin-top:2px}
+.prize-banner{border-radius:var(--r);padding:12px 15px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FDE68A}
+.prize-icon{font-size:28px;flex-shrink:0}
+.prize-text{flex:1}
+.prize-name{font-size:13px;font-weight:700;color:#92400E}
+.prize-sub{font-size:11px;color:#B45309;margin-top:2px}
+.prize-prog{height:8px;background:#FDE68A;border-radius:4px;margin-top:6px;overflow:hidden}
+.prize-prog-fill{height:100%;background:var(--amber);border-radius:4px;transition:width .4s}
+.streak-milestone{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.streak-milestone.reached{border-color:var(--green-b);background:var(--green-l)}
+.sm-icon{font-size:28px;flex-shrink:0}
+.sm-info{flex:1}
+.sm-name{font-size:13px;font-weight:700}
+.sm-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.sm-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:9px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -489,11 +514,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <span class="timer-txt" id="timerTxt">0:00 / 20:00</span>
   </div>
   <div id="examBanner"></div>
+  <div id="prizeBanner"></div>
   <div class="section-title"><span>📋 TAREAS DE HOY</span><button class="add-btn-s" onclick="openModal('modalTask')">+ Añadir</button></div>
   <div id="taskList"></div>
   <div class="section-title" style="margin-top:.25rem"><span>📅 MIS EXÁMENES</span><button class="add-btn-s" onclick="openModal('modalExam')">+ Añadir</button></div>
   <div id="examList" style="margin-bottom:1rem"></div>
   <button class="main-action" onclick="startStudy()">💬 Empezar a estudiar</button>
+  <button class="main-action" onclick="startLectura()" style="background:var(--purple)">📖 Lectura en voz alta</button>
+  <div style="display:flex;gap:8px;margin-bottom:1rem">
+    <button class="main-action" onclick="showPremios()" style="flex:1;margin-bottom:0;background:var(--amber)">🎁 Premios</button>
+    <button class="main-action" onclick="showLogros()" style="flex:1;margin-bottom:0;background:var(--white);color:var(--black);border:1.5px solid var(--border)">🏆 Logros</button>
+  </div>
+</div>
+
+<!-- PREMIOS -->
+<div class="screen" id="s_premios">
+  <div class="ob-top">
+    <button class="ob-back" onclick="show('s_dash')">← Volver</button>
+    <div style="font-size:16px;font-weight:700;flex:1;text-align:center">🎁 Mis Premios</div>
+  </div>
+  <div style="text-align:center;margin-bottom:1rem">
+    <div style="font-size:36px;font-weight:800;color:var(--blue)" id="premiosPts">0</div>
+    <div style="font-size:12px;color:var(--muted)">puntos disponibles</div>
+  </div>
+  <div class="section-title">🎁 PREMIOS POR PUNTOS</div>
+  <div id="premiosList"></div>
+  <div class="section-title" style="margin-top:1rem">⏱️ TIEMPO DE PANTALLA GANADO HOY</div>
+  <div id="timeEarnedSection"></div>
+  <button class="main-action" style="background:var(--faint);color:var(--black);border:1.5px solid var(--border);margin-top:.75rem" onclick="askMorePoints()">💡 ¿Cómo consigo más puntos?</button>
+</div>
+
+<!-- LOGROS -->
+<div class="screen" id="s_logros">
+  <div class="ob-top">
+    <button class="ob-back" onclick="show('s_dash')">← Volver</button>
+    <div style="font-size:16px;font-weight:700;flex:1;text-align:center">🏆 Mis Logros</div>
+  </div>
+  <div id="logrosContent"></div>
 </div>
 
 <!-- AGENDA SETUP -->
@@ -749,10 +806,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <button class="save-btn" onclick="savePin()" style="background:#555;margin-top:6px">Cambiar PIN</button>
   </div>
   <div class="set-card">
-    <div class="sc-t">PREMIOS</div>
-    <input class="api-in" id="prize7in" placeholder="Premio a los 7 días seguidos..." style="margin-top:0;margin-bottom:7px"/>
-    <input class="api-in" id="prize30in" placeholder="Premio a los 30 días seguidos..." style="margin-top:0"/>
-    <button class="save-btn" onclick="savePrizes()">Guardar premios</button>
+    <div class="sc-t">🎁 PREMIOS POR PUNTOS</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">El niño canjea puntos por premios. Añade los que quieras.</div>
+    <div id="parentPrizeList"></div>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <input class="api-in" id="newPrizeEmoji" placeholder="🎁" style="width:50px;text-align:center;margin:0"/>
+      <input class="api-in" id="newPrizeName" placeholder="Nombre del premio..." style="flex:1;margin:0"/>
+      <input class="api-in" id="newPrizePts" type="number" placeholder="Puntos" style="width:80px;margin:0"/>
+    </div>
+    <button class="save-btn" onclick="addPrize()">+ Añadir premio</button>
+  </div>
+  <div class="set-card">
+    <div class="sc-t">⏱️ REGLAS DE TIEMPO DE PANTALLA</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">Cada minuto de lectura/estudio verificado se convierte en tiempo de pantalla.</div>
+    <div id="parentTimeRules"></div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+      <select class="api-in" id="newRuleSource" style="flex:1;min-width:100px;margin:0">
+        <option value="lectura">📖 Lectura</option>
+        <option value="estudio">📚 Estudio</option>
+      </select>
+      <select class="api-in" id="newRuleTarget" style="flex:1;min-width:100px;margin:0">
+        <option value="youtube">▶️ YouTube</option>
+        <option value="videojuegos">🎮 Videojuegos</option>
+        <option value="tablet">📱 Tablet</option>
+        <option value="tv">📺 TV</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:6px;align-items:center">
+      <input class="api-in" id="newRuleRatio" type="number" placeholder="1" style="width:50px;margin:0;text-align:center" value="1"/>
+      <span style="font-size:12px;color:var(--muted)">min estudio =</span>
+      <input class="api-in" id="newRuleResult" type="number" placeholder="2" style="width:50px;margin:0;text-align:center" value="2"/>
+      <span style="font-size:12px;color:var(--muted)">min pantalla</span>
+      <span style="font-size:12px;color:var(--muted);margin-left:4px">Máx:</span>
+      <input class="api-in" id="newRuleMax" type="number" placeholder="60" style="width:55px;margin:0;text-align:center" value="60"/>
+      <span style="font-size:12px;color:var(--muted)">min</span>
+    </div>
+    <button class="save-btn" onclick="addTimeRule()">+ Añadir regla</button>
+  </div>
+  <div class="set-card">
+    <div class="sc-t">📊 RESUMEN HOY</div>
+    <div id="parentSummary"></div>
   </div>
 </div>
 
@@ -788,7 +881,9 @@ let apiKey=localStorage.getItem('lujuji_api')||'';
 let profile=JSON.parse(localStorage.getItem('lujuji_profile')||'null');
 let tasks=JSON.parse(localStorage.getItem('lujuji_tasks_'+today())||'[]');
 let exams=JSON.parse(localStorage.getItem('lujuji_exams')||'[]');
-let prizes=JSON.parse(localStorage.getItem('lujuji_prizes')||'{"d7":"","d30":""}');
+let prizes=JSON.parse(localStorage.getItem('lujuji_prizes')||'[]');
+let timeRules=JSON.parse(localStorage.getItem('lujuji_timerules')||'[]');
+let redeemed=JSON.parse(localStorage.getItem('lujuji_redeemed')||'[]');
 let curSubj=null, curTask=null;
 let hist=[], wS=0, loading=false, vA='', ortoBlocked=false;
 let uploadedPhotos=[], temariText='';
@@ -808,6 +903,9 @@ function today(){return new Date().toISOString().split('T')[0];}
 function sv(){localStorage.setItem('lujuji_profile',JSON.stringify(profile));}
 function svTasks(){localStorage.setItem('lujuji_tasks_'+today(),JSON.stringify(tasks));}
 function svExams(){localStorage.setItem('lujuji_exams',JSON.stringify(exams));}
+function svPrizes(){localStorage.setItem('lujuji_prizes',JSON.stringify(prizes));}
+function svTimeRules(){localStorage.setItem('lujuji_timerules',JSON.stringify(timeRules));}
+function svRedeemed(){localStorage.setItem('lujuji_redeemed',JSON.stringify(redeemed));}
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 
 // ════════════════════════════════════════════
@@ -842,8 +940,9 @@ function checkPin(){
     renderProfileEdit();
     document.getElementById('apiIn').value=apiKey?'••••••••••••':'';
     document.getElementById('pinDisplay').textContent=currentPin;
-    document.getElementById('prize7in').value=prizes.d7||'';
-    document.getElementById('prize30in').value=prizes.d30||'';
+    renderParentPrizes();
+    renderParentTimeRules();
+    renderParentSummary();
     show('s_parents');
   } else {
     document.getElementById('pinInput').value='';
@@ -959,7 +1058,7 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();
+  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();
   // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   updateTimerUI();
@@ -1006,10 +1105,124 @@ function checkStreak(){
 
 function checkBadges(){
   if(!profile.badges)profile.badges=[];
-  const nb=(id)=>{if(!profile.badges.includes(id)){profile.badges.push(id);document.getElementById('dBadges').textContent=profile.badges.length;toast('🏅 ¡Nueva insignia desbloqueada!');}};
-  if(profile.streak>=1)nb('day1');if(profile.streak>=7)nb('week1');if(profile.streak>=30)nb('month1');
-  if(profile.pts>=100)nb('pts100');if(profile.pts>=500)nb('pts500');
+  const nb=(id)=>{if(!profile.badges.includes(id)){profile.badges.push(id);document.getElementById('dBadges').textContent=profile.badges.length;toast('🏅 ¡Nueva insignia desbloqueada!');confetti();}};
+  // Rachas
+  if(profile.streak>=1)nb('streak1');
+  if(profile.streak>=3)nb('streak3');
+  if(profile.streak>=7)nb('streak7');
+  if(profile.streak>=14)nb('streak14');
+  if(profile.streak>=30)nb('streak30');
+  if(profile.streak>=60)nb('streak60');
+  if(profile.streak>=100)nb('streak100');
+  // Puntos
+  if(profile.pts>=50)nb('pts50');
+  if(profile.pts>=100)nb('pts100');
+  if(profile.pts>=250)nb('pts250');
+  if(profile.pts>=500)nb('pts500');
+  if(profile.pts>=1000)nb('pts1000');
+  if(profile.pts>=2500)nb('pts2500');
+  // Actividad
+  if(profile.gamesPlayed>=1)nb('game1');
+  if(profile.gamesPlayed>=10)nb('game10');
+  if(profile.gamesPlayed>=50)nb('game50');
+  if(profile.simsPlayed>=1)nb('sim1');
+  if(profile.simsPlayed>=10)nb('sim10');
+  if(profile.dictados>=1)nb('dict1');
+  if(profile.dictados>=10)nb('dict10');
+  if(profile.lecturas>=1)nb('lect1');
+  if(profile.lecturas>=10)nb('lect10');
+  if(profile.perfectGames>=1)nb('perfect1');
+  if(profile.perfectGames>=5)nb('perfect5');
+  sv();
 }
+
+const ALL_BADGES=[
+  // Rachas
+  {id:'streak1',icon:'🔥',name:'Primera llama',desc:'1 día seguido',cat:'racha'},
+  {id:'streak3',icon:'🔥',name:'En racha',desc:'3 días seguidos',cat:'racha'},
+  {id:'streak7',icon:'🔥',name:'Una semana',desc:'7 días seguidos',cat:'racha',prize:true},
+  {id:'streak14',icon:'🔥',name:'Dos semanas',desc:'14 días seguidos',cat:'racha'},
+  {id:'streak30',icon:'🔥',name:'Un mes entero',desc:'30 días seguidos',cat:'racha',prize:true},
+  {id:'streak60',icon:'💎',name:'Imparable',desc:'60 días seguidos',cat:'racha'},
+  {id:'streak100',icon:'👑',name:'Leyenda',desc:'100 días seguidos',cat:'racha'},
+  // Puntos
+  {id:'pts50',icon:'⭐',name:'Primeras estrellas',desc:'50 puntos',cat:'puntos'},
+  {id:'pts100',icon:'⭐',name:'Centenario',desc:'100 puntos',cat:'puntos'},
+  {id:'pts250',icon:'🌟',name:'Estrella',desc:'250 puntos',cat:'puntos'},
+  {id:'pts500',icon:'🌟',name:'Superestrella',desc:'500 puntos',cat:'puntos'},
+  {id:'pts1000',icon:'💫',name:'Mil puntos',desc:'1.000 puntos',cat:'puntos'},
+  {id:'pts2500',icon:'🏆',name:'Campeón/a',desc:'2.500 puntos',cat:'puntos'},
+  // Actividad
+  {id:'game1',icon:'🎮',name:'Primer juego',desc:'Jugar 1 partida',cat:'actividad'},
+  {id:'game10',icon:'🎮',name:'Jugón/a',desc:'Jugar 10 partidas',cat:'actividad'},
+  {id:'game50',icon:'🎮',name:'Pro gamer',desc:'Jugar 50 partidas',cat:'actividad'},
+  {id:'sim1',icon:'📝',name:'Primer simulacro',desc:'Hacer 1 simulacro',cat:'actividad'},
+  {id:'sim10',icon:'📝',name:'Preparado/a',desc:'Hacer 10 simulacros',cat:'actividad'},
+  {id:'dict1',icon:'🎙️',name:'Primer dictado',desc:'Hacer 1 dictado',cat:'actividad'},
+  {id:'dict10',icon:'🎙️',name:'Dictador/a',desc:'Hacer 10 dictados',cat:'actividad'},
+  {id:'lect1',icon:'📖',name:'Primera lectura',desc:'Leer 1 vez en voz alta',cat:'actividad'},
+  {id:'lect10',icon:'📖',name:'Ratón de biblioteca',desc:'Leer 10 veces',cat:'actividad'},
+  {id:'perfect1',icon:'💯',name:'Perfecto',desc:'1 juego sin fallos',cat:'actividad'},
+  {id:'perfect5',icon:'💯',name:'Máquina',desc:'5 juegos sin fallos',cat:'actividad'},
+];
+
+function showLogros(){
+  const cont=document.getElementById('logrosContent');
+  const badges=profile.badges||[];
+  const streak=profile.streak||0;
+  const pts=profile.pts||0;
+
+  // Racha actual
+  let html=`<div class="logro-section">
+    <div class="logro-title">🔥 RACHA ACTUAL</div>
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem;text-align:center;margin-bottom:8px">
+      <div style="font-size:48px;font-weight:800;color:var(--orange)">${streak}🔥</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">días seguidos estudiando</div>
+    </div>`;
+
+  // Próximo hito de racha
+  const streakMilestones=[3,7,14,30,60,100];
+  const nextStreak=streakMilestones.find(m=>m>streak);
+  if(nextStreak){
+    const pct=Math.round((streak/nextStreak)*100);
+    html+=`<div style="background:var(--amber-l);border:1px solid var(--amber-b);border-radius:var(--r);padding:10px 14px;font-size:12px;color:#92400E;font-weight:600">
+      <div>Siguiente: ${nextStreak} días (faltan ${nextStreak-streak})</div>
+      <div class="prize-prog" style="margin-top:6px"><div class="prize-prog-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Premios
+  if(prizes.length>0){
+    const available=pts-redeemed.reduce((s,r)=>s+r.pts,0);
+    html+=`<div class="logro-section"><div class="logro-title">🎁 PREMIOS</div>`;
+    prizes.forEach(p=>{
+      const pct=Math.min(100,Math.round((available/p.pts)*100));
+      const canRedeem=available>=p.pts;
+      html+=`<div class="streak-milestone${canRedeem?' reached':''}"><span class="sm-icon">${p.emoji}</span><div class="sm-info"><div class="sm-name">${p.name}</div><div class="sm-desc">${p.pts.toLocaleString()} puntos</div></div><span class="sm-status" style="background:${canRedeem?'var(--green-l)':'var(--faint)'};color:${canRedeem?'var(--green)':'var(--muted)'}">${canRedeem?'✓ Disponible':Math.max(0,p.pts-available).toLocaleString()+' pts'}</span></div>`;
+    });
+    html+=`</div>`;
+  }
+
+  // Insignias por categoría
+  const cats=[{id:'racha',label:'🔥 RACHAS'},{id:'puntos',label:'⭐ PUNTOS'},{id:'actividad',label:'🎮 ACTIVIDAD'}];
+  cats.forEach(cat=>{
+    const catBadges=ALL_BADGES.filter(b=>b.cat===cat.id);
+    html+=`<div class="logro-section"><div class="logro-title">${cat.label}</div><div class="badge-grid">`;
+    catBadges.forEach(b=>{
+      const earned=badges.includes(b.id);
+      html+=`<div class="badge-card ${earned?'earned':'locked'}"><span class="badge-icon">${earned?b.icon:'🔒'}</span><div class="badge-name">${earned?b.name:'???'}</div><div class="badge-desc">${b.desc}</div></div>`;
+    });
+    html+=`</div></div>`;
+  });
+
+  // Resumen
+  html+=`<div style="text-align:center;padding:1rem 0;font-size:13px;color:var(--muted)">${badges.length}/${ALL_BADGES.length} insignias desbloqueadas</div>`;
+
+  cont.innerHTML=html;
+  show('s_logros');
+}
+
 
 // ════════════════════════════════════════════
 // TASK TIMER (per tarea)
@@ -1654,7 +1867,10 @@ function gSummary(){
   const lvl=pct>=90?90:pct>=70?70:pct>=50?50:0;
   document.getElementById('gSI').textContent=icons[lvl];document.getElementById('gST').textContent=msgs[lvl];
   document.getElementById('gSC').textContent=gScore+'/'+gPool.length;document.getElementById('gSP').textContent=pct+'%';document.getElementById('gSS').textContent=gMaxS+'🔥';
-  // Si 100% -> desbloquear tarea
+  // Tracking
+  profile.gamesPlayed=(profile.gamesPlayed||0)+1;
+  if(pct===100)profile.perfectGames=(profile.perfectGames||0)+1;
+  checkBadges();sv();
   if(pct===100&&curTask){document.getElementById('tbDoneBtn').disabled=false;document.getElementById('taskTimeMini').textContent='✓ 100%!';document.getElementById('taskTimeMini').style.color='var(--green)';}
 }
 
@@ -1778,6 +1994,7 @@ function sSimResults(){
   const msgs={10:'¡Increíble! 🏆',9:"¡Excelente! 🌟",7:'¡Muy bien! 🌿',6:'¡Bien! 💪',5:'Aprobado 📚',4:'¡Sigue practicando! 💪'};
   document.getElementById('sSI').textContent=nota>=7?'🏆':nota>=5?'🌟':'💪';document.getElementById('ssST').textContent=msgs[nota]||msgs[5];
   document.getElementById('sSC').textContent=sScore+'/'+total;document.getElementById('sSN').textContent=nota+'/10';document.getElementById('sSD').textContent=sDev+'✓';
+  profile.simsPlayed=(profile.simsPlayed||0)+1;checkBadges();sv();
   if(pct===100&&curTask){document.getElementById('tbDoneBtn').disabled=false;document.getElementById('taskTimeMini').textContent='✓ 100%!';document.getElementById('taskTimeMini').style.color='var(--green)';}
 }
 
@@ -1829,6 +2046,7 @@ function checkDictado(){
   const dCorr=lang==='en'?'correct':lang==='ca'?'correctes':'correctas';
   result.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:.75rem;color:${pct>=80?'#166534':pct>=50?'#92400E':'#991B1B'}">${pct>=80?dMsg80:pct>=50?dMsg50:dMsg0} ${correct}/${orig.length} ${dCorr} (${pct}%)</div>${html}`;
   if(pct>=80)flashPts(15);else if(pct>=50)flashPts(5);
+  profile.dictados=(profile.dictados||0)+1;checkBadges();sv();
   // Penalización si hay errores
   if(wrongWords.length>0)startDictPenalty(wrongWords);
   recordActivity();
@@ -1936,7 +2154,206 @@ function saveApi(){
   apiKey=val;localStorage.setItem('lujuji_api',apiKey);toast('✓ API key guardada!');
 }
 function savePin(){const v=document.getElementById('newPinIn').value.trim();if(v.length!==4||isNaN(v)){toast('El PIN debe tener 4 dígitos');return;}localStorage.setItem('lujuji_pin',v);currentPin=v;document.getElementById('pinDisplay').textContent=v;toast('✓ PIN actualizado');}
-function savePrizes(){prizes.d7=document.getElementById('prize7in').value.trim();prizes.d30=document.getElementById('prize30in').value.trim();localStorage.setItem('lujuji_prizes',JSON.stringify(prizes));toast('✓ Premios guardados');}
+
+// ════════════════════════════════════════════
+// PREMIOS — ZONA PADRES
+// ════════════════════════════════════════════
+function addPrize(){
+  const emoji=document.getElementById('newPrizeEmoji').value.trim()||'🎁';
+  const name=document.getElementById('newPrizeName').value.trim();
+  const pts=parseInt(document.getElementById('newPrizePts').value)||0;
+  if(!name||!pts){toast('Escribe nombre y puntos');return;}
+  prizes.push({id:Date.now(),emoji,name,pts});
+  svPrizes();renderParentPrizes();
+  document.getElementById('newPrizeName').value='';document.getElementById('newPrizePts').value='';document.getElementById('newPrizeEmoji').value='';
+  toast('✓ Premio añadido');
+}
+
+function removePrize(id){
+  prizes=prizes.filter(p=>p.id!==id);svPrizes();renderParentPrizes();toast('Premio eliminado');
+}
+
+function renderParentPrizes(){
+  const el=document.getElementById('parentPrizeList');if(!el)return;
+  if(!prizes.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin premios configurados. ¡Añade el primero!</div>';return;}
+  el.innerHTML=prizes.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#FAFAFA;border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">
+    <span style="font-size:18px">${p.emoji}</span>
+    <span style="flex:1;font-size:13px;font-weight:600">${p.name}</span>
+    <span style="font-size:12px;color:var(--blue);font-weight:700">${p.pts.toLocaleString()} pts</span>
+    <button onclick="removePrize(${p.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 6px">✕</button>
+  </div>`).join('');
+}
+
+function addTimeRule(){
+  const source=document.getElementById('newRuleSource').value;
+  const target=document.getElementById('newRuleTarget').value;
+  const ratio=parseInt(document.getElementById('newRuleRatio').value)||1;
+  const result=parseInt(document.getElementById('newRuleResult').value)||2;
+  const max=parseInt(document.getElementById('newRuleMax').value)||60;
+  timeRules.push({id:Date.now(),source,target,ratio,result,max});
+  svTimeRules();renderParentTimeRules();toast('✓ Regla añadida');
+}
+
+function removeTimeRule(id){
+  timeRules=timeRules.filter(r=>r.id!==id);svTimeRules();renderParentTimeRules();toast('Regla eliminada');
+}
+
+function renderParentTimeRules(){
+  const el=document.getElementById('parentTimeRules');if(!el)return;
+  const icons={lectura:'📖',estudio:'📚',youtube:'▶️',videojuegos:'🎮',tablet:'📱',tv:'📺'};
+  if(!timeRules.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin reglas de tiempo. ¡Añade una!</div>';return;}
+  el.innerHTML=timeRules.map(r=>`<div style="display:flex;align-items:center;gap:6px;padding:8px 10px;background:#FAFAFA;border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;flex-wrap:wrap">
+    <span style="font-size:12px;font-weight:600">${icons[r.source]||''} ${r.ratio} min ${r.source}</span>
+    <span style="font-size:12px;color:var(--muted)">=</span>
+    <span style="font-size:12px;font-weight:600;color:var(--blue)">${icons[r.target]||''} ${r.result} min ${r.target}</span>
+    <span style="font-size:11px;color:var(--muted);margin-left:auto">máx ${r.max} min</span>
+    <button onclick="removeTimeRule(${r.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:2px 6px">✕</button>
+  </div>`).join('');
+}
+
+function renderParentSummary(){
+  const el=document.getElementById('parentSummary');if(!el)return;
+  const pts=profile?.pts||0;
+  const totalRedeemed=redeemed.reduce((s,r)=>s+r.pts,0);
+  el.innerHTML=`<div style="display:flex;gap:8px;margin-top:8px">
+    <div style="flex:1;background:#FAFAFA;border-radius:var(--r);padding:10px;text-align:center">
+      <div style="font-size:20px;font-weight:700;color:var(--blue)">${pts.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted)">puntos totales</div>
+    </div>
+    <div style="flex:1;background:#FAFAFA;border-radius:var(--r);padding:10px;text-align:center">
+      <div style="font-size:20px;font-weight:700;color:var(--red)">${totalRedeemed.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted)">canjeados</div>
+    </div>
+    <div style="flex:1;background:#FAFAFA;border-radius:var(--r);padding:10px;text-align:center">
+      <div style="font-size:20px;font-weight:700;color:var(--green)">${(pts-totalRedeemed).toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted)">disponibles</div>
+    </div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════
+// PREMIOS — VISTA NIÑO
+// ════════════════════════════════════════════
+function showPremios(){
+  const pts=profile?.pts||0;
+  const totalRedeemed=redeemed.reduce((s,r)=>s+r.pts,0);
+  const available=pts-totalRedeemed;
+  document.getElementById('premiosPts').textContent=available.toLocaleString();
+
+  // Render prizes list
+  const list=document.getElementById('premiosList');
+  if(!prizes.length){
+    list.innerHTML='<div style="background:var(--faint);border-radius:var(--r);padding:1.25rem;text-align:center;border:2px dashed var(--border)"><div style="font-size:36px;margin-bottom:6px">🎁</div><div style="font-size:14px;font-weight:700;margin-bottom:4px">Sin premios todavía</div><div style="font-size:13px;color:var(--muted)">Pide a tus padres que configuren premios en la zona de padres</div></div>';
+  } else {
+    list.innerHTML=prizes.map(p=>{
+      const pct=Math.min(100,Math.round((available/p.pts)*100));
+      const canRedeem=available>=p.pts;
+      const remaining=Math.max(0,p.pts-available);
+      return `<div style="background:var(--white);border:1.5px solid ${canRedeem?'var(--green-b)':'var(--border)'};border-radius:var(--rl);padding:1rem 1.15rem;margin-bottom:8px${canRedeem?';background:var(--green-l)':''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <span style="font-size:24px">${p.emoji}</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700">${p.name}</div>
+            <div style="font-size:12px;color:var(--muted)">${p.pts.toLocaleString()} puntos</div>
+          </div>
+          ${canRedeem?`<button onclick="redeemPrize(${p.id})" style="padding:6px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer">CANJEAR</button>`:`<span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:9px;background:var(--amber-l);color:var(--amber)">${remaining.toLocaleString()} pts</span>`}
+        </div>
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${canRedeem?'var(--green)':'var(--blue)'};border-radius:3px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right">${available.toLocaleString()} / ${p.pts.toLocaleString()}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Render time earned
+  renderTimeEarned();
+
+  show('s_premios');
+}
+
+function redeemPrize(id){
+  const prize=prizes.find(p=>p.id===id);if(!prize)return;
+  const available=(profile?.pts||0)-redeemed.reduce((s,r)=>s+r.pts,0);
+  if(available<prize.pts){toast('No tienes puntos suficientes');return;}
+  if(!confirm(`¿Canjear "${prize.name}" por ${prize.pts.toLocaleString()} puntos?`))return;
+  redeemed.push({id:Date.now(),prizeId:id,name:prize.name,pts:prize.pts,date:today()});
+  svRedeemed();
+  toast(`🎉 ¡Has canjeado "${prize.name}"!`);confetti();
+  showPremios();
+}
+
+function renderTimeEarned(){
+  const el=document.getElementById('timeEarnedSection');if(!el)return;
+  if(!timeRules.length){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Tus padres no han configurado reglas de tiempo todavía.</div>';return;}
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const studyMins=Math.floor(timerSecs/60);
+  const icons={youtube:'▶️',videojuegos:'🎮',tablet:'📱',tv:'📺'};
+  el.innerHTML=timeRules.map(r=>{
+    const sourceMins=r.source==='lectura'?readMins:studyMins;
+    const earned=Math.floor(sourceMins/r.ratio)*r.result;
+    const capped=Math.min(earned,r.max);
+    const pct=Math.round((capped/r.max)*100);
+    const sourceNeededForMax=Math.ceil(r.max/r.result)*r.ratio;
+    const remaining=Math.max(0,sourceNeededForMax-sourceMins);
+    return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:18px">${icons[r.target]||'📱'}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${r.target.charAt(0).toUpperCase()+r.target.slice(1)}</div>
+          <div style="font-size:11px;color:var(--muted)">${sourceMins} min ${r.source} = ${capped} min ganados</div>
+        </div>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${pct>=100?'var(--green)':'var(--blue)'};border-radius:4px"></div>
+      </div>
+      <div style="font-size:11px;margin-top:4px;display:flex;justify-content:space-between">
+        <span style="color:${remaining>0?'var(--blue)':'var(--green)'}; font-weight:600">${remaining>0?remaining+' min '+r.source+' para el máximo':'¡Máximo alcanzado!'}</span>
+        <span style="color:var(--muted)">${capped} / ${r.max} min</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function askMorePoints(){
+  show('s_dash');
+  setTimeout(()=>{
+    const pending=tasks.find(t=>!t.done&&t.type==='agent');
+    if(pending){const subj=SUBJS.find(s=>pending.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)))||SUBJS[0];openStudy(subj,pending);}
+    else{showSubjSelector();}
+    setTimeout(()=>{
+      document.getElementById('chatIn').value='¿Qué puedo hacer para conseguir más puntos rápido?';
+      sendMsg();
+    },500);
+  },300);
+}
+
+function renderPrizeBanner(){
+  const banner=document.getElementById('prizeBanner');if(!banner)return;
+  if(!prizes.length){banner.innerHTML='';return;}
+  const available=(profile?.pts||0)-redeemed.reduce((s,r)=>s+r.pts,0);
+  const closest=prizes.filter(p=>p.pts>available).sort((a,b)=>a.pts-b.pts)[0];
+  const canRedeem=prizes.filter(p=>p.pts<=available);
+  if(canRedeem.length>0){
+    banner.innerHTML=`<div style="border-radius:var(--r);padding:12px 15px;margin-bottom:1rem;display:flex;align-items:center;gap:10px;background:var(--green-l);border:1.5px solid var(--green-b);cursor:pointer" onclick="showPremios()">
+      <span style="font-size:24px">🎁</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#166534">¡Puedes canjear ${canRedeem.length} premio${canRedeem.length>1?'s':''}!</div><div style="font-size:11px;color:#166534;margin-top:2px">Tienes ${available.toLocaleString()} puntos disponibles</div></div>
+      <span style="font-size:12px;color:#166534;font-weight:600">Ver →</span>
+    </div>`;
+  } else if(closest){
+    const remaining=closest.pts-available;
+    const pct=Math.round((available/closest.pts)*100);
+    banner.innerHTML=`<div style="border-radius:var(--r);padding:12px 15px;margin-bottom:1rem;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FDE68A;cursor:pointer" onclick="showPremios()">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <span style="font-size:20px">${closest.emoji}</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#92400E">${closest.name}</div><div style="font-size:11px;color:#B45309;margin-top:1px">Faltan ${remaining.toLocaleString()} puntos</div></div>
+      </div>
+      <div style="height:6px;background:#FDE68A;border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--amber);border-radius:3px"></div></div>
+    </div>`;
+  } else {
+    banner.innerHTML='';
+  }
+}
 
 function renderProfileEdit(){
   const rows=document.getElementById('profileEditRows');
