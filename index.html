@@ -2507,9 +2507,10 @@ function getMiniHitoHTML(){
   // Priority 1: Can redeem a prize
   const canRedeem=prizes.filter(p=>p.pts<=available);
   if(canRedeem.length>0){
-    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--green-l);border:1px solid var(--green-b);border-radius:10px;font-size:11px;cursor:pointer" onclick="showPremios()">
-      <span style="font-size:14px">🎁</span>
-      <span style="flex:1;font-weight:600;color:#166534">¡Puedes canjear ${canRedeem.length} premio${canRedeem.length>1?'s':''}!</span>
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#DCFCE7;border:2px solid #86EFAC;border-radius:12px;font-size:12px;cursor:pointer" onclick="showPremios()">
+      <span style="font-size:20px">🎁</span>
+      <span style="flex:1;font-weight:700;color:#166534">¡Puedes canjear ${canRedeem.length} premio${canRedeem.length>1?'s':''}!</span>
+      <span style="font-size:11px;font-weight:700;color:#166534;background:#BBF7D0;padding:3px 8px;border-radius:6px">Ver →</span>
     </div>`;
   }
   
@@ -2518,10 +2519,13 @@ function getMiniHitoHTML(){
   if(closestPrize){
     const remaining=closestPrize.pts-available;
     const pct=Math.round((available/closestPrize.pts)*100);
-    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--faint);border:1px solid var(--border);border-radius:10px;font-size:11px;cursor:pointer" onclick="showPremios()">
-      <span style="font-size:14px">${closestPrize.emoji}</span>
-      <span style="flex:1;font-weight:600;color:var(--black)">${closestPrize.name} — faltan ${remaining.toLocaleString()} pts</span>
-      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${pct}%;background:var(--amber);border-radius:2px"></div></div>
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FEF3C7;border:2px solid #FDE68A;border-radius:12px;font-size:12px;cursor:pointer" onclick="showPremios()">
+      <span style="font-size:20px">${closestPrize.emoji}</span>
+      <div style="flex:1">
+        <div style="font-weight:700;color:#92400E">${closestPrize.name}</div>
+        <div style="font-size:11px;color:#B45309;margin-top:2px">Faltan ${remaining.toLocaleString()} pts</div>
+        <div style="height:5px;background:#FDE68A;border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:#D97706;border-radius:3px"></div></div>
+      </div>
     </div>`;
   }
   
@@ -2531,18 +2535,21 @@ function getMiniHitoHTML(){
   if(nextStreak){
     const remaining=nextStreak-streak;
     const pct=Math.round((streak/nextStreak)*100);
-    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--faint);border:1px solid var(--border);border-radius:10px;font-size:11px;cursor:pointer" onclick="showLogros()">
-      <span style="font-size:14px">🔥</span>
-      <span style="flex:1;font-weight:600;color:var(--black)">Racha ${nextStreak} días — ${remaining===1?'¡mañana!':'faltan '+remaining}</span>
-      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${pct}%;background:var(--orange);border-radius:2px"></div></div>
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#FFF7ED;border:2px solid #FDBA74;border-radius:12px;font-size:12px;cursor:pointer" onclick="showLogros()">
+      <span style="font-size:20px">🔥</span>
+      <div style="flex:1">
+        <div style="font-weight:700;color:#9A3412">Racha de ${nextStreak} días</div>
+        <div style="font-size:11px;color:#C2410C;margin-top:2px">${remaining===1?'¡Mañana lo consigues!':'Faltan '+remaining+' días'}</div>
+        <div style="height:5px;background:#FED7AA;border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:#EA580C;border-radius:3px"></div></div>
+      </div>
     </div>`;
   }
   
   // Priority 4: Bonus active
   if(mult>1){
-    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--green-l);border:1px solid var(--green-b);border-radius:10px;font-size:11px">
-      <span style="font-size:14px">⚡</span>
-      <span style="flex:1;font-weight:600;color:#166534">${reason} — ¡puntos x${mult}!</span>
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#DCFCE7;border:2px solid #86EFAC;border-radius:12px;font-size:12px">
+      <span style="font-size:20px">⚡</span>
+      <span style="flex:1;font-weight:700;color:#166534">${reason} — ¡Puntos x${mult}!</span>
     </div>`;
   }
   
