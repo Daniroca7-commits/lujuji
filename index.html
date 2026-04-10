@@ -2092,7 +2092,7 @@ function playDictado(){
   dictPlaying=true;btn.textContent='⏸ Pausar';
   const u=new SpeechSynthesisUtterance(dictText);
   const langCode=curSubj?.lang==='ca'?'ca-ES':curSubj?.lang==='en'?'en-GB':'es-ES';
-  u.lang=langCode;u.rate=0.75;u.pitch=1.1;
+  u.lang=langCode;u.rate=0.55;u.pitch=1.1;
   // Buscar voz femenina del idioma
   const voices=window.speechSynthesis.getVoices();
   const femVoice=voices.find(v=>v.lang.startsWith(langCode.substring(0,2))&&/female|femenin|mujer|mónica|paulina|helena|jorge|microsoft.*es/i.test(v.name))||voices.find(v=>v.lang.startsWith(langCode.substring(0,2))&&!/male/i.test(v.name))||voices.find(v=>v.lang.startsWith(langCode.substring(0,2)));
@@ -2504,43 +2504,49 @@ function getMiniHitoHTML(){
   const available=pts-redeemed.reduce((s,r)=>s+r.pts,0);
   const{mult,reason}=getBonus();
   
-  // Find the closest thing to achieve
-  let best=null;
+  // Priority 1: Can redeem a prize
+  const canRedeem=prizes.filter(p=>p.pts<=available);
+  if(canRedeem.length>0){
+    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--green-l);border:1px solid var(--green-b);border-radius:10px;font-size:11px;cursor:pointer" onclick="showPremios()">
+      <span style="font-size:14px">🎁</span>
+      <span style="flex:1;font-weight:600;color:#166534">¡Puedes canjear ${canRedeem.length} premio${canRedeem.length>1?'s':''}!</span>
+    </div>`;
+  }
   
-  // Check closest prize
+  // Priority 2: Closest prize by points
   const closestPrize=prizes.filter(p=>p.pts>available).sort((a,b)=>(a.pts-available)-(b.pts-available))[0];
   if(closestPrize){
     const remaining=closestPrize.pts-available;
     const pct=Math.round((available/closestPrize.pts)*100);
-    best={icon:closestPrize.emoji,text:`${closestPrize.name} — faltan ${remaining.toLocaleString()} pts`,pct,color:'var(--amber)'};
+    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--faint);border:1px solid var(--border);border-radius:10px;font-size:11px;cursor:pointer" onclick="showPremios()">
+      <span style="font-size:14px">${closestPrize.emoji}</span>
+      <span style="flex:1;font-weight:600;color:var(--black)">${closestPrize.name} — faltan ${remaining.toLocaleString()} pts</span>
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${pct}%;background:var(--amber);border-radius:2px"></div></div>
+    </div>`;
   }
   
-  // Check streak milestone (prioritize if very close)
+  // Priority 3: Streak milestone
   const streakMilestones=[3,7,14,30,60,100];
   const nextStreak=streakMilestones.find(m=>m>streak);
-  if(nextStreak&&(nextStreak-streak)<=3){
+  if(nextStreak){
     const remaining=nextStreak-streak;
     const pct=Math.round((streak/nextStreak)*100);
-    best={icon:'🔥',text:`Racha ${nextStreak} días — ${remaining===1?'¡mañana!':'faltan '+remaining}`,pct,color:'var(--orange)'};
+    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--faint);border:1px solid var(--border);border-radius:10px;font-size:11px;cursor:pointer" onclick="showLogros()">
+      <span style="font-size:14px">🔥</span>
+      <span style="flex:1;font-weight:600;color:var(--black)">Racha ${nextStreak} días — ${remaining===1?'¡mañana!':'faltan '+remaining}</span>
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${pct}%;background:var(--orange);border-radius:2px"></div></div>
+    </div>`;
   }
   
-  // Check canRedeem prize
-  const canRedeem=prizes.filter(p=>p.pts<=available);
-  if(canRedeem.length>0){
-    best={icon:'🎁',text:`¡Puedes canjear ${canRedeem.length} premio${canRedeem.length>1?'s':''}!`,pct:100,color:'var(--green)'};
+  // Priority 4: Bonus active
+  if(mult>1){
+    return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--green-l);border:1px solid var(--green-b);border-radius:10px;font-size:11px">
+      <span style="font-size:14px">⚡</span>
+      <span style="flex:1;font-weight:600;color:#166534">${reason} — ¡puntos x${mult}!</span>
+    </div>`;
   }
   
-  // Bonus active
-  if(mult>1&&!best){
-    best={icon:'⚡',text:`${reason} — ¡puntos x${mult}!`,pct:100,color:'var(--green)'};
-  }
-  
-  if(!best)return'';
-  return`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--faint);border:1px solid var(--border);border-radius:10px;font-size:11px">
-    <span style="font-size:14px">${best.icon}</span>
-    <span style="flex:1;font-weight:600;color:var(--black)">${best.text}</span>
-    <div style="width:40px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0"><div style="height:100%;width:${best.pct}%;background:${best.color};border-radius:2px"></div></div>
-  </div>`;
+  return'';
 }
 
 function renderAllMiniHitos(){
