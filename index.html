@@ -78,6 +78,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 .res-wrap{text-align:center;padding:1.5rem 0}
 .res-ava{font-size:90px;display:block;margin-bottom:.75rem;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.85}}
 .res-name{font-size:26px;font-weight:800;margin-bottom:4px}
 .res-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5}
 .res-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);padding:1rem 1.25rem;margin-bottom:.75rem;text-align:left}
@@ -447,6 +448,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 
 /* MINI HITO */
 .mini-hito{margin-bottom:.5rem}
+/* TOGGLE */
+label:has(input[type=checkbox]:checked)>span:first-of-type{background:var(--green)!important}
+label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(20px)}
 </style>
 </head>
 <body>
@@ -543,6 +547,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <span class="timer-txt" id="timerTxt">0:00 / 20:00</span>
   </div>
   <div id="examBanner"></div>
+  <div id="tempPrizeBanner"></div>
+  <div id="extraRoundBanner"></div>
   <div id="prizeBanner"></div>
   <div id="timeBanner"></div>
   <div class="section-title"><span>📋 TAREAS DE HOY</span><button class="add-btn-s" onclick="openModal('modalTask')">+ Añadir</button></div>
@@ -854,6 +860,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
     <button class="save-btn" onclick="addPrize()">+ Añadir premio</button>
   </div>
   <div class="set-card">
+    <div class="sc-t">⭐ PREMIO ESPECIAL DE HOY</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">Premio que solo dura hoy. Aparece destacado para motivar. Desaparece mañana.</div>
+    <div id="parentTempPrize"></div>
+    <div style="margin-top:8px">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input class="api-in" id="newTempEmoji" placeholder="🌟" style="width:50px;text-align:center;margin:0;font-size:18px"/>
+        <input class="api-in" id="newTempName" placeholder="Ej: Si lees 30 min → helado" style="flex:1;margin:0"/>
+      </div>
+      <div style="display:flex;gap:6px">
+        <select class="api-in" id="newTempType" style="flex:1;margin:0">
+          <option value="lectura">📖 Leer X minutos</option>
+          <option value="estudio">📚 Estudiar X minutos</option>
+          <option value="puntos">⭐ Conseguir X puntos hoy</option>
+        </select>
+        <input class="api-in" id="newTempTarget" type="number" placeholder="30" style="width:70px;margin:0;text-align:center"/>
+      </div>
+    </div>
+    <button class="save-btn" onclick="addTempPrize()" style="background:var(--amber)">⭐ Crear premio de hoy</button>
+  </div>
+  <div class="set-card">
+    <div class="sc-t">🔄 RONDAS EXTRA FIN DE SEMANA</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">Sábado y domingo, si completan la lectura mínima (30 min), pueden hacer otra ronda extra de 30 min para ganar hasta 1h más de pantalla.</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;font-weight:600">Activar rondas extra finde:</span>
+      <label style="position:relative;width:44px;height:24px;flex-shrink:0">
+        <input type="checkbox" id="extraRoundsToggle" onchange="saveExtraRounds()" style="opacity:0;width:100%;height:100%;position:absolute;cursor:pointer;margin:0"/>
+        <span style="position:absolute;inset:0;background:var(--border);border-radius:12px;transition:background .2s"></span>
+        <span style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none"></span>
+      </label>
+    </div>
+  </div>
+  <div class="set-card">
     <div class="sc-t">⏱️ REGLAS DE TIEMPO DE PANTALLA</div>
     <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">Cada minuto de lectura/estudio verificado se convierte en tiempo de pantalla.</div>
     <div id="parentTimeRules"></div>
@@ -929,6 +967,8 @@ let exams=JSON.parse(localStorage.getItem('lujuji_exams')||'[]');
 let prizes=(()=>{try{const p=JSON.parse(localStorage.getItem('lujuji_prizes')||'[]');return Array.isArray(p)?p:[];}catch(e){return[];}})();
 let timeRules=(()=>{try{const r=JSON.parse(localStorage.getItem('lujuji_timerules')||'[]');return Array.isArray(r)?r:[];}catch(e){return[];}})();
 let redeemed=(()=>{try{const r=JSON.parse(localStorage.getItem('lujuji_redeemed')||'[]');return Array.isArray(r)?r:[];}catch(e){return[];}})();
+let tempPrize=JSON.parse(localStorage.getItem('lujuji_tempprize')||'null');
+let extraRoundsEnabled=localStorage.getItem('lujuji_extrarounds')==='true';
 let curSubj=null, curTask=null;
 let hist=[], wS=0, loading=false, vA='', ortoBlocked=false;
 let uploadedPhotos=[], temariText='';
@@ -988,6 +1028,8 @@ function checkPin(){
     renderParentPrizes();
     renderParentTimeRules();
     renderParentSummary();
+    renderParentTempPrize();
+    const ert=document.getElementById('extraRoundsToggle');if(ert)ert.checked=extraRoundsEnabled;
     show('s_parents');
   } else {
     document.getElementById('pinInput').value='';
@@ -1104,6 +1146,9 @@ function openDash(){
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
   renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();renderBonusIndicator();renderCalendar();renderAllMiniHitos();
+  const tpb=document.getElementById('tempPrizeBanner');if(tpb)tpb.innerHTML=renderTempPrizeBanner();
+  const erb=document.getElementById('extraRoundBanner');if(erb)erb.innerHTML=renderExtraRoundBanner();
+  checkTempPrize();
   // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
   updateTimerUI();
@@ -2309,6 +2354,129 @@ function renderParentSummary(){
 }
 
 // ════════════════════════════════════════════
+// PREMIOS TEMPORALES + RONDAS EXTRA
+// ════════════════════════════════════════════
+function addTempPrize(){
+  const emoji=document.getElementById('newTempEmoji').value.trim()||'🌟';
+  const name=document.getElementById('newTempName').value.trim();
+  const type=document.getElementById('newTempType').value;
+  const target=parseInt(document.getElementById('newTempTarget').value)||0;
+  if(!name||!target){toast('Escribe el premio y el objetivo');return;}
+  tempPrize={emoji,name,type,target,date:today(),completed:false};
+  localStorage.setItem('lujuji_tempprize',JSON.stringify(tempPrize));
+  renderParentTempPrize();
+  document.getElementById('newTempName').value='';document.getElementById('newTempTarget').value='';
+  toast('⭐ Premio especial creado para hoy');
+}
+
+function removeTempPrize(){
+  tempPrize=null;localStorage.removeItem('lujuji_tempprize');
+  renderParentTempPrize();toast('Premio especial eliminado');
+}
+
+function renderParentTempPrize(){
+  const el=document.getElementById('parentTempPrize');if(!el)return;
+  // Limpiar premios de días anteriores
+  if(tempPrize&&tempPrize.date!==today()){tempPrize=null;localStorage.removeItem('lujuji_tempprize');}
+  if(!tempPrize){el.innerHTML='<div style="font-size:13px;color:var(--muted);padding:6px 0">Sin premio especial activo hoy.</div>';return;}
+  const typeLabel={lectura:'📖 Leer',estudio:'📚 Estudiar',puntos:'⭐ Conseguir'};
+  const unitLabel={lectura:'min leyendo',estudio:'min estudiando',puntos:'puntos hoy'};
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#FEF3C7;border:1.5px solid #FDE68A;border-radius:var(--r);margin-bottom:6px">
+    <span style="font-size:20px">${tempPrize.emoji}</span>
+    <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#92400E">${tempPrize.name}</div><div style="font-size:11px;color:#B45309">${typeLabel[tempPrize.type]} ${tempPrize.target} ${unitLabel[tempPrize.type]}</div></div>
+    ${tempPrize.completed?'<span style="font-size:12px;font-weight:700;color:var(--green)">✓ Completado</span>':'<button onclick="removeTempPrize()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px">✕</button>'}
+  </div>`;
+}
+
+function checkTempPrize(){
+  if(!tempPrize||tempPrize.completed||tempPrize.date!==today())return;
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const studyMins=Math.floor((parseInt(localStorage.getItem('lujuji_timer_'+today())||'0'))/60);
+  const ptsToday=profile?.ptsToday||0;
+  let achieved=false;
+  if(tempPrize.type==='lectura'&&readMins>=tempPrize.target)achieved=true;
+  if(tempPrize.type==='estudio'&&studyMins>=tempPrize.target)achieved=true;
+  if(tempPrize.type==='puntos'&&ptsToday>=tempPrize.target)achieved=true;
+  if(achieved){
+    tempPrize.completed=true;
+    localStorage.setItem('lujuji_tempprize',JSON.stringify(tempPrize));
+    toast(`🌟 ¡Premio especial conseguido! ${tempPrize.name}`);
+    confetti();flashPts(50);
+  }
+}
+
+function renderTempPrizeBanner(){
+  // Clean expired
+  if(tempPrize&&tempPrize.date!==today()){tempPrize=null;localStorage.removeItem('lujuji_tempprize');}
+  if(!tempPrize)return'';
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const studyMins=Math.floor((parseInt(localStorage.getItem('lujuji_timer_'+today())||'0'))/60);
+  const current=tempPrize.type==='lectura'?readMins:tempPrize.type==='estudio'?studyMins:(profile?.ptsToday||0);
+  const pct=Math.min(100,Math.round((current/tempPrize.target)*100));
+  if(tempPrize.completed){
+    return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#DCFCE7;border:2px solid #86EFAC;border-radius:12px;margin-bottom:.75rem">
+      <span style="font-size:22px">${tempPrize.emoji}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#166534">✓ ${tempPrize.name} — ¡Conseguido!</div></div>
+    </div>`;
+  }
+  const remaining=tempPrize.target-current;
+  const unit=tempPrize.type==='lectura'?'min leyendo':tempPrize.type==='estudio'?'min estudiando':'puntos';
+  return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,#FEF9C3,#FEF3C7);border:2px solid #FACC15;border-radius:12px;margin-bottom:.75rem;animation:pulse 2s ease infinite">
+    <span style="font-size:22px">${tempPrize.emoji}</span>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:#854D0E">⭐ PREMIO DE HOY: ${tempPrize.name}</div>
+      <div style="font-size:11px;color:#A16207;margin-top:2px">Faltan ${remaining} ${unit}</div>
+      <div style="height:5px;background:#FDE68A;border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:#EAB308;border-radius:3px"></div></div>
+    </div>
+  </div>`;
+}
+
+function saveExtraRounds(){
+  extraRoundsEnabled=document.getElementById('extraRoundsToggle').checked;
+  localStorage.setItem('lujuji_extrarounds',extraRoundsEnabled?'true':'false');
+  toast(extraRoundsEnabled?'✓ Rondas extra activadas':'Rondas extra desactivadas');
+}
+
+function checkExtraRound(){
+  if(!extraRoundsEnabled)return false;
+  const day=new Date().getDay();
+  if(day!==0&&day!==6)return false; // Solo finde
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const extraDone=localStorage.getItem('lujuji_extra_done_'+today())==='true';
+  return readMins>=30&&!extraDone;
+}
+
+function renderExtraRoundBanner(){
+  if(!checkExtraRound())return'';
+  return`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:2px solid #A78BFA;border-radius:12px;margin-bottom:.75rem">
+    <span style="font-size:22px">🔄</span>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:#5B21B6">¡Ronda extra disponible!</div>
+      <div style="font-size:11px;color:#6D28D9;margin-top:2px">Lee 30 min más y gana hasta 1h extra de pantalla</div>
+    </div>
+    <button onclick="startExtraRound()" style="padding:6px 12px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">Leer →</button>
+  </div>`;
+}
+
+function startExtraRound(){
+  startLectura();
+  toast('🔄 ¡Ronda extra! Lee 30 min más para ganar 1h de pantalla');
+}
+
+function completeExtraRound(){
+  localStorage.setItem('lujuji_extra_done_'+today(),'true');
+  // Add extra time based on rules
+  const lectRules=timeRules.filter(r=>r.source==='lectura');
+  lectRules.forEach(r=>{
+    const extraMins=Math.min(60,Math.floor(30/r.ratio)*r.result);
+    const key='lujuji_extra_time_'+r.target+'_'+today();
+    const prev=parseInt(localStorage.getItem(key)||'0');
+    localStorage.setItem(key,prev+extraMins);
+  });
+  toast('🎉 ¡1h extra de pantalla ganada!');confetti();flashPts(30);
+}
+
+// ════════════════════════════════════════════
 // PREMIOS — VISTA NIÑO
 // ════════════════════════════════════════════
 function showPremios(){
@@ -2774,7 +2942,12 @@ async function stopLectura(){
   const prevMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
   localStorage.setItem('lujuji_read_mins_'+today(),prevMins+readMins);
   profile.lecturas=(profile.lecturas||0)+1;
-  checkBadges();sv();
+  checkBadges();sv();checkTempPrize();
+  // Check if extra round completed (30+ min in finde)
+  const totalReadToday=prevMins+readMins;
+  if(extraRoundsEnabled&&(new Date().getDay()===0||new Date().getDay()===6)&&totalReadToday>=60&&localStorage.getItem('lujuji_extra_done_'+today())!=='true'){
+    completeExtraRound();
+  }
 
   document.getElementById('lecturaQCard').style.display='block';
   document.getElementById('lecturaQContent').innerHTML='<div class="ldots" style="color:var(--purple);padding:1rem;text-align:center"><span></span><span></span><span></span></div>';
