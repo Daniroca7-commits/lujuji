@@ -453,6 +453,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 /* TOGGLE */
 label:has(input[type=checkbox]:checked)>span:first-of-type{background:var(--green)!important}
 label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(20px)}
+/* TABS */
+.tab-btn{flex:1;padding:8px 4px;border:none;background:transparent;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-radius:var(--r);transition:all .2s}
+.tab-btn.active{background:var(--white);color:var(--black);box-shadow:0 1px 3px rgba(0,0,0,.1)}
 </style>
 </head>
 <body>
@@ -487,7 +490,16 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
   <div class="modal-sheet">
     <div class="modal-title"><span>Añadir examen</span><button class="modal-close" onclick="closeModal('modalExam')">×</button></div>
     <input class="modal-in" id="examNameIn" placeholder="¿De qué asignatura?" oninput="examUpd()"/>
-    <input class="modal-in" id="examDateIn" type="date" oninput="examUpd()" style="margin-top:0"/>
+    <div id="examCalPicker"></div>
+    <input type="hidden" id="examDatePicked" value=""/>
+    <div style="margin-top:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">📸 Foto del temario (opcional)</div>
+      <div style="position:relative;border:1.5px dashed var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;background:var(--faint)">
+        <input type="file" accept="image/*" capture="environment" onchange="handleExamPhoto(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
+        <img id="examPhotoPrev" style="display:none;max-width:100%;border-radius:6px;margin-bottom:6px"/>
+        <div id="examPhotoPlaceholder" style="font-size:13px;color:var(--muted)">📷 Toca para subir foto del temario</div>
+      </div>
+    </div>
     <button class="modal-save" id="examSaveBtn" onclick="saveExam()" disabled>Añadir examen</button>
   </div>
 </div>
@@ -533,65 +545,46 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
       <div class="dash-name" id="dName"></div>
       <div class="dash-curso" id="dCurso"></div>
     </div>
-    <div class="settings-tap" id="settingsTap" onclick="handleSettingsTap()">⚙️</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div style="cursor:pointer;padding:5px 10px;background:var(--faint);border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px" onclick="showMisLogros()">🏆 Logros</div>
+      <div class="settings-tap" id="settingsTap" onclick="handleSettingsTap()">⚙️</div>
+    </div>
   </div>
   <div class="stats-row">
-    <div class="stat-card sc-streak" style="cursor:pointer" onclick="showLogros()"><div class="stat-val" id="dStreak">0🔥</div><div class="stat-lbl">días seguidos</div></div>
-    <div class="stat-card sc-pts" style="cursor:pointer" onclick="showPremios()"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
-    <div class="stat-card" style="cursor:pointer" onclick="showLogros()"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
+    <div class="stat-card sc-streak" style="cursor:pointer" onclick="showMisLogros('insignias')"><div class="stat-val" id="dStreak">0🔥</div><div class="stat-lbl">días seguidos</div></div>
+    <div class="stat-card sc-pts" style="cursor:pointer" onclick="showMisLogros('premios')"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
+    <div class="stat-card" style="cursor:pointer" onclick="showMisLogros('insignias')"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
   </div>
-  <div id="calendarWrap"></div>
-  <div id="streakBanner"></div>
-  <div id="bonusIndicator"></div>
-  <div class="timer-card">
-    <span style="font-size:20px">⏱️</span>
-    <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:0%"></div></div>
-    <span class="timer-txt" id="timerTxt">0:00 / 20:00</span>
-  </div>
-  <div id="examBanner"></div>
+  <div id="miniCalendar"></div>
   <div id="tempPrizeBanner"></div>
   <div id="extraRoundBanner"></div>
-  <div id="prizeBanner"></div>
-  <div id="timeBanner"></div>
+  <div id="examList" style="margin-bottom:.75rem"></div>
   <div class="section-title"><span>📋 TAREAS DE HOY</span><button class="add-btn-s" onclick="openModal('modalTask')">+ Añadir</button></div>
   <div id="taskList"></div>
-  <div class="section-title" style="margin-top:.25rem"><span>📅 MIS EXÁMENES</span><button class="add-btn-s" onclick="openModal('modalExam')">+ Añadir</button></div>
-  <div id="examList" style="margin-bottom:1rem"></div>
-  <button class="main-action" onclick="startStudy()">💬 Empezar a estudiar</button>
-  <button class="main-action" onclick="startLectura()" style="background:var(--purple)">📖 Lectura en voz alta</button>
-  <div style="display:flex;gap:8px;margin-bottom:1rem">
-    <button class="main-action" onclick="showPremios()" style="flex:1;margin-bottom:0;background:var(--amber)">🎁 Premios</button>
-    <button class="main-action" onclick="showLogros()" style="flex:1;margin-bottom:0;background:var(--white);color:var(--black);border:1.5px solid var(--border)">🏆 Logros</button>
+  <button class="main-action" style="margin-top:.75rem;padding:18px;font-size:17px" onclick="showStudyPicker()">📚 Empezar →</button>
+</div>
+
+<!-- STUDY PICKER -->
+<div class="modal-overlay" id="modalStudyPick">
+  <div class="modal-sheet">
+    <div class="modal-title"><span>¿Qué hacemos?</span><button class="modal-close" onclick="closeModal('modalStudyPick')">×</button></div>
+    <div id="studyPickList"></div>
   </div>
 </div>
 
-<!-- PREMIOS -->
-<div class="screen" id="s_premios">
-  <div class="ob-top">
-    <button class="ob-back" onclick="show('s_dash')">← Volver</button>
-    <div style="font-size:16px;font-weight:700;flex:1;text-align:center">🎁 Mis Premios</div>
-  </div>
-  <div class="mini-hito" id="hitoPremios"></div>
-  <div style="text-align:center;margin-bottom:1rem">
-    <div style="font-size:36px;font-weight:800;color:var(--blue)" id="premiosPts">0</div>
-    <div style="font-size:12px;color:var(--muted)">puntos disponibles</div>
-  </div>
-  <div class="section-title">🎁 PREMIOS POR PUNTOS</div>
-  <div id="premiosList"></div>
-  <div class="section-title" style="margin-top:1rem">⏱️ TIEMPO DE PANTALLA GANADO HOY</div>
-  <div id="timeEarnedSection"></div>
-  <button class="main-action" style="background:var(--faint);color:var(--black);border:1.5px solid var(--border);margin-top:.75rem" onclick="askMorePoints()">💡 ¿Cómo consigo más puntos?</button>
-</div>
-
-<!-- LOGROS -->
-<div class="screen" id="s_logros">
+<!-- MIS LOGROS (unified scroll) -->
+<div class="screen" id="s_mislogros">
   <div class="ob-top">
     <button class="ob-back" onclick="show('s_dash')">← Volver</button>
     <div style="font-size:16px;font-weight:700;flex:1;text-align:center">🏆 Mis Logros</div>
   </div>
-  <div class="mini-hito" id="hitoLogros"></div>
-  <div id="logrosContent"></div>
+  <div id="logrosAllContent"></div>
 </div>
+
+<!-- backward compat -->
+<div class="screen" id="s_premios" style="display:none"></div>
+<div class="screen" id="s_logros" style="display:none"><div id="logrosContent"></div></div>
+<div class="screen" id="s_progreso" style="display:none"></div>
 
 <!-- AGENDA SETUP -->
 <div class="screen" id="s_agenda">
@@ -1001,7 +994,7 @@ const delay=ms=>new Promise(r=>setTimeout(r,ms));
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function sTab(id,btn){document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('tp-'+id).classList.add('active');}
-function openModal(id){document.getElementById(id).classList.add('vis');}
+function openModal(id){document.getElementById(id).classList.add('vis');if(id==='modalExam'){examCalMonth=new Date().getMonth();examCalYear=new Date().getFullYear();document.getElementById('examDatePicked').value='';renderExamCalPicker();}}
 function closeModal(id){document.getElementById(id).classList.remove('vis');}
 
 // ════════════════════════════════════════════
@@ -1141,7 +1134,6 @@ function finishOb(){
 // ════════════════════════════════════════════
 function openDash(){
   if(!profile){show('s0');return;}
-  // Check if streak should be reset (missed yesterday)
   verifyStreak();
   document.getElementById('dAva').textContent=profile.avatar||'📚';
   document.getElementById('dName').textContent=profile.name;
@@ -1149,15 +1141,156 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();renderPrizeBanner();renderTimeBanner();renderStreakBanner();renderBonusIndicator();renderCalendar();renderAllMiniHitos();
+  renderTasks();renderExams();renderExamBanner();renderAllMiniHitos();renderMiniCalendar();
   const tpb=document.getElementById('tempPrizeBanner');if(tpb)tpb.innerHTML=renderTempPrizeBanner();
   const erb=document.getElementById('extraRoundBanner');if(erb)erb.innerHTML=renderExtraRoundBanner();
   checkTempPrize();
-  // Pausar timer cuando estamos en dashboard
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
-  updateTimerUI();
   show('s_dash');
 }
+
+function showStudyPicker(){
+  const list=document.getElementById('studyPickList');
+  let html='';
+  SUBJS.forEach(s=>{
+    html+=`<button style="width:100%;padding:14px;margin-bottom:8px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .1s" onclick="closeModal('modalStudyPick');openStudyDirect('${s.id}')">
+      <span style="font-size:20px">${s.flag||'📚'}</span> ${s.name}
+    </button>`;
+  });
+  html+=`<button style="width:100%;padding:14px;margin-bottom:8px;background:var(--purple);color:#fff;border:none;border-radius:var(--rl);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center" onclick="closeModal('modalStudyPick');startLectura()">
+    📖 Lectura en voz alta
+  </button>`;
+  list.innerHTML=html;
+  openModal('modalStudyPick');
+}
+
+function openStudyDirect(subjId){
+  const subj=SUBJS.find(s=>s.id===subjId);if(!subj)return;
+  // Check if there's an exam with photo for this subject
+  const examWithPhoto=exams.find(e=>e.photo&&e.name.toLowerCase().includes(subj.name.toLowerCase().substring(0,4)));
+  if(examWithPhoto&&examWithPhoto.photo){
+    uploadedPhotos=[examWithPhoto.photo];
+    temariText='';
+  }
+  openStudy(subj);
+}
+
+function showMisLogros(){
+  const cont=document.getElementById('logrosAllContent');if(!cont)return;
+  const pts=profile?.pts||0;
+  const available=pts-redeemed.reduce((s,r)=>s+r.pts,0);
+  const badges=profile?.badges||[];
+  const streak=profile?.streak||0;
+  const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const studyMins=Math.floor(timerSecs/60);
+  const readHist=profile?.readHistory||[];
+  
+  let html='';
+  
+  // === RACHA + PUNTOS ===
+  html+=`<div style="display:flex;gap:8px;margin-bottom:1rem">
+    <div style="flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--orange)">${streak}🔥</div>
+      <div style="font-size:11px;color:var(--muted)">días seguidos</div>
+    </div>
+    <div style="flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:var(--blue)">${available.toLocaleString()}</div>
+      <div style="font-size:11px;color:var(--muted)">puntos</div>
+    </div>
+  </div>`;
+  
+  // === PREMIOS ===
+  if(prizes.length>0){
+    html+=`<div class="logro-section"><div class="logro-title">🎁 PREMIOS</div>`;
+    prizes.forEach(p=>{
+      const pct=Math.min(100,Math.round((available/p.pts)*100));
+      const canRedeem=available>=p.pts;
+      const remaining=Math.max(0,p.pts-available);
+      html+=`<div style="background:var(--white);border:1.5px solid ${canRedeem?'var(--green-b)':'var(--border)'};border-radius:var(--rl);padding:12px 14px;margin-bottom:6px${canRedeem?';background:var(--green-l)':''}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-size:20px">${p.emoji}</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">${p.name}</div><div style="font-size:11px;color:var(--muted)">${p.pts.toLocaleString()} pts</div></div>
+          ${canRedeem?`<button onclick="redeemPrize(${p.id})" style="padding:5px 12px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer">CANJEAR</button>`:`<span style="font-size:11px;font-weight:700;color:var(--amber)">${remaining.toLocaleString()} pts</span>`}
+        </div>
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${canRedeem?'var(--green)':'var(--blue)'};border-radius:3px"></div></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  
+  // === TIEMPO PANTALLA ===
+  if(timeRules.length>0){
+    html+=`<div class="logro-section"><div class="logro-title">⏱️ TIEMPO DE PANTALLA HOY</div>`;
+    const icons={youtube:'▶️',videojuegos:'🎮',tablet:'📱',tv:'📺'};
+    timeRules.forEach(r=>{
+      const sourceMins=r.source==='lectura'?readMins:studyMins;
+      const earned=Math.min(Math.floor(sourceMins/r.ratio)*r.result,r.max);
+      const pct=Math.round((earned/r.max)*100);
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:4px">
+        <span style="font-size:16px">${icons[r.target]||'📱'}</span>
+        <div style="flex:1"><div style="font-size:12px;font-weight:600">${r.target} — ${earned}/${r.max} min</div>
+        <div style="height:4px;background:var(--border);border-radius:2px;margin-top:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${pct>=100?'var(--green)':'var(--blue)'};border-radius:2px"></div></div></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  
+  // === PROGRESO HOY ===
+  html+=`<div class="logro-section"><div class="logro-title">📊 HOY</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:.75rem">
+      <div style="background:var(--faint);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--purple)">${readMins}</div><div style="font-size:10px;color:var(--muted)">min lectura</div></div>
+      <div style="background:var(--faint);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--blue)">${studyMins}</div><div style="font-size:10px;color:var(--muted)">min estudio</div></div>
+      <div style="background:var(--faint);border-radius:var(--r);padding:10px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--green)">${readMins+studyMins}</div><div style="font-size:10px;color:var(--muted)">total</div></div>
+    </div></div>`;
+  
+  // === CALENDARIO ===
+  html+=`<div id="calendarWrapLogros"></div>`;
+  
+  // === ACTIVIDAD TOTAL ===
+  html+=`<div class="logro-section"><div class="logro-title">🎯 ACTIVIDAD TOTAL</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+      <div style="background:var(--faint);border-radius:var(--r);padding:8px;text-align:center"><div style="font-size:16px;font-weight:700">${profile?.gamesPlayed||0}</div><div style="font-size:9px;color:var(--muted)">juegos</div></div>
+      <div style="background:var(--faint);border-radius:var(--r);padding:8px;text-align:center"><div style="font-size:16px;font-weight:700">${profile?.simsPlayed||0}</div><div style="font-size:9px;color:var(--muted)">simulacros</div></div>
+      <div style="background:var(--faint);border-radius:var(--r);padding:8px;text-align:center"><div style="font-size:16px;font-weight:700">${profile?.lecturas||0}</div><div style="font-size:9px;color:var(--muted)">lecturas</div></div>
+      <div style="background:var(--faint);border-radius:var(--r);padding:8px;text-align:center"><div style="font-size:16px;font-weight:700">${profile?.dictados||0}</div><div style="font-size:9px;color:var(--muted)">dictados</div></div>
+    </div></div>`;
+  
+  // === HISTORIAL LECTURA ===
+  if(readHist.length>0){
+    html+=`<div class="logro-section"><div class="logro-title">📚 HISTORIAL DE LECTURA</div>`;
+    readHist.slice(-5).reverse().forEach(r=>{
+      html+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:3px">
+        <span style="font-size:14px">📖</span>
+        <div style="flex:1"><div style="font-size:11px;font-weight:600">${r.title}</div><div style="font-size:9px;color:var(--muted)">${r.date} · ${r.mins} min</div></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  
+  // === INSIGNIAS (al final) ===
+  html+=`<div class="logro-section"><div class="logro-title">🏅 INSIGNIAS (${badges.length}/${ALL_BADGES.length})</div>`;
+  const cats=[{id:'racha',label:'🔥 Rachas'},{id:'puntos',label:'⭐ Puntos'},{id:'actividad',label:'🎮 Actividad'}];
+  cats.forEach(cat=>{
+    const catBadges=ALL_BADGES.filter(b=>b.cat===cat.id);
+    html+=`<div style="font-size:11px;font-weight:600;color:var(--muted);margin:8px 0 4px">${cat.label}</div><div class="badge-grid">`;
+    catBadges.forEach(b=>{
+      const earned=badges.includes(b.id);
+      html+=`<div class="badge-card ${earned?'earned':'locked'}"><span class="badge-icon">${earned?b.icon:'🔒'}</span><div class="badge-name">${earned?b.name:'???'}</div></div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`</div>`;
+  
+  cont.innerHTML=html;
+  setTimeout(()=>renderCalendar('calendarWrapLogros'),10);
+  show('s_mislogros');
+}
+
+// Backward compat
+function showPremios(){showMisLogros();}
+function showLogros(){showMisLogros();}
+function showProgreso(){showMisLogros();}
+
 
 // ════════════════════════════════════════════
 // TIMER GLOBAL 20 MIN (solo con actividad real)
@@ -1379,7 +1512,40 @@ function updateTaskTimerUI(){
 // TAREAS
 // ════════════════════════════════════════════
 function selTaskType(card){document.querySelectorAll('.mtype').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');newTaskType=card.dataset.type;}
-function examUpd(){const n=document.getElementById('examNameIn').value.trim();const d=document.getElementById('examDateIn').value;document.getElementById('examSaveBtn').disabled=!n||!d;}
+function examUpd(){const n=document.getElementById('examNameIn').value.trim();const d=document.getElementById('examDatePicked').value;document.getElementById('examSaveBtn').disabled=!n||!d;}
+
+let examCalMonth=new Date().getMonth();
+let examCalYear=new Date().getFullYear();
+
+function renderExamCalPicker(){
+  const el=document.getElementById('examCalPicker');if(!el)return;
+  const picked=document.getElementById('examDatePicked').value;
+  const firstDay=new Date(examCalYear,examCalMonth,1);
+  const lastDay=new Date(examCalYear,examCalMonth+1,0).getDate();
+  const startDow=(firstDay.getDay()||7)-1;
+  const monthNames=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const t=today();
+  let html=`<div style="background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:10px;margin:8px 0">
+    <div style="display:flex;align-items:center;margin-bottom:8px">
+      <button onclick="examCalMonth--;if(examCalMonth<0){examCalMonth=11;examCalYear--;}renderExamCalPicker()" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px 8px">‹</button>
+      <div style="flex:1;text-align:center;font-size:13px;font-weight:700">${monthNames[examCalMonth]} ${examCalYear}</div>
+      <button onclick="examCalMonth++;if(examCalMonth>11){examCalMonth=0;examCalYear++;}renderExamCalPicker()" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px 8px">›</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center">`;
+  ['L','M','X','J','V','S','D'].forEach(d=>{html+=`<div style="font-size:9px;color:var(--muted);font-weight:600;padding:2px">${d}</div>`;});
+  for(let i=0;i<startDow;i++)html+=`<div></div>`;
+  for(let d=1;d<=lastDay;d++){
+    const dStr=`${examCalYear}-${String(examCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast=dStr<t;
+    const isPicked=dStr===picked;
+    const bg=isPicked?'var(--blue)':isPast?'transparent':'var(--faint)';
+    const color=isPicked?'#fff':isPast?'var(--border)':'var(--black)';
+    const cursor=isPast?'default':'pointer';
+    html+=`<div onclick="${isPast?'':`document.getElementById('examDatePicked').value='${dStr}';examUpd();renderExamCalPicker()`}" style="padding:6px 2px;border-radius:6px;font-size:12px;font-weight:600;background:${bg};color:${color};cursor:${cursor}">${d}</div>`;
+  }
+  html+=`</div></div>`;
+  el.innerHTML=html;
+}
 
 function saveTask(){
   const name=document.getElementById('taskNameIn').value.trim();if(!name)return;
@@ -1406,11 +1572,30 @@ function checkOrtoBasic(text){
   return errores.filter(e=>tl.includes(e.w)&&!text.includes(e.c)&&text.toLowerCase()!==e.w);
 }
 
+let examPhotoB64=null;
+function handleExamPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    examPhotoB64=e.target.result.split(',')[1];
+    document.getElementById('examPhotoPrev').src=e.target.result;
+    document.getElementById('examPhotoPrev').style.display='block';
+    document.getElementById('examPhotoPlaceholder').textContent='✓ Foto subida — toca para cambiar';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
 function saveExam(){
-  const name=document.getElementById('examNameIn').value.trim();const date=document.getElementById('examDateIn').value;if(!name||!date)return;
-  exams.push({id:Date.now(),name,date});exams.sort((a,b)=>a.date.localeCompare(b.date));
+  const name=document.getElementById('examNameIn').value.trim();
+  const date=document.getElementById('examDatePicked').value;
+  if(!name||!date)return;
+  const exam={id:Date.now(),name,date};
+  if(examPhotoB64)exam.photo=examPhotoB64;
+  exams.push(exam);exams.sort((a,b)=>a.date.localeCompare(b.date));
   svExams();renderExams();renderExamBanner();closeModal('modalExam');
-  document.getElementById('examNameIn').value='';document.getElementById('examDateIn').value='';document.getElementById('examSaveBtn').disabled=true;
+  document.getElementById('examNameIn').value='';document.getElementById('examDatePicked').value='';document.getElementById('examSaveBtn').disabled=true;
+  document.getElementById('examPhotoPrev').style.display='none';document.getElementById('examPhotoPlaceholder').textContent='📷 Toca para subir foto del temario';
+  examPhotoB64=null;
   toast('✓ Examen añadido');
 }
 
@@ -1435,23 +1620,39 @@ function renderTasks(){
 
 function renderExams(){
   const list=document.getElementById('examList');const now=today();
-  const upcoming=exams.filter(e=>e.date>=now).slice(0,3);
-  if(!upcoming.length){list.innerHTML=`<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin exámenes próximos — ¡añade los que tengas!</div>`;return;}
-  list.innerHTML=upcoming.map(e=>{
+  const upcoming=exams.filter(e=>e.date>=now).slice(0,5);
+  if(!upcoming.length){
+    list.innerHTML=`<div style="background:var(--amber-l);border:2px solid var(--amber-b);border-radius:var(--rl);padding:1.25rem;text-align:center;cursor:pointer" onclick="openModal('modalExam')">
+      <div style="font-size:32px;margin-bottom:6px">📝</div>
+      <div style="font-size:15px;font-weight:700;color:#92400E">¿Tienes algún examen?</div>
+      <div style="font-size:13px;color:#B45309;margin-top:4px">Añádelo para que te ayude a prepararlo</div>
+      <div style="margin-top:10px;display:inline-block;padding:8px 20px;background:var(--amber);color:#fff;border-radius:var(--r);font-size:13px;font-weight:700">+ Añadir examen</div>
+    </div>`;
+    return;
+  }
+  let html=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.5rem">`;
+  upcoming.forEach(e=>{
     const days=Math.ceil((new Date(e.date)-new Date(now))/(1000*60*60*24));
-    const cls=days<=2?'urgent':days<=6?'soon':'ok';
-    const mult=days<=2?'x1.5 ⚠️':days<=6?'x2 🔥':days>=7?'x3 🌟':'';
-    return `<div class="exam-card ${cls}"><div class="exam-days">${days}d</div><div style="flex:1"><div class="exam-name">${e.name}</div><div class="exam-sub">${new Date(e.date+'T12:00:00').toLocaleDateString('ca-ES',{weekday:'long',day:'numeric',month:'long'})}</div></div>${mult?`<span class="exam-badge" style="background:${days<=2?'#FFF3E0':days<=6?'var(--amber-l)':'var(--green-l)'};color:${days<=2?'var(--orange)':days<=6?'var(--amber)':'var(--green)'}">${mult}</span>`:''}</div>`;
-  }).join('');
+    const urgent=days<=2;const soon=days<=6;
+    const bg=urgent?'#FEE2E2':soon?'#FEF3C7':'var(--faint)';
+    const color=urgent?'#991B1B':soon?'#92400E':'var(--black)';
+    const border=urgent?'#FCA5A5':soon?'#FDE68A':'var(--border)';
+    const subjMatch=SUBJS.find(s=>e.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)));
+    const onclick=subjMatch?`openStudyDirect('${subjMatch.id}')`:`showStudyPicker()`;
+    html+=`<div onclick="${onclick}" style="display:flex;align-items:center;gap:5px;padding:8px 12px;background:${bg};border:1.5px solid ${border};border-radius:12px;font-size:12px;cursor:pointer;transition:transform .1s;flex:1;min-width:120px" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">
+      <div style="flex:1">
+        <div style="font-weight:700;color:${color};font-size:13px">${e.name}</div>
+        <div style="color:${color};opacity:.7;font-size:11px;margin-top:1px">${new Date(e.date+'T12:00:00').getDate()} ${new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{month:'short'})} · ${days}d</div>
+      </div>
+      <span style="font-size:18px">${urgent?'⚠️':'📚'}</span>
+    </div>`;
+  });
+  html+=`<div onclick="openModal('modalExam')" style="display:flex;align-items:center;justify-content:center;padding:8px 12px;background:var(--faint);border:1.5px dashed var(--border);border-radius:12px;font-size:12px;cursor:pointer;min-width:50px;color:var(--muted);font-weight:600">+</div>`;
+  html+=`</div>`;
+  list.innerHTML=html;
 }
 
-function renderExamBanner(){
-  const now=today();const next=exams.filter(e=>e.date>=now).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  const banner=document.getElementById('examBanner');
-  if(!next||Math.ceil((new Date(next.date)-new Date(now))/(1000*60*60*24))>7){banner.innerHTML='';return;}
-  const days=Math.ceil((new Date(next.date)-new Date(now))/(1000*60*60*24));
-  const cls=days<=2?'urgent':days<=6?'soon':'ok';
-  banner.innerHTML=`<div class="exam-card ${cls}" style="margin-bottom:1rem"><div class="exam-days">${days}d</div><div style="flex:1"><div class="exam-name">📅 Examen: ${next.name}</div><div class="exam-sub">${days<=2?'¡Repaso urgente!':days<=4?'¡A repasar!':'Empieza a repasar'}</div></div></div>`;
+function renderExamBanner(){}
 }
 
 // ════════════════════════════════════════════
@@ -2673,8 +2874,8 @@ function askMorePoints(){
   },300);
 }
 
-function renderPrizeBanner(){
-  const banner=document.getElementById('prizeBanner');if(!banner)return;
+function renderPrizeBanner(targetId){
+  const banner=document.getElementById(targetId||'prizeBanner');if(!banner)return;
   if(!prizes.length){banner.innerHTML='';return;}
   const available=(profile?.pts||0)-redeemed.reduce((s,r)=>s+r.pts,0);
   const closest=prizes.filter(p=>p.pts>available).sort((a,b)=>a.pts-b.pts)[0];
@@ -2700,8 +2901,8 @@ function renderPrizeBanner(){
   }
 }
 
-function renderTimeBanner(){
-  const banner=document.getElementById('timeBanner');if(!banner)return;
+function renderTimeBanner(targetId){
+  const banner=document.getElementById(targetId||'timeBanner');if(!banner)return;
   if(!timeRules.length){banner.innerHTML='';return;}
   const readMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
   const studyMins=Math.floor((parseInt(localStorage.getItem('lujuji_timer_'+today())||'0'))/60);
@@ -2725,8 +2926,8 @@ function renderTimeBanner(){
   banner.innerHTML=html;
 }
 
-function renderStreakBanner(){
-  const banner=document.getElementById('streakBanner');if(!banner)return;
+function renderStreakBanner(targetId){
+  const banner=document.getElementById(targetId||'streakBanner');if(!banner)return;
   const streak=profile?.streak||0;
   const streakMilestones=[3,7,14,30,60,100];
   const nextStreak=streakMilestones.find(m=>m>streak);
@@ -2752,8 +2953,8 @@ function renderStreakBanner(){
   }
 }
 
-function renderBonusIndicator(){
-  const el=document.getElementById('bonusIndicator');if(!el)return;
+function renderBonusIndicator(targetId){
+  const el=document.getElementById(targetId||'bonusIndicator');if(!el)return;
   const{mult,reason}=getBonus();
   if(mult>1){
     el.innerHTML=`<div style="border-radius:var(--r);padding:9px 14px;margin-bottom:.75rem;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border:1.5px solid var(--green-b)">
@@ -2831,8 +3032,8 @@ function renderAllMiniHitos(){
   });
 }
 
-function renderCalendar(){
-  const wrap=document.getElementById('calendarWrap');if(!wrap)return;
+function renderCalendar(targetId){
+  const wrap=document.getElementById(targetId||'calendarWrap');if(!wrap)return;
   const t=today();const todayDate=new Date(t+'T12:00:00');
   
   // Get start of current week (Monday)
@@ -2909,6 +3110,44 @@ function renderCalendar(){
   });
   
   html+=`</div></div>`;
+  wrap.innerHTML=html;
+}
+
+function renderMiniCalendar(){
+  const wrap=document.getElementById('miniCalendar');if(!wrap)return;
+  const t=today();const todayDate=new Date(t+'T12:00:00');
+  const startDate=new Date(todayDate);
+  const dayOfWeek=startDate.getDay()||7;
+  startDate.setDate(startDate.getDate()-(dayOfWeek-1));
+  const days=[];
+  for(let i=0;i<7;i++){const d=new Date(startDate);d.setDate(startDate.getDate()+i);days.push(d);}
+  const examDates=exams.map(e=>e.date);
+  const studiedDays=new Set();
+  days.forEach(d=>{
+    const dStr=d.toISOString().split('T')[0];
+    if(parseInt(localStorage.getItem('lujuji_timer_'+dStr)||'0')>=1200)studiedDays.add(dStr);
+  });
+  if(profile?.lastDay)studiedDays.add(profile.lastDay);
+  const dayNames=['L','M','X','J','V','S','D'];
+  let html=`<div style="display:flex;gap:4px;margin-bottom:.75rem;cursor:pointer" onclick="showMisLogros('progreso')">`;
+  days.forEach((d,i)=>{
+    const dStr=d.toISOString().split('T')[0];
+    const isToday=dStr===t;
+    const isExam=examDates.includes(dStr);
+    const isStudied=studiedDays.has(dStr);
+    const isMissed=dStr<t&&!studiedDays.has(dStr)&&dStr>=(profile?.createdAt?.split('T')[0]||t);
+    const isFuture=dStr>t;
+    let bg='var(--faint)';let color='var(--muted)';let border='1px solid var(--border)';
+    if(isExam){bg='var(--amber-l)';color='#92400E';border='1.5px solid var(--amber-b)';}
+    else if(isStudied){bg='var(--green-l)';color='#166534';border='1.5px solid var(--green-b)';}
+    else if(isMissed){bg='var(--red-l)';color='#991B1B';border='1.5px solid var(--red-b)';}
+    if(isToday)border='2px solid var(--black)';
+    html+=`<div style="flex:1;text-align:center;border-radius:var(--r);padding:6px 2px;background:${bg};border:${border}">
+      <div style="font-size:9px;color:${color};font-weight:600">${dayNames[i]}</div>
+      <div style="font-size:13px;font-weight:700;color:${color}">${d.getDate()}</div>
+    </div>`;
+  });
+  html+=`</div>`;
   wrap.innerHTML=html;
 }
 
