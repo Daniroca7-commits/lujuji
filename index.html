@@ -1323,6 +1323,24 @@ function showLogros(){
   // Resumen
   html+=`<div style="text-align:center;padding:1rem 0;font-size:13px;color:var(--muted)">${badges.length}/${ALL_BADGES.length} insignias desbloqueadas</div>`;
 
+  // Reading history
+  const readHist=profile.readHistory||[];
+  if(readHist.length>0){
+    html+=`<div class="logro-section"><div class="logro-title">📚 HISTORIAL DE LECTURA</div>`;
+    const recent=readHist.slice(-10).reverse();
+    recent.forEach(r=>{
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">
+        <span style="font-size:20px">📖</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700">${r.title}</div>
+          <div style="font-size:11px;color:var(--muted)">${r.date} · ${r.mins} min · ${r.words} palabras${r.page?' · pág. '+r.page:''}</div>
+        </div>
+      </div>`;
+    });
+    if(readHist.length>10)html+=`<div style="font-size:11px;color:var(--muted);text-align:center;padding:4px 0">Mostrando últimas 10 de ${readHist.length} lecturas</div>`;
+    html+=`</div>`;
+  }
+
   cont.innerHTML=html;
   show('s_logros');
 }
@@ -1612,9 +1630,18 @@ function buildSys(){
   const temariCtx=temariText?`TEMARI PUJAT:\n${temariText.substring(0,2000)}\nUsa aquest contingut per a explicacions, exemples i preguntes.`:'';
   const pendingExam=exams.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
   const examCtx=pendingExam?`EXAMEN PRÒXIM: ${pendingExam.name} en ${Math.ceil((new Date(pendingExam.date)-new Date())/(1000*60*60*24))} dies — inclou mini-repassos del tema.`:'';
+  
+  // Adaptive difficulty
+  const gamesOk=profile.perfectGames||0;const gamesTotal=profile.gamesPlayed||0;
+  const successRate=gamesTotal>3?Math.round((gamesOk/gamesTotal)*100):50;
+  let difficultyCtx='';
+  if(successRate>=80)difficultyCtx='NIVELL: L\'alumne encerta molt ('+successRate+'%). PUJA LA DIFICULTAT: preguntes més complexes, problemes de múltiples passos, vocabulari avançat, exercicis que requerixin pensament crític.';
+  else if(successRate<=30)difficultyCtx='NIVELL: L\'alumne falla molt ('+successRate+'%). BAIXA LA DIFICULTAT: simplifica les explicacions, dona més pistes, usa exemples molt concrets, preguntes més curtes i directes, celebra cada petit encert.';
+  else difficultyCtx='NIVELL: L\'alumne va bé ('+successRate+'% encerts). Mantín un nivell adequat al seu curs.';
 
   return `Ets l'agent de ${p.name} (${p.cursoLabel||'Primària'}) per a l'assignatura: ${s.name}. ${li[s.lang]}
 PERFIL: Le mola: ${hbs||'variat'}. Le mola: ${lv||'vàries'}. Li costa: ${hd||'no especificat'}.
+${difficultyCtx}
 USA els seus hobbies per a exemples concrets i analogies. VARIA les analogies — no repeteixis sempre el mateix esport o joc. Alterna entre tots els seus hobbies de forma aleatòria i de vegades usa analogies sorprenents i inesperades que els facin somriure.
 ${taskCtx}
 ${temariCtx}
@@ -1661,14 +1688,22 @@ function greet(){
 function renderQrow(s){
   const row=document.getElementById('qrow');row.innerHTML='';
   const qmap={
-    matematicas:{es:['Explícame las fracciones','No entiendo los decimales','Dame un problema 🔥','¿Qué repaso?']},
-    lengua:{es:['¿Qué es el sujeto?','Los acentos me cuestan','Dame un ejercicio','¿En qué he fallado?']},
-    medi:{ca:["Explica'm els nutrients","No entenc els processats","Fem preguntes del temari","Ajuda'm amb la tasca"]},
-    valencia:{ca:["Explica'm un concepte","Tinc un dubte","Fem una pregunta","Ajuda'm amb la tasca"]},
-    ingles:{en:["Explain the present simple","I don't understand tenses","Give me an exercise","Help me with my task"]},
+    matematicas:{es:['Explícame las fracciones','No entiendo los decimales','Dame un problema 🔥','🃏 Flashcards']},
+    lengua:{es:['¿Qué es el sujeto?','Los acentos me cuestan','Dame un ejercicio','🃏 Flashcards']},
+    medi:{ca:["Explica'm els nutrients","No entenc els processats","Fem preguntes del temari","🃏 Flashcards"]},
+    valencia:{ca:["Explica'm un concepte","Tinc un dubte","Fem una pregunta","🃏 Flashcards"]},
+    ingles:{en:["Explain the present simple","I don't understand tenses","Give me an exercise","🃏 Flashcards"]},
   };
-  const btns=(qmap[s.id]?.[s.lang])||['Ajuda\'m','Dame un ejercicio','No entiendo','¿Qué repaso?'];
-  btns.forEach(t=>{const b=document.createElement('button');b.className='qbtn';b.textContent=t;b.onclick=()=>{document.getElementById('chatIn').value=t;sendMsg();};row.appendChild(b);});
+  const btns=(qmap[s.id]?.[s.lang])||['Ajuda\'m','Dame un ejercicio','No entiendo','🃏 Flashcards'];
+  btns.forEach(t=>{
+    const b=document.createElement('button');b.className='qbtn';b.textContent=t;
+    if(t==='🃏 Flashcards'){
+      b.onclick=()=>startFlashcards(s);
+    } else {
+      b.onclick=()=>{document.getElementById('chatIn').value=t;sendMsg();};
+    }
+    row.appendChild(b);
+  });
 }
 
 // ════════════════════════════════════════════
@@ -1754,6 +1789,36 @@ function flashPts(n){
   f.textContent=mult>1?`+${total} pts ⭐ (${reason})`:(`+${total} pts ⭐`);
   f.style.display='block';setTimeout(()=>f.style.display='none',2000);
   checkBadges();
+}
+
+async function startFlashcards(s){
+  if(!apiKey){toast('Necesitas API key para las flashcards');return;}
+  const chat=document.getElementById('chat');
+  const loadDiv=document.createElement('div');loadDiv.className='msg bot';
+  loadDiv.innerHTML='<div class="ldots"><span></span><span></span><span></span></div> Generando flashcards...';
+  chat.appendChild(loadDiv);chat.scrollTop=chat.scrollHeight;
+  try{
+    const lang=s.lang;const langTxt={es:'en español',ca:'en valencià',en:'in English'};
+    const nivel=profile?.cursoLabel||'Primaria';
+    const temCtx=temariText?'Usa este temario: '+temariText.substring(0,800):'Genera sobre temas típicos de '+s.name+' para '+nivel;
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:600,messages:[{role:"user",content:`Genera exactamente 5 flashcards de repaso ${langTxt[lang]} para un alumno de ${nivel} de ${s.name}. ${temCtx}. Formato EXACTO por línea: PREGUNTA|RESPUESTA. Solo las 5 líneas, sin introducción ni explicación.`}]})});
+    const data=await res.json();const text=data.content?.map(b=>b.text||'').join('').trim()||'';
+    const cards=text.split('\n').filter(l=>l.includes('|')).map(l=>{const[q,a]=l.split('|');return{q:q.trim(),a:a?.trim()||'?'};}).slice(0,5);
+    if(cards.length===0){loadDiv.innerHTML='No se pudieron generar flashcards. Inténtalo de nuevo.';return;}
+    // Render flashcard UI
+    let html='<div style="font-size:14px;font-weight:700;margin-bottom:8px">🃏 Flashcards de repaso</div>';
+    cards.forEach((c,i)=>{
+      const id='fc'+Date.now()+'_'+i;
+      html+=`<div style="background:var(--faint);border:1.5px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:6px;cursor:pointer" onclick="this.querySelector('.fc-ans').style.display=this.querySelector('.fc-ans').style.display==='none'?'block':'none'">
+        <div style="font-size:13px;font-weight:600;color:var(--black)">❓ ${c.q}</div>
+        <div class="fc-ans" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:13px;color:var(--green);font-weight:600">✅ ${c.a}</div>
+      </div>`;
+    });
+    html+='<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">Toca cada tarjeta para ver la respuesta</div>';
+    loadDiv.innerHTML=html;
+    chat.scrollTop=chat.scrollHeight;
+    flashPts(10);
+  }catch(e){loadDiv.innerHTML='Error generando flashcards. Inténtalo de nuevo.';}
 }
 
 async function sendMsg(){
@@ -2977,6 +3042,9 @@ async function stopLectura(){
   const prevMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
   localStorage.setItem('lujuji_read_mins_'+today(),prevMins+readMins);
   profile.lecturas=(profile.lecturas||0)+1;
+  // Save to reading history
+  if(!profile.readHistory)profile.readHistory=[];
+  profile.readHistory.push({title,page:pags,mins:readMins,words,date:today()});
   checkBadges();sv();checkTempPrize();
   // Check if extra round completed (30+ min in finde)
   const totalReadToday=prevMins+readMins;
