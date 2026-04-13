@@ -1141,6 +1141,8 @@ function finishOb(){
 // ════════════════════════════════════════════
 function openDash(){
   if(!profile){show('s0');return;}
+  // Check if streak should be reset (missed yesterday)
+  verifyStreak();
   document.getElementById('dAva').textContent=profile.avatar||'📚';
   document.getElementById('dName').textContent=profile.name;
   document.getElementById('dCurso').textContent=profile.cursoLabel||'';
@@ -1193,6 +1195,16 @@ function checkStreak(){
   else{profile.streak=1;profile.lastDay=t;}
   document.getElementById('dStreak').textContent=profile.streak+'🔥';
   checkBadges();sv();
+}
+
+function verifyStreak(){
+  if(!profile||!profile.lastDay)return;
+  const t=today();
+  if(profile.lastDay===t)return; // Already studied today, streak is fine
+  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yStr=yesterday.toISOString().split('T')[0];
+  if(profile.lastDay===yStr)return; // Studied yesterday, streak continues when they study today
+  // Missed at least one day — reset streak to 0
+  profile.streak=0;sv();
 }
 
 function checkBadges(){
