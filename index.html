@@ -1633,10 +1633,10 @@ function renderExams(){
   let html=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.5rem">`;
   upcoming.forEach(e=>{
     const days=Math.ceil((new Date(e.date)-new Date(now))/(1000*60*60*24));
-    const urgent=days<=2;const soon=days<=6;
-    const bg=urgent?'#FEE2E2':soon?'#FEF3C7':'var(--faint)';
-    const color=urgent?'#991B1B':soon?'#92400E':'var(--black)';
-    const border=urgent?'#FCA5A5':soon?'#FDE68A':'var(--border)';
+    const urgent=days<=2;
+    const bg=urgent?'#FEE2E2':'#DCFCE7';
+    const color=urgent?'#991B1B':'#166534';
+    const border=urgent?'#FCA5A5':'#86EFAC';
     const subjMatch=SUBJS.find(s=>e.name.toLowerCase().includes(s.name.toLowerCase().substring(0,4)));
     const onclick=subjMatch?`openStudyDirect('${subjMatch.id}')`:`showStudyPicker()`;
     html+=`<div onclick="${onclick}" style="display:flex;align-items:center;gap:5px;padding:8px 12px;background:${bg};border:1.5px solid ${border};border-radius:12px;font-size:12px;cursor:pointer;transition:transform .1s;flex:1;min-width:120px" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform=''">
@@ -1644,7 +1644,7 @@ function renderExams(){
         <div style="font-weight:700;color:${color};font-size:13px">${e.name}</div>
         <div style="color:${color};opacity:.7;font-size:11px;margin-top:1px">${new Date(e.date+'T12:00:00').getDate()} ${new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{month:'short'})} · ${days}d</div>
       </div>
-      <span style="font-size:18px">${urgent?'⚠️':'📚'}</span>
+      <span style="font-size:18px">${urgent?'⚠️':'📝'}</span>
     </div>`;
   });
   html+=`<div onclick="openModal('modalExam')" style="display:flex;align-items:center;justify-content:center;padding:8px 12px;background:var(--faint);border:1.5px dashed var(--border);border-radius:12px;font-size:12px;cursor:pointer;min-width:50px;color:var(--muted);font-weight:600">+</div>`;
@@ -3153,14 +3153,16 @@ function renderMiniCalendar(){
   const examDates=exams.map(e=>e.date);
   const studiedDays=new Set();
   days.forEach(d=>{
-    const dStr=d.toISOString().split('T')[0];
+    const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');const dd=String(d.getDate()).padStart(2,'0');
+    const dStr=`${y}-${m}-${dd}`;
     if(parseInt(localStorage.getItem('lujuji_timer_'+dStr)||'0')>=1200)studiedDays.add(dStr);
   });
   if(profile?.lastDay)studiedDays.add(profile.lastDay);
   const dayNames=['L','M','X','J','V','S','D'];
   let html=`<div style="display:flex;gap:4px;margin-bottom:.75rem;cursor:pointer" onclick="showMisLogros('progreso')">`;
   days.forEach((d,i)=>{
-    const dStr=d.toISOString().split('T')[0];
+    const y=d.getFullYear();const m=String(d.getMonth()+1).padStart(2,'0');const dd=String(d.getDate()).padStart(2,'0');
+    const dStr=`${y}-${m}-${dd}`;
     const isToday=dStr===t;
     const isExam=examDates.includes(dStr);
     const isStudied=studiedDays.has(dStr);
@@ -3173,7 +3175,8 @@ function renderMiniCalendar(){
     if(isToday)border='2px solid var(--black)';
     html+=`<div style="flex:1;text-align:center;border-radius:var(--r);padding:6px 2px;background:${bg};border:${border}">
       <div style="font-size:9px;color:${color};font-weight:600">${dayNames[i]}</div>
-      <div style="font-size:13px;font-weight:700;color:${color}">${d.getDate()}</div>
+      <div style="font-size:14px;font-weight:700;color:${color}">${d.getDate()}</div>
+      ${isExam?`<div style="width:5px;height:5px;border-radius:50%;background:var(--amber);margin:2px auto 0"></div>`:''}
     </div>`;
   });
   html+=`</div>`;
