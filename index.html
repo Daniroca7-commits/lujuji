@@ -95,7 +95,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
-.stat-card{background:var(--white);border-radius:var(--r);padding:14px 10px;text-align:center;border:1.5px solid var(--border)}
+.stat-card{background:var(--white);border-radius:var(--r);padding:14px 10px;text-align:center;border:1.5px solid var(--border);transition:transform .15s,border-color .15s}
+.stat-card:active{transform:scale(0.96)}
 .stat-val{font-size:24px;font-weight:800;margin-bottom:2px}
 .stat-lbl{font-size:11px;color:var(--muted);font-weight:500}
 .sc-streak .stat-val{color:var(--orange)}
@@ -143,7 +144,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 .ae-sub{font-size:13px;color:var(--muted);margin-bottom:1rem;line-height:1.5}
 
 /* MAIN ACTION */
-.main-action{width:100%;padding:16px;background:var(--black);color:#fff;border:none;border-radius:var(--rl);font-size:16px;font-weight:700;cursor:pointer;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.main-action{width:100%;padding:16px;background:var(--black);color:#fff;border:none;border-radius:var(--rl);font-size:16px;font-weight:700;cursor:pointer;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s,opacity .1s}
+.main-action:active{transform:scale(0.98);opacity:.9}
 
 /* MODALES */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
@@ -357,7 +359,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 .save-btn{width:100%;padding:13px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
 
 /* TOAST */
-.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--black);color:#fff;padding:11px 22px;border-radius:var(--r);font-size:13px;font-weight:600;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--black);color:#fff;padding:13px 24px;border-radius:var(--rl);font-size:14px;font-weight:700;z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
 /* PIN MODAL */
@@ -1195,7 +1197,7 @@ function checkStreak(){
 
 function checkBadges(){
   if(!profile.badges)profile.badges=[];
-  const nb=(id)=>{if(!profile.badges.includes(id)){profile.badges.push(id);document.getElementById('dBadges').textContent=profile.badges.length;toast('🏅 ¡Nueva insignia desbloqueada!');confetti();}};
+  const nb=(id)=>{if(!profile.badges.includes(id)){profile.badges.push(id);document.getElementById('dBadges').textContent=profile.badges.length;const badge=ALL_BADGES.find(b=>b.id===id);toast(`🏅 ¡${badge?badge.icon+' '+badge.name:'Nueva insignia'}!`);confetti();}};
   // Rachas
   if(profile.streak>=1)nb('streak1');
   if(profile.streak>=3)nb('streak3');
@@ -1611,9 +1613,11 @@ REGLA IMPORTANT — ASSIGNATURA ESTRICTA:
 Estàs treballant NOMÉS ${s.name}. Si l'alumne pregunta sobre ${otherSubjs}, respon: "Això és d'una altra assignatura! Ara estem amb ${s.name}. Quan acabes pots obrir-la 😊" NO respongues sobre altres assignatures.
 
 CORRECCIÓ ORTOGRÀFICA OBLIGATÒRIA:
-Si l'alumne escriu paraules amb faltes, AL FINAL de la teua resposta afegeix SEMPRE:
+Revisa CADA missatge de l'alumne. Busca: accents que falten (pagina→página, leccion→lección, tambien→también), majúscules al principi de frase i després de punt, confusions b/v, h que falta, g/j, c/qu/k, ll/y, r/rr. 
+Si trobes QUALSEVOL falta, AL FINAL de la teua resposta afegeix SEMPRE:
 "📝 Ortografia: ❌ [paraula_mal] → ✅ [paraula_correcta]"
-Per a cada falta. L'alumne haurà de confirmar que ho ha vist abans de poder continuar.
+Per a CADA falta trobada. L'alumne haurà de confirmar que ho ha vist.
+Si NO hi ha faltes, NO afegeixis res d'ortografia.
 
 CORRECCIÓ QUAN FALLA (5 PASSOS):
 1.✅ Primer el que SÍ ha fet bé
@@ -2121,14 +2125,29 @@ function sSimResults(){
 // ════════════════════════════════════════════
 // DICTADO
 // ════════════════════════════════════════════
-function buildDictado(subj){
+async function buildDictado(subj){
   if(!subj.hasDictado)return;
-  const lang=subj.lang;const pool=DICTADOS[lang]||DICTADOS.ca;
-  dictText=pool[Math.floor(Math.random()*pool.length)];
+  const lang=subj.lang;
   document.getElementById('dictTa').value='';document.getElementById('dictResult').style.display='none';
-  document.getElementById('dictCheckBtn').disabled=true;document.getElementById('dictPlayBtn').disabled=false;
-  document.getElementById('dictPlayBtn').textContent='🔊 Escuchar el dictado';
+  document.getElementById('dictCheckBtn').disabled=true;document.getElementById('dictPlayBtn').disabled=true;
+  document.getElementById('dictPlayBtn').textContent='Generando dictado...';
   document.getElementById('dictPenalty').classList.remove('vis');
+  
+  if(apiKey){
+    try{
+      const langInstr={es:'Escribe en español.',ca:'Escriu en valencià.',en:'Write in English.'};
+      const nivel=profile?.cursoLabel||'Primaria';
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:200,messages:[{role:"user",content:`Genera un texto de dictado para un alumno de ${nivel}. ${langInstr[lang]} El texto debe tener 2-3 frases (30-50 palabras), vocabulario adecuado a su edad, con alguna palabra que pueda ser difícil de escribir. Solo el texto del dictado, sin explicaciones ni comillas.`}]})});
+      const data=await res.json();
+      const text=data.content?.map(b=>b.text||'').join('').trim()||'';
+      if(text.length>20){dictText=text;}
+      else{const pool=DICTADOS[lang]||DICTADOS.es;dictText=pool[Math.floor(Math.random()*pool.length)];}
+    }catch(e){const pool=DICTADOS[lang]||DICTADOS.es;dictText=pool[Math.floor(Math.random()*pool.length)];}
+  } else {
+    const pool=DICTADOS[lang]||DICTADOS.es;dictText=pool[Math.floor(Math.random()*pool.length)];
+  }
+  document.getElementById('dictPlayBtn').disabled=false;
+  document.getElementById('dictPlayBtn').textContent='🔊 Escuchar el dictado';
 }
 
 function playDictado(){
@@ -2357,16 +2376,20 @@ function renderParentSummary(){
 // PREMIOS TEMPORALES + RONDAS EXTRA
 // ════════════════════════════════════════════
 function addTempPrize(){
-  const emoji=document.getElementById('newTempEmoji').value.trim()||'🌟';
-  const name=document.getElementById('newTempName').value.trim();
-  const type=document.getElementById('newTempType').value;
-  const target=parseInt(document.getElementById('newTempTarget').value)||0;
-  if(!name||!target){toast('Escribe el premio y el objetivo');return;}
-  tempPrize={emoji,name,type,target,date:today(),completed:false};
-  localStorage.setItem('lujuji_tempprize',JSON.stringify(tempPrize));
-  renderParentTempPrize();
-  document.getElementById('newTempName').value='';document.getElementById('newTempTarget').value='';
-  toast('⭐ Premio especial creado para hoy');
+  try{
+    const emoji=document.getElementById('newTempEmoji')?.value?.trim()||'🌟';
+    const name=document.getElementById('newTempName')?.value?.trim()||'';
+    const type=document.getElementById('newTempType')?.value||'lectura';
+    const target=parseInt(document.getElementById('newTempTarget')?.value)||0;
+    if(!name){toast('Escribe el nombre del premio');return;}
+    if(!target){toast('Escribe el objetivo (minutos o puntos)');return;}
+    tempPrize={emoji:emoji,name:name,type:type,target:target,date:today(),completed:false};
+    localStorage.setItem('lujuji_tempprize',JSON.stringify(tempPrize));
+    renderParentTempPrize();
+    document.getElementById('newTempName').value='';
+    document.getElementById('newTempTarget').value='';
+    toast('⭐ Premio especial creado para hoy');
+  }catch(e){toast('Error: '+e.message);}
 }
 
 function removeTempPrize(){
