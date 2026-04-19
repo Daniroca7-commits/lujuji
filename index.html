@@ -555,6 +555,11 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <div class="stat-card sc-pts" style="cursor:pointer" onclick="showMisLogros('premios')"><div class="stat-val" id="dPts">0</div><div class="stat-lbl">puntos ⭐</div></div>
     <div class="stat-card" style="cursor:pointer" onclick="showMisLogros('insignias')"><div class="stat-val" id="dBadges">0</div><div class="stat-lbl">insignias 🏅</div></div>
   </div>
+  <div class="timer-card">
+    <span style="font-size:16px">⏱️</span>
+    <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBar" style="width:0%"></div></div>
+    <span class="timer-txt" id="timerTxt">0:00 / 20:00</span>
+  </div>
   <div id="miniCalendar"></div>
   <div id="tempPrizeBanner"></div>
   <div id="extraRoundBanner"></div>
@@ -641,6 +646,11 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <span class="sh-lang" id="shLang"></span>
   </div>
   <div class="mini-hito" id="hitoStudy"></div>
+  <div class="timer-card" style="margin-bottom:.5rem">
+    <span style="font-size:16px">⏱️</span>
+    <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBarStudy" style="width:0%"></div></div>
+    <span class="timer-txt" id="timerTxtStudy">0:00 / 20:00</span>
+  </div>
   <div class="task-banner" id="taskBanner" style="display:none">
     <span class="tb-icon">📌</span>
     <span class="tb-text" id="taskBannerText"></span>
@@ -1146,6 +1156,10 @@ function openDash(){
   const erb=document.getElementById('extraRoundBanner');if(erb)erb.innerHTML=renderExtraRoundBanner();
   checkTempPrize();
   if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  // Restore timer display from saved data
+  const savedTimer=parseInt(localStorage.getItem('lujuji_timer_'+today())||'0');
+  timerSecs=savedTimer;timerDone=timerSecs>=1200;
+  updateTimerUI();
   show('s_dash');
 }
 
@@ -1317,9 +1331,14 @@ function startTimer(){
 function updateTimerUI(){
   const mins=Math.floor(timerSecs/60);const secs=timerSecs%60;
   const pct=Math.min(100,(timerSecs/1200)*100);
-  const fill=document.getElementById('timerBar');const txt=document.getElementById('timerTxt');
-  if(fill){fill.style.width=pct+'%';fill.className='timer-bar-fill'+(timerDone?' done':pct>75?' warn':'');}
-  if(txt)txt.textContent=`${mins}:${String(secs).padStart(2,'0')} / 20:00`;
+  const cls='timer-bar-fill'+(timerDone?' done':pct>75?' warn':'');
+  const txt=`${mins}:${String(secs).padStart(2,'0')} / 20:00`;
+  // Dashboard timer
+  const fill=document.getElementById('timerBar');if(fill){fill.style.width=pct+'%';fill.className=cls;}
+  const t1=document.getElementById('timerTxt');if(t1)t1.textContent=txt;
+  // Study timer
+  const fill2=document.getElementById('timerBarStudy');if(fill2){fill2.style.width=pct+'%';fill2.className=cls;}
+  const t2=document.getElementById('timerTxtStudy');if(t2)t2.textContent=txt;
 }
 
 function checkStreak(){
@@ -1839,9 +1858,22 @@ function buildSys(){
   else if(successRate<=30)difficultyCtx='NIVELL: L\'alumne falla molt ('+successRate+'%). BAIXA LA DIFICULTAT: simplifica les explicacions, dona més pistes, usa exemples molt concrets, preguntes més curtes i directes, celebra cada petit encert.';
   else difficultyCtx='NIVELL: L\'alumne va bé ('+successRate+'% encerts). Mantín un nivell adequat al seu curs.';
 
+  // Time and progress context
+  const studyMinsToday=Math.floor(timerSecs/60);
+  const readMinsToday=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
+  const streakVal=p.streak||0;
+  const ptsVal=p.pts||0;
+  const available=ptsVal-redeemed.reduce((s,r)=>s+r.pts,0);
+  const closestPrize=prizes.filter(pr=>pr.pts>available).sort((a,b)=>(a.pts-available)-(b.pts-available))[0];
+  const timeCtx=`TEMPS AVUI: ${studyMinsToday} min estudiant, ${readMinsToday} min lectura. ${timerDone?'JA ha completat els 20 min del dia! 🎉':'Falten '+(20-studyMinsToday)+' min per confirmar la ratxa.'}
+RATXA: ${streakVal} dies seguits. ${streakVal===0?'Encara no ha començat la ratxa!':''}
+PUNTS: ${available.toLocaleString()} punts disponibles.${closestPrize?' Pròxim premi: "'+closestPrize.name+'" a '+closestPrize.pts.toLocaleString()+' pts (falten '+(closestPrize.pts-available).toLocaleString()+').':''}
+Si l'alumne pregunta pel temps, la ratxa, els punts o els premis, RESPON amb aquestes dades reals. MAI diguis "no tinc accés" — TU TENS la informació.`;
+
   return `Ets l'agent de ${p.name} (${p.cursoLabel||'Primària'}) per a l'assignatura: ${s.name}. ${li[s.lang]}
 PERFIL: Le mola: ${hbs||'variat'}. Le mola: ${lv||'vàries'}. Li costa: ${hd||'no especificat'}.
 ${difficultyCtx}
+${timeCtx}
 USA els seus hobbies per a exemples concrets i analogies. VARIA les analogies — no repeteixis sempre el mateix esport o joc. Alterna entre tots els seus hobbies de forma aleatòria i de vegades usa analogies sorprenents i inesperades que els facin somriure.
 ${taskCtx}
 ${temariCtx}
@@ -2446,10 +2478,19 @@ if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{};
 
 function checkDictado(){
   const userText=document.getElementById('dictTa').value.trim();if(!userText||!dictText)return;
-  const orig=dictText.replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
-  const user=userText.replace(/[.,;:!?¡¿]/g,'').split(/\s+/);
+  // Compare word by word keeping punctuation attached
+  const orig=dictText.split(/\s+/);
+  const user=userText.split(/\s+/);
   let correct=0;let html='';const wrongWords=[];
-  orig.forEach((word,i)=>{const userWord=user[i]||'___';const isOk=word===userWord;if(isOk)correct++;else wrongWords.push({wrong:userWord,correct:word});
+  orig.forEach((word,i)=>{
+    const userWord=user[i]||'___';
+    const isOk=word===userWord;
+    // Also check if only punctuation is missing (word without punct matches)
+    const wordClean=word.replace(/[.,;:!?¡¿""«»]/g,'');
+    const userClean=userWord.replace(/[.,;:!?¡¿""«»]/g,'');
+    const isPunctError=!isOk&&wordClean===userClean;
+    if(isOk)correct++;
+    else wrongWords.push({wrong:userWord,correct:word,punctOnly:isPunctError});
     html+=`<span class="dict-word ${isOk?'dw-ok':'dw-err'}">${isOk?word:userWord}</span>`;
     if(!isOk&&userWord!=='___')html+=`<span class="dict-word dw-fix">${word}</span>`;html+=' ';
   });
@@ -2460,10 +2501,16 @@ function checkDictado(){
   const dMsg50=lang==='en'?'💪 Almost!':lang==='ca'?'💪 Quasi!':'💪 ¡Casi!';
   const dMsg0=lang==='en'?'📝 Keep practicing!':lang==='ca'?'📝 Practica més!':'📝 ¡Sigue practicando!';
   const dCorr=lang==='en'?'correct':lang==='ca'?'correctes':'correctas';
-  result.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:.75rem;color:${pct>=80?'#166534':pct>=50?'#92400E':'#991B1B'}">${pct>=80?dMsg80:pct>=50?dMsg50:dMsg0} ${correct}/${orig.length} ${dCorr} (${pct}%)</div>${html}`;
+  // Show punctuation tips
+  const punctErrors=wrongWords.filter(w=>w.punctOnly);
+  let punctTip='';
+  if(punctErrors.length>0){
+    const punctLabel={es:'⚠️ Signos de puntuación: ',ca:'⚠️ Signes de puntuació: ',en:'⚠️ Punctuation: '};
+    punctTip=`<div style="font-size:12px;color:var(--amber);font-weight:600;margin-top:6px">${punctLabel[lang]}${punctErrors.map(w=>`"${w.wrong}" → "${w.correct}"`).join(', ')}</div>`;
+  }
+  result.innerHTML=`<div style="font-weight:700;font-size:14px;margin-bottom:.75rem;color:${pct>=80?'#166534':pct>=50?'#92400E':'#991B1B'}">${pct>=80?dMsg80:pct>=50?dMsg50:dMsg0} ${correct}/${orig.length} ${dCorr} (${pct}%)</div>${html}${punctTip}`;
   if(pct>=80)flashPts(15);else if(pct>=50)flashPts(5);
   profile.dictados=(profile.dictados||0)+1;checkBadges();sv();
-  // Penalización si hay errores
   if(wrongWords.length>0)startDictPenalty(wrongWords);
   recordActivity();
 }
