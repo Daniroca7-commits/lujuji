@@ -800,9 +800,31 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
       </div>
     </div>
   </div>
-</div>
 
-<!-- ZONA PADRES -->
+  <!-- TAB MAPA -->
+  <div class="tab-pane" id="tp-mapa">
+    <div style="text-align:center;margin-bottom:.75rem">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+        <button onclick="startMapQuiz('provincias')" style="padding:6px 12px;background:var(--green-l);border:1.5px solid var(--green-b);border-radius:var(--r);font-size:11px;font-weight:600;color:#166534;cursor:pointer">📍 Provincias</button>
+        <button onclick="startMapQuiz('comunidades')" style="padding:6px 12px;background:var(--blue-l);border:1.5px solid var(--blue-b);border-radius:var(--r);font-size:11px;font-weight:600;color:#1D4ED8;cursor:pointer">🏛️ Comunidades</button>
+        <button onclick="startMapQuiz('rios')" style="padding:6px 12px;background:var(--purple-l);border:1.5px solid var(--purple-b);border-radius:var(--r);font-size:11px;font-weight:600;color:var(--purple);cursor:pointer">🌊 Ríos</button>
+        <button onclick="startMapQuiz('cordilleras')" style="padding:6px 12px;background:var(--amber-l);border:1.5px solid var(--amber-b);border-radius:var(--r);font-size:11px;font-weight:600;color:#92400E;cursor:pointer">⛰️ Cordilleras</button>
+      </div>
+    </div>
+    <div id="mapSvgContainer" style="text-align:center"><div style="padding:2rem;color:var(--muted)">Cargando mapa...</div></div>
+    <div id="mapQuizControls" style="display:none">
+      <div id="mapQuizPrompt" style="text-align:center;font-size:14px;font-weight:700;margin:8px 0"></div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="mapAnswer" placeholder="Escribe el nombre..." style="flex:1;padding:10px;font-size:14px;border:1.5px solid var(--border);border-radius:var(--r);outline:none" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkMapAnswer()"/>
+        <button onclick="checkMapAnswer()" style="padding:10px 16px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer">✓</button>
+      </div>
+      <div id="mapQuizFeedback" style="text-align:center;margin-top:6px;font-size:13px;font-weight:600"></div>
+      <div id="mapQuizScore" style="text-align:center;margin-top:4px;font-size:11px;color:var(--muted)"></div>
+    </div>
+    <div id="mapQuizArea"></div>
+  </div>
+
+</div>
 <!-- LECTURA -->
 <div class="screen" id="s_lectura">
   <div class="ob-top">
@@ -1790,6 +1812,7 @@ function openStudy(subj,task){
   const tabs=document.getElementById('modeTabs');tabs.innerHTML='';
   const tabList=[{id:'agente',label:'💬 Agente'},{id:'juego',label:'🎮 Juego'},{id:'simulacro',label:'📝 Simulacro'}];
   if(subj.hasDictado)tabList.push({id:'dictado',label:'🎙️ Dictado'});
+  if(subj.id==='medi')tabList.push({id:'mapa',label:'🗺️ Mapa'});
   tabList.forEach((t,i)=>{const b=document.createElement('button');b.className='stab'+(i===0?' active':'');b.textContent=t.label;b.onclick=()=>sTab(t.id,b);tabs.appendChild(b);});
 
   // Juego/Sim — mostrar aviso si no hay temario
@@ -3430,6 +3453,228 @@ async function submitLecturaAns(title,questions){
     }catch(e){document.getElementById('lecturaQContent').innerHTML='<div style="font-size:13px;color:var(--green)">🌟 ¡Muy bien por leer! +20 pts</div>';}
   }
 }
+
+// ════════════════════════════════════════════
+// MAPA QUIZ
+// ════════════════════════════════════════════
+const MAP_DATA={
+  provincias:{
+    title:'Provincias de España',
+    items:[
+      {name:'A Coruña',hint:'Noroeste, costa atlántica, arriba de Pontevedra'},
+      {name:'Lugo',hint:'Norte de Galicia, interior, al este de A Coruña'},
+      {name:'Ourense',hint:'Sur de Galicia, interior, debajo de Lugo'},
+      {name:'Pontevedra',hint:'Suroeste de Galicia, costa, debajo de A Coruña'},
+      {name:'Asturias',hint:'Costa norte, entre Galicia y Cantabria'},
+      {name:'Cantabria',hint:'Costa norte, entre Asturias y País Vasco'},
+      {name:'Vizcaya',hint:'País Vasco, costa, la más al este'},
+      {name:'Guipúzcoa',hint:'País Vasco, costa, entre Vizcaya y Francia'},
+      {name:'Álava',hint:'País Vasco, interior, al sur de Vizcaya'},
+      {name:'Navarra',hint:'Norte, entre País Vasco y Aragón, frontera con Francia'},
+      {name:'León',hint:'Noroeste interior, grande, al sur de Asturias'},
+      {name:'Zamora',hint:'Oeste, debajo de León, frontera con Portugal'},
+      {name:'Salamanca',hint:'Oeste, debajo de Zamora, frontera con Portugal'},
+      {name:'Valladolid',hint:'Centro-norte, al este de Zamora'},
+      {name:'Palencia',hint:'Norte, entre León y Burgos'},
+      {name:'Burgos',hint:'Norte-centro, grande, al este de Palencia'},
+      {name:'Soria',hint:'Centro-norte, al este de Burgos, pequeña'},
+      {name:'Segovia',hint:'Centro, al sur de Valladolid, cerca de Madrid'},
+      {name:'Ávila',hint:'Centro-oeste, al sur de Valladolid, al oeste de Segovia'},
+      {name:'La Rioja',hint:'Norte, pequeña, entre Navarra y Burgos'},
+      {name:'Huesca',hint:'Noreste, Pirineos, al norte de Zaragoza'},
+      {name:'Zaragoza',hint:'Noreste, grande, centro de Aragón'},
+      {name:'Teruel',hint:'Este interior, al sur de Zaragoza'},
+      {name:'Lleida',hint:'Noreste, interior de Cataluña, Pirineos'},
+      {name:'Girona',hint:'Noreste, costa, frontera con Francia'},
+      {name:'Barcelona',hint:'Costa noreste, entre Girona y Tarragona'},
+      {name:'Tarragona',hint:'Costa este, al sur de Barcelona'},
+      {name:'Castellón',hint:'Costa este, al sur de Tarragona'},
+      {name:'Valencia',hint:'Costa este, centro de la Comunitat Valenciana'},
+      {name:'Alicante',hint:'Costa sureste, al sur de Valencia'},
+      {name:'Murcia',hint:'Sureste, entre Alicante y Almería'},
+      {name:'Almería',hint:'Sureste, costa, la más al este de Andalucía'},
+      {name:'Granada',hint:'Sur, al oeste de Almería, Sierra Nevada'},
+      {name:'Málaga',hint:'Costa sur, entre Granada y Cádiz'},
+      {name:'Jaén',hint:'Interior de Andalucía, al norte de Granada'},
+      {name:'Córdoba',hint:'Centro de Andalucía, al norte de Málaga'},
+      {name:'Sevilla',hint:'Suroeste, grande, al oeste de Córdoba'},
+      {name:'Huelva',hint:'Suroeste, costa, frontera con Portugal'},
+      {name:'Cádiz',hint:'Sur, costa, el punto más al sur de España'},
+      {name:'Badajoz',hint:'Suroeste, grande, frontera con Portugal, Extremadura'},
+      {name:'Cáceres',hint:'Oeste, grande, al norte de Badajoz, Extremadura'},
+      {name:'Madrid',hint:'Centro de España, comunidad uniprovincial'},
+      {name:'Toledo',hint:'Centro-sur, al sur de Madrid, grande'},
+      {name:'Ciudad Real',hint:'Centro-sur, al sur de Toledo'},
+      {name:'Cuenca',hint:'Centro-este, al este de Toledo'},
+      {name:'Guadalajara',hint:'Centro, al noreste de Madrid'},
+      {name:'Albacete',hint:'Sureste interior, entre Ciudad Real y Murcia'},
+      {name:'Islas Baleares',hint:'Islas en el Mediterráneo, al este de Valencia'},
+      {name:'Las Palmas',hint:'Islas Canarias, islas orientales'},
+      {name:'Santa Cruz de Tenerife',hint:'Islas Canarias, islas occidentales'}
+    ]
+  },
+  comunidades:{
+    title:'Comunidades Autónomas',
+    items:[
+      {name:'Galicia',hint:'Noroeste, 4 provincias, costa atlántica'},
+      {name:'Asturias',hint:'Costa norte, entre Galicia y Cantabria'},
+      {name:'Cantabria',hint:'Costa norte, entre Asturias y País Vasco'},
+      {name:'País Vasco',hint:'Norte, 3 provincias, junto a Francia'},
+      {name:'Navarra',hint:'Norte, entre País Vasco y Aragón'},
+      {name:'La Rioja',hint:'Norte, pequeña, entre Navarra y Castilla y León'},
+      {name:'Aragón',hint:'Noreste, 3 provincias, Pirineos'},
+      {name:'Cataluña',hint:'Noreste, costa mediterránea, frontera con Francia'},
+      {name:'Castilla y León',hint:'Centro-norte, la más grande, 9 provincias'},
+      {name:'Madrid',hint:'Centro de España, rodea la capital'},
+      {name:'Castilla-La Mancha',hint:'Centro-sur, 5 provincias'},
+      {name:'Comunitat Valenciana',hint:'Costa este, 3 provincias'},
+      {name:'Murcia',hint:'Sureste, costa, uniprovincial'},
+      {name:'Extremadura',hint:'Suroeste, 2 provincias, frontera con Portugal'},
+      {name:'Andalucía',hint:'Sur, la más poblada, 8 provincias, costa sur'},
+      {name:'Islas Baleares',hint:'Islas en el Mediterráneo'},
+      {name:'Islas Canarias',hint:'Islas en el Atlántico, cerca de África'},
+    ]
+  },
+  rios:{
+    title:'Ríos de España',
+    items:[
+      {name:'Ebro',hint:'Nace en Cantabria, desemboca en el Mediterráneo por Tarragona. Pasa por Zaragoza'},
+      {name:'Duero',hint:'El más largo de la Península. Nace en Soria, pasa por Valladolid, desemboca en Oporto (Portugal)'},
+      {name:'Tajo',hint:'El más largo de la Península Ibérica. Nace en Teruel, pasa por Toledo y Madrid, desemboca en Lisboa'},
+      {name:'Guadiana',hint:'Nace en Ciudad Real, frontera con Portugal, desemboca en Huelva'},
+      {name:'Guadalquivir',hint:'Nace en Jaén, pasa por Córdoba y Sevilla, desemboca en Sanlúcar (Cádiz)'},
+      {name:'Segura',hint:'Nace en Jaén, pasa por Murcia, desemboca en el Mediterráneo'},
+      {name:'Júcar',hint:'Nace en Cuenca, desemboca en Valencia, Mediterráneo'},
+      {name:'Turia',hint:'Nace en Teruel, desemboca en Valencia'},
+      {name:'Miño',hint:'El más importante de Galicia. Desemboca en el Atlántico, frontera con Portugal'},
+      {name:'Nalón',hint:'El más largo de Asturias, desemboca en el Cantábrico'},
+      {name:'Nervión',hint:'Pasa por Bilbao, desemboca en el Cantábrico'},
+    ]
+  },
+  cordilleras:{
+    title:'Cordilleras y montañas',
+    items:[
+      {name:'Pirineos',hint:'Norte, frontera con Francia, de este a oeste'},
+      {name:'Cordillera Cantábrica',hint:'Norte, paralela a la costa cantábrica'},
+      {name:'Sistema Ibérico',hint:'Noreste al sureste, separa la Meseta del Mediterráneo'},
+      {name:'Sistema Central',hint:'Centro, divide la Meseta en norte y sur. Sierra de Guadarrama'},
+      {name:'Sierra Morena',hint:'Sur de la Meseta, separa la Meseta de Andalucía'},
+      {name:'Sistemas Béticos',hint:'Sur y sureste, incluye Sierra Nevada (Mulhacén, el pico más alto peninsular)'},
+      {name:'Montes de Toledo',hint:'Centro, entre el Tajo y el Guadiana'},
+      {name:'Macizo Galaico',hint:'Noroeste, Galicia'},
+      {name:'Sierra Nevada',hint:'Sur, Granada, pico Mulhacén (3.479m)'},
+      {name:'Teide',hint:'Islas Canarias, Tenerife, el pico más alto de España (3.718m)'},
+    ]
+  }
+};
+
+let mapQuizItems=[];let mapQuizIdx=0;let mapQuizScore=0;let mapQuizType='';
+
+let mapSvgLoaded=false;
+async function loadMapSvg(){
+  if(mapSvgLoaded)return true;
+  const container=document.getElementById('mapSvgContainer');
+  if(!container)return false;
+  try{
+    const res=await fetch('spain.svg');
+    if(!res.ok)throw new Error('No se pudo cargar el mapa');
+    const svg=await res.text();
+    container.innerHTML=svg;
+    mapSvgLoaded=true;
+    return true;
+  }catch(e){
+    container.innerHTML='<div style="padding:1rem;color:var(--red);text-align:center">Error cargando el mapa. Recarga la página.</div>';
+    return false;
+  }
+}
+
+async function startMapQuiz(type){
+  mapQuizType=type;
+  const data=MAP_DATA[type];if(!data)return;
+  
+  // Load SVG if not loaded
+  const loaded=await loadMapSvg();
+  if(!loaded)return;
+  
+  // Reset all provinces on map
+  document.querySelectorAll('.pr').forEach(p=>{p.className='pr';});
+  // Show controls
+  document.getElementById('mapQuizControls').style.display='block';
+  
+  if(type==='provincias'){
+    mapQuizItems=[...data.items].sort(()=>Math.random()-.5).slice(0,15);
+  } else {
+    mapQuizItems=[...data.items].sort(()=>Math.random()-.5);
+  }
+  mapQuizIdx=0;mapQuizScore=0;
+  document.getElementById('mapQuizArea').innerHTML='';
+  renderMapQuestion();
+}
+
+function renderMapQuestion(){
+  if(mapQuizIdx>=mapQuizItems.length){
+    // Show final score
+    const pct=Math.round((mapQuizScore/mapQuizItems.length)*100);
+    document.getElementById('mapQuizControls').style.display='none';
+    document.getElementById('mapQuizArea').innerHTML=`<div style="text-align:center;padding:1rem">
+      <div style="font-size:36px;margin-bottom:6px">${pct>=80?'🌟':pct>=50?'💪':'📝'}</div>
+      <div style="font-size:22px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)'}">${mapQuizScore}/${mapQuizItems.length}</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">${pct>=80?'¡Excelente!':pct>=50?'¡Casi! Sigue practicando':'Necesitas repasar más'}</div>
+      <button onclick="startMapQuiz('${mapQuizType}')" style="margin-top:.75rem;padding:8px 16px;background:var(--black);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer">🔄 Repetir</button>
+    </div>`;
+    if(pct>=80)flashPts(20);else if(pct>=50)flashPts(10);
+    return;
+  }
+  const item=mapQuizItems[mapQuizIdx];
+  const num=mapQuizIdx+1;const total=mapQuizItems.length;
+  
+  // Highlight the province on the map
+  document.querySelectorAll('.pr.hi').forEach(p=>p.classList.remove('hi'));
+  // Find by data-name
+  const el=document.querySelector(`.pr[data-name="${item.name}"]`);
+  if(el)el.classList.add('hi');
+  
+  const whatLabel={provincias:'provincia',comunidades:'comunidad',rios:'río',cordilleras:'cordillera'};
+  document.getElementById('mapQuizPrompt').textContent=`${num}/${total} — ¿Qué ${whatLabel[mapQuizType]||'lugar'} es la zona amarilla?`;
+  document.getElementById('mapQuizScore').textContent=`Aciertos: ${mapQuizScore}`;
+  document.getElementById('mapQuizFeedback').textContent='';
+  const inp=document.getElementById('mapAnswer');
+  if(inp){inp.value='';inp.focus();}
+}
+
+function checkMapAnswer(){
+  const input=document.getElementById('mapAnswer');if(!input)return;
+  const answer=input.value.trim();if(!answer)return;
+  const item=mapQuizItems[mapQuizIdx];
+  const correct=item.name;
+  const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').trim();
+  const isOk=norm(answer)===norm(correct)||norm(answer).includes(norm(correct))||norm(correct).includes(norm(answer));
+  
+  // Color the province on the map
+  const el=document.querySelector(`.pr[data-name="${item.name}"]`);
+  if(el){el.classList.remove('hi');el.classList.add(isOk?'ok':'no');}
+  
+  const fb=document.getElementById('mapQuizFeedback');
+  if(isOk){
+    mapQuizScore++;
+    fb.innerHTML=`<span style="color:var(--green)">✅ ¡Correcto! ${correct}</span>`;
+  } else {
+    fb.innerHTML=`<span style="color:var(--red)">❌ Era: ${correct}</span>`;
+  }
+  
+  mapQuizIdx++;
+  setTimeout(()=>renderMapQuestion(),isOk?1200:2500);
+  recordActivity();
+}
+
+function mapClick(el){
+  // If quiz is active, don't do anything on click
+  if(mapQuizItems.length>0&&mapQuizIdx<mapQuizItems.length)return;
+  // Otherwise show the name
+  const name=el.dataset.name;
+  toast(name);
+}
+
 function confetti(){
   const c=document.createElement('canvas');c.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';document.body.appendChild(c);
   const ctx=c.getContext('2d');c.width=window.innerWidth;c.height=window.innerHeight;
