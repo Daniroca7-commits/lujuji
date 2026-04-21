@@ -3516,23 +3516,23 @@ const MAP_DATA={
   comunidades:{
     title:'Comunidades Autónomas',
     items:[
-      {name:'Galicia',hint:'Noroeste, 4 provincias, costa atlántica'},
-      {name:'Asturias',hint:'Costa norte, entre Galicia y Cantabria'},
-      {name:'Cantabria',hint:'Costa norte, entre Asturias y País Vasco'},
-      {name:'País Vasco',hint:'Norte, 3 provincias, junto a Francia'},
-      {name:'Navarra',hint:'Norte, entre País Vasco y Aragón'},
-      {name:'La Rioja',hint:'Norte, pequeña, entre Navarra y Castilla y León'},
-      {name:'Aragón',hint:'Noreste, 3 provincias, Pirineos'},
-      {name:'Cataluña',hint:'Noreste, costa mediterránea, frontera con Francia'},
-      {name:'Castilla y León',hint:'Centro-norte, la más grande, 9 provincias'},
-      {name:'Madrid',hint:'Centro de España, rodea la capital'},
-      {name:'Castilla-La Mancha',hint:'Centro-sur, 5 provincias'},
-      {name:'Comunitat Valenciana',hint:'Costa este, 3 provincias'},
-      {name:'Murcia',hint:'Sureste, costa, uniprovincial'},
-      {name:'Extremadura',hint:'Suroeste, 2 provincias, frontera con Portugal'},
-      {name:'Andalucía',hint:'Sur, la más poblada, 8 provincias, costa sur'},
-      {name:'Islas Baleares',hint:'Islas en el Mediterráneo'},
-      {name:'Islas Canarias',hint:'Islas en el Atlántico, cerca de África'},
+      {name:'Galicia',hint:'Noroeste, 4 provincias, costa atlántica',provs:['A Coruña','Lugo','Ourense','Pontevedra']},
+      {name:'Asturias',hint:'Costa norte, entre Galicia y Cantabria',provs:['Asturias']},
+      {name:'Cantabria',hint:'Costa norte, entre Asturias y País Vasco',provs:['Cantabria']},
+      {name:'País Vasco',hint:'Norte, 3 provincias, junto a Francia',provs:['Álava','Guipúzcoa','Vizcaya']},
+      {name:'Navarra',hint:'Norte, entre País Vasco y Aragón',provs:['Navarra']},
+      {name:'La Rioja',hint:'Norte, pequeña, entre Navarra y Castilla y León',provs:['La Rioja']},
+      {name:'Aragón',hint:'Noreste, 3 provincias, Pirineos',provs:['Huesca','Zaragoza','Teruel']},
+      {name:'Cataluña',hint:'Noreste, costa mediterránea, frontera con Francia',provs:['Barcelona','Girona','Lleida','Tarragona']},
+      {name:'Castilla y León',hint:'Centro-norte, la más grande, 9 provincias',provs:['León','Palencia','Burgos','Soria','Zamora','Valladolid','Segovia','Ávila','Salamanca']},
+      {name:'Madrid',hint:'Centro de España, rodea la capital',provs:['Madrid']},
+      {name:'Castilla-La Mancha',hint:'Centro-sur, 5 provincias',provs:['Toledo','Ciudad Real','Cuenca','Guadalajara','Albacete']},
+      {name:'Comunitat Valenciana',hint:'Costa este, 3 provincias',provs:['Castellón','Valencia','Alicante']},
+      {name:'Murcia',hint:'Sureste, costa, uniprovincial',provs:['Murcia']},
+      {name:'Extremadura',hint:'Suroeste, 2 provincias, frontera con Portugal',provs:['Cáceres','Badajoz']},
+      {name:'Andalucía',hint:'Sur, la más poblada, 8 provincias, costa sur',provs:['Huelva','Sevilla','Córdoba','Jaén','Granada','Almería','Málaga','Cádiz']},
+      {name:'Islas Baleares',hint:'Islas en el Mediterráneo',provs:['Islas Baleares']},
+      {name:'Islas Canarias',hint:'Islas en el Atlántico, cerca de África',provs:['Las Palmas','Santa Cruz de Tenerife']},
     ]
   },
   rios:{
@@ -3613,7 +3613,6 @@ async function startMapQuiz(type){
 
 function renderMapQuestion(){
   if(mapQuizIdx>=mapQuizItems.length){
-    // Show final score
     const pct=Math.round((mapQuizScore/mapQuizItems.length)*100);
     document.getElementById('mapQuizControls').style.display='none';
     document.getElementById('mapQuizArea').innerHTML=`<div style="text-align:center;padding:1rem">
@@ -3628,11 +3627,13 @@ function renderMapQuestion(){
   const item=mapQuizItems[mapQuizIdx];
   const num=mapQuizIdx+1;const total=mapQuizItems.length;
   
-  // Highlight the province on the map
+  // Remove previous highlight
   document.querySelectorAll('.pr.hi').forEach(p=>p.classList.remove('hi'));
-  // Find by data-name
-  const el=document.querySelector(`.pr[data-name="${item.name}"]`);
-  if(el)el.classList.add('hi');
+  // Find provinces to highlight (use provs array if exists, else match by name)
+  const provsToHighlight=item.provs||[item.name];
+  document.querySelectorAll('.pr').forEach(p=>{
+    if(provsToHighlight.includes(p.dataset.name))p.classList.add('hi');
+  });
   
   const whatLabel={provincias:'provincia',comunidades:'comunidad',rios:'río',cordilleras:'cordillera'};
   document.getElementById('mapQuizPrompt').textContent=`${num}/${total} — ¿Qué ${whatLabel[mapQuizType]||'lugar'} es la zona amarilla?`;
@@ -3650,16 +3651,18 @@ function checkMapAnswer(){
   const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'').trim();
   const isOk=norm(answer)===norm(correct)||norm(answer).includes(norm(correct))||norm(correct).includes(norm(answer));
   
-  // Color the province on the map
-  const el=document.querySelector(`.pr[data-name="${item.name}"]`);
-  if(el){el.classList.remove('hi');el.classList.add(isOk?'ok':'no');}
+  // Color the provinces on the map
+  const provsToColor=item.provs||[item.name];
+  document.querySelectorAll('.pr').forEach(p=>{
+    if(provsToColor.includes(p.dataset.name)){p.classList.remove('hi');p.classList.add(isOk?'ok':'no');}
+  });
   
   const fb=document.getElementById('mapQuizFeedback');
   if(isOk){
     mapQuizScore++;
     fb.innerHTML=`<span style="color:var(--green)">✅ ¡Correcto! ${correct}</span>`;
   } else {
-    fb.innerHTML=`<span style="color:var(--red)">❌ Era: ${correct}</span>`;
+    fb.innerHTML=`<span style="color:var(--red)">❌ Era: <strong>${correct}</strong></span>`;
   }
   
   mapQuizIdx++;
