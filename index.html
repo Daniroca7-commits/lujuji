@@ -707,9 +707,15 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
           <div style="font-size:13px;color:#92400E;margin-bottom:.75rem;line-height:1.5">Sube foto del libro y/o escribe el tema.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <button id="gameFotoBtn" onclick="document.getElementById('gameFotoInput').click()" style="flex:1;padding:11px;background:var(--white);color:#92400E;border:1.5px solid var(--amber-b);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
-            <input type="file" id="gameFotoInput" accept="image/*" multiple style="display:none" onchange="handleGameFoto(this)"/>
+            <input type="file" id="gameFotoInput" accept="image/*" style="display:none" onchange="handleGameFoto(this)"/>
           </div>
-          <div id="gameFotoPreview" style="display:none;margin-bottom:8px;text-align:center"><img id="gameFotoImg" style="max-width:100%;max-height:120px;border-radius:10px;border:1.5px solid var(--amber-b)"/><button onclick="removeGameFoto()" style="display:block;margin:6px auto 0;font-size:12px;color:var(--red);background:none;border:none;cursor:pointer">✕ Quitar foto</button></div>
+          <div id="gameFotoPreview" style="display:none;margin-bottom:8px">
+            <div id="gameFotoThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+            <div style="display:flex;gap:6px">
+              <button onclick="document.getElementById('gameFotoInput').click()" style="flex:1;padding:8px;background:var(--faint);border:1.5px dashed var(--border);border-radius:var(--r);font-size:12px;color:var(--muted);cursor:pointer">📷 + Añadir otra foto</button>
+              <button onclick="removeGameFoto()" style="padding:8px 12px;font-size:12px;color:var(--red);background:none;border:1px solid var(--red-b);border-radius:var(--r);cursor:pointer">✕ Quitar todas</button>
+            </div>
+          </div>
           <textarea id="temaManualGame" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--amber-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:60px;background:#fff;margin-bottom:8px" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado" oninput="checkGameReady()"></textarea>
         </div>
       </div>
@@ -747,9 +753,15 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
           <div style="font-size:13px;color:#4C1D95;margin-bottom:.75rem;line-height:1.5">Como un examen real. Sube foto del libro y/o escribe el tema.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <button id="simFotoBtn" onclick="document.getElementById('simFotoInput').click()" style="flex:1;padding:11px;background:var(--white);color:var(--purple);border:1.5px solid var(--purple-b);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
-            <input type="file" id="simFotoInput" accept="image/*" multiple style="display:none" onchange="handleSimFoto(this)"/>
+            <input type="file" id="simFotoInput" accept="image/*" style="display:none" onchange="handleSimFoto(this)"/>
           </div>
-          <div id="simFotoPreview" style="display:none;margin-bottom:8px;text-align:center"><img id="simFotoImg" style="max-width:100%;max-height:120px;border-radius:10px;border:1.5px solid var(--purple-b)"/><button onclick="removeSimFoto()" style="display:block;margin:6px auto 0;font-size:12px;color:var(--red);background:none;border:none;cursor:pointer">✕ Quitar foto</button></div>
+          <div id="simFotoPreview" style="display:none;margin-bottom:8px">
+            <div id="simFotoThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+            <div style="display:flex;gap:6px">
+              <button onclick="document.getElementById('simFotoInput').click()" style="flex:1;padding:8px;background:var(--faint);border:1.5px dashed var(--border);border-radius:var(--r);font-size:12px;color:var(--muted);cursor:pointer">📷 + Añadir otra foto</button>
+              <button onclick="removeSimFoto()" style="padding:8px 12px;font-size:12px;color:var(--red);background:none;border:1px solid var(--red-b);border-radius:var(--r);cursor:pointer">✕ Quitar todas</button>
+            </div>
+          </div>
           <textarea id="temaManualSim" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--purple-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:60px;background:#fff;margin-bottom:.75rem" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado" oninput="checkSimReady()"></textarea>
           <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:6px">TIPO DE EXAMEN</div>
           <div class="gmode-grid" id="simTypeGrid" style="margin-bottom:.75rem">
@@ -2191,8 +2203,15 @@ function handleGameFoto(input){
 }
 function renderGameFotoPreview(){
   const prev=document.getElementById('gameFotoPreview');const btn=document.getElementById('gameFotoBtn');
-  if(gameFotos.length){prev.style.display='block';document.getElementById('gameFotoImg').src='data:image/jpeg;base64,'+gameFotos[gameFotos.length-1];btn.textContent=`📸 ${gameFotos.length} foto${gameFotos.length>1?'s':''} ✓`;}
-  else{prev.style.display='none';btn.textContent='📸 Subir foto';}
+  const thumbs=document.getElementById('gameFotoThumbs');
+  if(gameFotos.length){
+    prev.style.display='block';
+    btn.textContent=`📸 ${gameFotos.length} foto${gameFotos.length>1?'s':''} ✓`;
+    thumbs.innerHTML=gameFotos.map((p,i)=>`<div style="position:relative;width:55px;height:55px;border-radius:6px;overflow:hidden;border:1px solid var(--amber-b)">
+      <img src="data:image/jpeg;base64,${p}" style="width:100%;height:100%;object-fit:cover"/>
+      <div onclick="gameFotos.splice(${i},1);renderGameFotoPreview();checkGameReady()" style="position:absolute;top:1px;right:1px;background:rgba(0,0,0,.5);color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</div>
+    </div>`).join('');
+  } else {prev.style.display='none';btn.textContent='📸 Subir foto';thumbs.innerHTML='';}
 }
 function removeGameFoto(){gameFotos=[];renderGameFotoPreview();checkGameReady();}
 function checkGameReady(){
@@ -2215,8 +2234,15 @@ function handleSimFoto(input){
 }
 function renderSimFotoPreview(){
   const prev=document.getElementById('simFotoPreview');const btn=document.getElementById('simFotoBtn');
-  if(simFotos.length){prev.style.display='block';document.getElementById('simFotoImg').src='data:image/jpeg;base64,'+simFotos[simFotos.length-1];btn.textContent=`📸 ${simFotos.length} foto${simFotos.length>1?'s':''} ✓`;}
-  else{prev.style.display='none';btn.textContent='📸 Subir foto';}
+  const thumbs=document.getElementById('simFotoThumbs');
+  if(simFotos.length){
+    prev.style.display='block';
+    btn.textContent=`📸 ${simFotos.length} foto${simFotos.length>1?'s':''} ✓`;
+    thumbs.innerHTML=simFotos.map((p,i)=>`<div style="position:relative;width:55px;height:55px;border-radius:6px;overflow:hidden;border:1px solid var(--purple-b)">
+      <img src="data:image/jpeg;base64,${p}" style="width:100%;height:100%;object-fit:cover"/>
+      <div onclick="simFotos.splice(${i},1);renderSimFotoPreview();checkSimReady()" style="position:absolute;top:1px;right:1px;background:rgba(0,0,0,.5);color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</div>
+    </div>`).join('');
+  } else {prev.style.display='none';btn.textContent='📸 Subir foto';thumbs.innerHTML='';}
 }
 function removeSimFoto(){simFotos=[];renderSimFotoPreview();checkSimReady();}
 function checkSimReady(){
