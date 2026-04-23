@@ -493,11 +493,11 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <div id="examCalPicker"></div>
     <input type="hidden" id="examDatePicked" value=""/>
     <div style="margin-top:8px">
-      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">📸 Foto del temario (opcional)</div>
-      <div style="position:relative;border:1.5px dashed var(--border);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;background:var(--faint)">
-        <input type="file" accept="image/*" capture="environment" onchange="handleExamPhoto(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
-        <img id="examPhotoPrev" style="display:none;max-width:100%;border-radius:6px;margin-bottom:6px"/>
-        <div id="examPhotoPlaceholder" style="font-size:13px;color:var(--muted)">📷 Toca para subir foto del temario</div>
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">📸 Fotos del temario (opcional)</div>
+      <div id="examPhotosList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+      <div style="position:relative;border:1.5px dashed var(--border);border-radius:var(--r);padding:10px;text-align:center;cursor:pointer;background:var(--faint)">
+        <input type="file" accept="image/*" multiple capture="environment" onchange="handleExamPhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
+        <div id="examPhotoPlaceholder" style="font-size:13px;color:var(--muted)">📷 Toca para añadir fotos</div>
       </div>
     </div>
     <button class="modal-save" id="examSaveBtn" onclick="saveExam()" disabled>Añadir examen</button>
@@ -1026,7 +1026,7 @@ const delay=ms=>new Promise(r=>setTimeout(r,ms));
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function sTab(id,btn){document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));if(btn)btn.classList.add('active');document.getElementById('tp-'+id).classList.add('active');}
-function openModal(id){document.getElementById(id).classList.add('vis');if(id==='modalExam'){examCalMonth=new Date().getMonth();examCalYear=new Date().getFullYear();document.getElementById('examDatePicked').value='';renderExamCalPicker();}}
+function openModal(id){document.getElementById(id).classList.add('vis');if(id==='modalExam'){examCalMonth=new Date().getMonth();examCalYear=new Date().getFullYear();document.getElementById('examDatePicked').value='';examPhotos=[];renderExamPhotosList();renderExamCalPicker();}}
 function closeModal(id){document.getElementById(id).classList.remove('vis');}
 
 // ════════════════════════════════════════════
@@ -1202,10 +1202,11 @@ function showStudyPicker(){
 
 function openStudyDirect(subjId){
   const subj=SUBJS.find(s=>s.id===subjId);if(!subj)return;
-  // Check if there's an exam with photo for this subject
-  const examWithPhoto=exams.find(e=>e.photo&&e.name.toLowerCase().includes(subj.name.toLowerCase().substring(0,4)));
-  if(examWithPhoto&&examWithPhoto.photo){
-    uploadedPhotos=[examWithPhoto.photo];
+  // Check if there's an exam with photos for this subject
+  const examWithPhoto=exams.find(e=>(e.photo||e.photos)&&e.name.toLowerCase().includes(subj.name.toLowerCase().substring(0,4)));
+  if(examWithPhoto){
+    if(examWithPhoto.photos)uploadedPhotos=[...examWithPhoto.photos];
+    else if(examWithPhoto.photo)uploadedPhotos=[examWithPhoto.photo];
     temariText='';
   }
   openStudy(subj);
@@ -1613,17 +1614,27 @@ function checkOrtoBasic(text){
   return errores.filter(e=>tl.includes(e.w)&&!text.includes(e.c)&&text.toLowerCase()!==e.w);
 }
 
-let examPhotoB64=null;
-function handleExamPhoto(input){
-  if(!input.files||!input.files[0])return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    examPhotoB64=e.target.result.split(',')[1];
-    document.getElementById('examPhotoPrev').src=e.target.result;
-    document.getElementById('examPhotoPrev').style.display='block';
-    document.getElementById('examPhotoPlaceholder').textContent='✓ Foto subida — toca para cambiar';
-  };
-  reader.readAsDataURL(input.files[0]);
+let examPhotos=[];
+function handleExamPhotos(input){
+  if(!input.files||!input.files.length)return;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      examPhotos.push(e.target.result.split(',')[1]);
+      renderExamPhotosList();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function renderExamPhotosList(){
+  const list=document.getElementById('examPhotosList');if(!list)return;
+  list.innerHTML=examPhotos.map((p,i)=>`<div style="position:relative;width:60px;height:60px;border-radius:6px;overflow:hidden;border:1px solid var(--border)">
+    <img src="data:image/jpeg;base64,${p}" style="width:100%;height:100%;object-fit:cover"/>
+    <div onclick="examPhotos.splice(${i},1);renderExamPhotosList()" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;width:18px;height:18px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</div>
+  </div>`).join('');
+  document.getElementById('examPhotoPlaceholder').textContent=examPhotos.length?`✓ ${examPhotos.length} foto${examPhotos.length>1?'s':''} · toca para añadir más`:'📷 Toca para añadir fotos';
 }
 
 function saveExam(){
@@ -1631,12 +1642,13 @@ function saveExam(){
   const date=document.getElementById('examDatePicked').value;
   if(!name||!date)return;
   const exam={id:Date.now(),name,date};
-  if(examPhotoB64)exam.photo=examPhotoB64;
+  if(examPhotos.length===1)exam.photo=examPhotos[0];
+  else if(examPhotos.length>1)exam.photos=examPhotos;
   exams.push(exam);exams.sort((a,b)=>a.date.localeCompare(b.date));
   svExams();renderExams();renderExamBanner();closeModal('modalExam');
   document.getElementById('examNameIn').value='';document.getElementById('examDatePicked').value='';document.getElementById('examSaveBtn').disabled=true;
-  document.getElementById('examPhotoPrev').style.display='none';document.getElementById('examPhotoPlaceholder').textContent='📷 Toca para subir foto del temario';
-  examPhotoB64=null;
+  document.getElementById('examPhotosList').innerHTML='';document.getElementById('examPhotoPlaceholder').textContent='📷 Toca para añadir fotos';
+  examPhotos=[];
   toast('✓ Examen añadido');
 }
 
