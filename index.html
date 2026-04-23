@@ -2220,7 +2220,12 @@ let gameFotos=[], simFotos=[], simType='mix';
 function handleGameFoto(input){
   if(!input.files||!input.files[0])return;
   const reader=new FileReader();
-  reader.onload=e=>{gameFotos.push(e.target.result.split(',')[1]);renderGameFotoPreview();checkGameReady();};
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    const mt=dataUrl.substring(dataUrl.indexOf(':')+1,dataUrl.indexOf(';'));
+    gameFotos.push({b64:dataUrl.split(',')[1],mt:mt});
+    renderGameFotoPreview();checkGameReady();
+  };
   reader.readAsDataURL(input.files[0]);input.value='';
 }
 function renderGameFotoPreview(){
@@ -2230,7 +2235,7 @@ function renderGameFotoPreview(){
     prev.style.display='block';
     btn.textContent=`📸 ${gameFotos.length} foto${gameFotos.length>1?'s':''} ✓`;
     thumbs.innerHTML=gameFotos.map((p,i)=>`<div style="position:relative;width:55px;height:55px;border-radius:6px;overflow:hidden;border:1px solid var(--amber-b)">
-      <img src="data:image/jpeg;base64,${p}" style="width:100%;height:100%;object-fit:cover"/>
+      <img src="data:${p.mt||'image/jpeg'};base64,${p.b64||p}" style="width:100%;height:100%;object-fit:cover"/>
       <div onclick="gameFotos.splice(${i},1);renderGameFotoPreview();checkGameReady()" style="position:absolute;top:1px;right:1px;background:rgba(0,0,0,.5);color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</div>
     </div>`).join('');
   } else {prev.style.display='none';btn.textContent='📸 Subir foto';thumbs.innerHTML='';}
@@ -2248,7 +2253,12 @@ function checkGameReady(){
 function handleSimFoto(input){
   if(!input.files||!input.files[0])return;
   const reader=new FileReader();
-  reader.onload=e=>{simFotos.push(e.target.result.split(',')[1]);renderSimFotoPreview();checkSimReady();};
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    const mt=dataUrl.substring(dataUrl.indexOf(':')+1,dataUrl.indexOf(';'));
+    simFotos.push({b64:dataUrl.split(',')[1],mt:mt});
+    renderSimFotoPreview();checkSimReady();
+  };
   reader.readAsDataURL(input.files[0]);input.value='';
 }
 function renderSimFotoPreview(){
@@ -2258,7 +2268,7 @@ function renderSimFotoPreview(){
     prev.style.display='block';
     btn.textContent=`📸 ${simFotos.length} foto${simFotos.length>1?'s':''} ✓`;
     thumbs.innerHTML=simFotos.map((p,i)=>`<div style="position:relative;width:55px;height:55px;border-radius:6px;overflow:hidden;border:1px solid var(--purple-b)">
-      <img src="data:image/jpeg;base64,${p}" style="width:100%;height:100%;object-fit:cover"/>
+      <img src="data:${p.mt||'image/jpeg'};base64,${p.b64||p}" style="width:100%;height:100%;object-fit:cover"/>
       <div onclick="simFotos.splice(${i},1);renderSimFotoPreview();checkSimReady()" style="position:absolute;top:1px;right:1px;background:rgba(0,0,0,.5);color:#fff;width:16px;height:16px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer">×</div>
     </div>`).join('');
   } else {prev.style.display='none';btn.textContent='📸 Subir foto';thumbs.innerHTML='';}
@@ -2282,9 +2292,9 @@ async function loadTemaFromInput(fotos,textareaId){
       const lang=curSubj?.lang||'es';
       const langTxt={es:'Responde en español.',ca:'Respon en català.',en:'Answer in English.'};
       const content=[];
-      fotoArr.forEach(b64=>{
-        let mt='image/jpeg';
-        if(b64.startsWith('iVBOR'))mt='image/png';
+      fotoArr.forEach(f=>{
+        const b64=f.b64||f;
+        const mt=f.mt||'image/jpeg';
         content.push({type:"image",source:{type:"base64",media_type:mt,data:b64}});
       });
       content.push({type:"text",text:`Extrae TODO el texto visible de ${fotoArr.length>1?'estas imágenes':'esta imagen'} de un libro/temario de ${curSubj.name} (${profile.cursoLabel||'Primaria'}). ${langTxt[lang]} Devuelve SOLO el contenido extraído completo y detallado, sin resumir.${texto?' El alumno indica: "'+texto+'"':''}`});
