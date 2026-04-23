@@ -1638,7 +1638,16 @@ let examPhotos=[];
 function handleExamPhotos(input){
   if(!input.files||!input.files[0])return;
   const reader=new FileReader();
-  reader.onload=e=>{examPhotos.push(e.target.result.split(',')[1]);renderExamPhotosList();};
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=Math.min(img.width,1400);c.height=Math.round(img.height*(c.width/img.width));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const b64=c.toDataURL('image/jpeg',0.8).split(',')[1];
+      examPhotos.push(b64);renderExamPhotosList();
+    };
+    img.src=e.target.result;
+  };
   reader.readAsDataURL(input.files[0]);input.value='';
 }
 
@@ -2221,10 +2230,14 @@ function handleGameFoto(input){
   if(!input.files||!input.files[0])return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const dataUrl=e.target.result;
-    const mt=dataUrl.substring(dataUrl.indexOf(':')+1,dataUrl.indexOf(';'));
-    gameFotos.push({b64:dataUrl.split(',')[1],mt:mt});
-    renderGameFotoPreview();checkGameReady();
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=Math.min(img.width,1400);c.height=Math.round(img.height*(c.width/img.width));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const b64=c.toDataURL('image/jpeg',0.8).split(',')[1];
+      gameFotos.push({b64,mt:'image/jpeg'});renderGameFotoPreview();checkGameReady();
+    };
+    img.src=e.target.result;
   };
   reader.readAsDataURL(input.files[0]);input.value='';
 }
@@ -2254,10 +2267,14 @@ function handleSimFoto(input){
   if(!input.files||!input.files[0])return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const dataUrl=e.target.result;
-    const mt=dataUrl.substring(dataUrl.indexOf(':')+1,dataUrl.indexOf(';'));
-    simFotos.push({b64:dataUrl.split(',')[1],mt:mt});
-    renderSimFotoPreview();checkSimReady();
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');c.width=Math.min(img.width,1400);c.height=Math.round(img.height*(c.width/img.width));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const b64=c.toDataURL('image/jpeg',0.8).split(',')[1];
+      simFotos.push({b64,mt:'image/jpeg'});renderSimFotoPreview();checkSimReady();
+    };
+    img.src=e.target.result;
   };
   reader.readAsDataURL(input.files[0]);input.value='';
 }
