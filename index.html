@@ -1636,13 +1636,10 @@ function checkOrtoBasic(text){
 
 let examPhotos=[];
 function handleExamPhotos(input){
-  if(!input.files||!input.files.length)return;
-  Array.from(input.files).forEach(async file=>{
-    const compressed=await compressImage(file);
-    examPhotos.push(compressed.base64);
-    renderExamPhotosList();
-  });
-  input.value='';
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{examPhotos.push(e.target.result.split(',')[1]);renderExamPhotosList();};
+  reader.readAsDataURL(input.files[0]);input.value='';
 }
 
 function renderExamPhotosList(){
@@ -2221,12 +2218,10 @@ async function analyzePhotos(){
 let gameFotos=[], simFotos=[], simType='mix';
 
 function handleGameFoto(input){
-  if(!input.files||!input.files.length)return;
-  Array.from(input.files).forEach(async file=>{
-    const compressed=await compressImage(file);
-    gameFotos.push(compressed.base64);renderGameFotoPreview();checkGameReady();
-  });
-  input.value='';
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{gameFotos.push(e.target.result.split(',')[1]);renderGameFotoPreview();checkGameReady();};
+  reader.readAsDataURL(input.files[0]);input.value='';
 }
 function renderGameFotoPreview(){
   const prev=document.getElementById('gameFotoPreview');const btn=document.getElementById('gameFotoBtn');
@@ -2251,12 +2246,10 @@ function checkGameReady(){
 }
 
 function handleSimFoto(input){
-  if(!input.files||!input.files.length)return;
-  Array.from(input.files).forEach(async file=>{
-    const compressed=await compressImage(file);
-    simFotos.push(compressed.base64);renderSimFotoPreview();checkSimReady();
-  });
-  input.value='';
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{simFotos.push(e.target.result.split(',')[1]);renderSimFotoPreview();checkSimReady();};
+  reader.readAsDataURL(input.files[0]);input.value='';
 }
 function renderSimFotoPreview(){
   const prev=document.getElementById('simFotoPreview');const btn=document.getElementById('simFotoBtn');
@@ -2292,17 +2285,15 @@ async function loadTemaFromInput(fotos,textareaId){
       fotoArr.forEach(b64=>{
         let mt='image/jpeg';
         if(b64.startsWith('iVBOR'))mt='image/png';
-        else if(b64.startsWith('R0lGO'))mt='image/gif';
-        else if(b64.startsWith('UklGR'))mt='image/webp';
         content.push({type:"image",source:{type:"base64",media_type:mt,data:b64}});
       });
       content.push({type:"text",text:`Extrae TODO el texto visible de ${fotoArr.length>1?'estas imágenes':'esta imagen'} de un libro/temario de ${curSubj.name} (${profile.cursoLabel||'Primaria'}). ${langTxt[lang]} Devuelve SOLO el contenido extraído completo y detallado, sin resumir.${texto?' El alumno indica: "'+texto+'"':''}`});
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",content}]})});
       const data=await res.json();
-      if(data.error){console.error('API error:',data.error);temariText=texto||'';return;}
+      if(data.error){console.error('API error:',JSON.stringify(data.error));temariText=texto||'';return;}
       const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
       temariText=texto?(reply+'\n\nContexto del alumno: '+texto):reply;
-    }catch(e){console.error('loadTema error:',e);temariText=texto||'Error leyendo foto';}
+    }catch(e){console.error('loadTema error:',e);temariText=texto||'';}
   } else if(texto) {
     temariText=texto;
   }
