@@ -2149,18 +2149,28 @@ function compressImage(file,maxW=1200){
   return new Promise(resolve=>{
     const reader=new FileReader();
     reader.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const canvas=document.createElement('canvas');
-        let w=img.width,h=img.height;
-        if(w>maxW){h=Math.round(h*(maxW/w));w=maxW;}
-        canvas.width=w;canvas.height=h;
-        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
-        const dataUrl=canvas.toDataURL('image/jpeg',0.7);
-        resolve({src:dataUrl,base64:dataUrl.split(',')[1]});
-      };
-      img.src=e.target.result;
+      const origB64=e.target.result.split(',')[1];
+      const origSrc=e.target.result;
+      try{
+        const img=new Image();
+        img.onload=()=>{
+          try{
+            const canvas=document.createElement('canvas');
+            let w=img.width,h=img.height;
+            if(w>maxW){h=Math.round(h*(maxW/w));w=maxW;}
+            canvas.width=w;canvas.height=h;
+            const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+            const dataUrl=canvas.toDataURL('image/jpeg',0.7);
+            const b64=dataUrl.split(',')[1];
+            if(b64&&b64.length>100)resolve({src:dataUrl,base64:b64});
+            else resolve({src:origSrc,base64:origB64});
+          }catch(err){resolve({src:origSrc,base64:origB64});}
+        };
+        img.onerror=()=>resolve({src:origSrc,base64:origB64});
+        img.src=e.target.result;
+      }catch(err){resolve({src:origSrc,base64:origB64});}
     };
+    reader.onerror=()=>resolve({src:'',base64:''});
     reader.readAsDataURL(file);
   });
 }
@@ -2279,14 +2289,20 @@ async function loadTemaFromInput(fotos,textareaId){
       const lang=curSubj?.lang||'es';
       const langTxt={es:'Responde en español.',ca:'Respon en català.',en:'Answer in English.'};
       const content=[];
-      fotoArr.forEach(b64=>{content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});});
+      fotoArr.forEach(b64=>{
+        let mt='image/jpeg';
+        if(b64.startsWith('iVBOR'))mt='image/png';
+        else if(b64.startsWith('R0lGO'))mt='image/gif';
+        else if(b64.startsWith('UklGR'))mt='image/webp';
+        content.push({type:"image",source:{type:"base64",media_type:mt,data:b64}});
+      });
       content.push({type:"text",text:`Extrae TODO el texto visible de ${fotoArr.length>1?'estas imágenes':'esta imagen'} de un libro/temario de ${curSubj.name} (${profile.cursoLabel||'Primaria'}). ${langTxt[lang]} Devuelve SOLO el contenido extraído completo y detallado, sin resumir.${texto?' El alumno indica: "'+texto+'"':''}`});
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content}]})});
       const data=await res.json();
       if(data.error){console.error('API error:',data.error);temariText=texto||'';return;}
       const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
       temariText=texto?(reply+'\n\nContexto del alumno: '+texto):reply;
-    }catch(e){temariText=texto||'Error leyendo foto';}
+    }catch(e){console.error('loadTema error:',e);temariText=texto||'Error leyendo foto';}
   } else if(texto) {
     temariText=texto;
   }
