@@ -2282,7 +2282,9 @@ async function loadTemaFromInput(fotos,textareaId){
       fotoArr.forEach(b64=>{content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});});
       content.push({type:"text",text:`Extrae TODO el texto visible de ${fotoArr.length>1?'estas imágenes':'esta imagen'} de un libro/temario de ${curSubj.name} (${profile.cursoLabel||'Primaria'}). ${langTxt[lang]} Devuelve SOLO el contenido extraído completo y detallado, sin resumir.${texto?' El alumno indica: "'+texto+'"':''}`});
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content}]})});
-      const data=await res.json();const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
+      const data=await res.json();
+      if(data.error){console.error('API error:',data.error);temariText=texto||'';return;}
+      const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
       temariText=texto?(reply+'\n\nContexto del alumno: '+texto):reply;
     }catch(e){temariText=texto||'Error leyendo foto';}
   } else if(texto) {
@@ -2455,11 +2457,11 @@ async function simStart(){
           simPregs=matches.map(m=>{try{return JSON.parse(m);}catch(e3){return null;}}).filter(Boolean);
         }catch(e3){simPregs=[];}
       }
-    }catch(e){simPregs=[];}
+    }catch(e){console.error('Sim API error:',e);simPregs=[];}
   }
   const sLoadEl=document.getElementById('sLoading');if(sLoadEl)sLoadEl.remove();
   document.getElementById('sCard').style.display='block';
-  if(!simPregs.length){toast('Error generando el simulacro.');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
+  if(!simPregs.length){toast('Error generando el simulacro. Mira la consola (F12).');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
   sSimShowQ();recordActivity();
 }
 function simReset(){document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.remove('vis');simPregs=[];
