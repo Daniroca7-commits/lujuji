@@ -496,7 +496,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
       <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">📸 Fotos del temario (opcional)</div>
       <div id="examPhotosList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
       <div style="position:relative;border:1.5px dashed var(--border);border-radius:var(--r);padding:10px;text-align:center;cursor:pointer;background:var(--faint)">
-        <input type="file" accept="image/*" multiple capture="environment" onchange="handleExamPhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
+        <input type="file" accept="image/*" multiple onchange="handleExamPhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
         <div id="examPhotoPlaceholder" style="font-size:13px;color:var(--muted)">📷 Toca para añadir fotos</div>
       </div>
     </div>
@@ -650,6 +650,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <span style="font-size:16px">⏱️</span>
     <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timerBarStudy" style="width:0%"></div></div>
     <span class="timer-txt" id="timerTxtStudy">0:00 / 20:00</span>
+    <span id="bonusBadge" style="display:none;padding:2px 8px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:20px;font-size:11px;font-weight:700;color:#92400E;white-space:nowrap"></span>
   </div>
   <div class="task-banner" id="taskBanner" style="display:none">
     <span class="tb-icon">📌</span>
@@ -706,7 +707,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
           <div style="font-size:13px;color:#92400E;margin-bottom:.75rem;line-height:1.5">Sube foto del libro y/o escribe el tema.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <button id="gameFotoBtn" onclick="document.getElementById('gameFotoInput').click()" style="flex:1;padding:11px;background:var(--white);color:#92400E;border:1.5px solid var(--amber-b);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
-            <input type="file" id="gameFotoInput" accept="image/*" style="display:none" onchange="handleGameFoto(this)"/>
+            <input type="file" id="gameFotoInput" accept="image/*" multiple style="display:none" onchange="handleGameFoto(this)"/>
           </div>
           <div id="gameFotoPreview" style="display:none;margin-bottom:8px;text-align:center"><img id="gameFotoImg" style="max-width:100%;max-height:120px;border-radius:10px;border:1.5px solid var(--amber-b)"/><button onclick="removeGameFoto()" style="display:block;margin:6px auto 0;font-size:12px;color:var(--red);background:none;border:none;cursor:pointer">✕ Quitar foto</button></div>
           <textarea id="temaManualGame" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--amber-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:60px;background:#fff;margin-bottom:8px" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado" oninput="checkGameReady()"></textarea>
@@ -746,7 +747,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
           <div style="font-size:13px;color:#4C1D95;margin-bottom:.75rem;line-height:1.5">Como un examen real. Sube foto del libro y/o escribe el tema.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <button id="simFotoBtn" onclick="document.getElementById('simFotoInput').click()" style="flex:1;padding:11px;background:var(--white);color:var(--purple);border:1.5px solid var(--purple-b);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
-            <input type="file" id="simFotoInput" accept="image/*" style="display:none" onchange="handleSimFoto(this)"/>
+            <input type="file" id="simFotoInput" accept="image/*" multiple style="display:none" onchange="handleSimFoto(this)"/>
           </div>
           <div id="simFotoPreview" style="display:none;margin-bottom:8px;text-align:center"><img id="simFotoImg" style="max-width:100%;max-height:120px;border-radius:10px;border:1.5px solid var(--purple-b)"/><button onclick="removeSimFoto()" style="display:block;margin:6px auto 0;font-size:12px;color:var(--red);background:none;border:none;cursor:pointer">✕ Quitar foto</button></div>
           <textarea id="temaManualSim" style="width:100%;padding:11px 14px;font-size:13px;border:1.5px solid var(--purple-b);border-radius:var(--r);outline:none;font-family:inherit;resize:none;min-height:60px;background:#fff;margin-bottom:.75rem" placeholder="Ej: Fracciones y decimales&#10;Ej: El sujeto y el predicado" oninput="checkSimReady()"></textarea>
@@ -1362,6 +1363,13 @@ function updateTimerUI(){
   // Study timer
   const fill2=document.getElementById('timerBarStudy');if(fill2){fill2.style.width=pct+'%';fill2.className=cls;}
   const t2=document.getElementById('timerTxtStudy');if(t2)t2.textContent=txt;
+  // Bonus badge
+  const bb=document.getElementById('bonusBadge');
+  if(bb){
+    const{mult,reason}=getBonus();
+    if(mult>1){bb.style.display='';bb.textContent=`x${mult} ⭐`;}
+    else{bb.style.display='none';}
+  }
 }
 
 function checkStreak(){
@@ -1783,7 +1791,7 @@ function openStudyTask(id){const task=tasks.find(t=>t.id===id);if(!task)return;c
 function openStudy(subj,task){
   curSubj=subj;curTask=task||null;
   uploadedPhotos=[];temariText='';hist=[];wS=0;loading=false;ortoBlocked=false;
-  gameFotoB64=null;simFotoB64=null;
+  gameFotos=[];simFotos=[];
 
   document.getElementById('shAva').textContent=profile.avatar||'📚';
   document.getElementById('shName').textContent=`${profile.name} · ${subj.name}`;
@@ -2170,18 +2178,26 @@ async function analyzePhotos(){
 // ════════════════════════════════════════════
 // JUEGO
 // ════════════════════════════════════════════
-let gameFotoB64=null, simFotoB64=null, simType='mix';
+let gameFotos=[], simFotos=[], simType='mix';
 
 function handleGameFoto(input){
-  if(!input.files||!input.files[0])return;
-  const reader=new FileReader();
-  reader.onload=e=>{gameFotoB64=e.target.result.split(',')[1];document.getElementById('gameFotoImg').src=e.target.result;document.getElementById('gameFotoPreview').style.display='block';document.getElementById('gameFotoBtn').textContent='📸 Foto cargada ✓';checkGameReady();};
-  reader.readAsDataURL(input.files[0]);input.value='';
+  if(!input.files||!input.files.length)return;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{gameFotos.push(e.target.result.split(',')[1]);renderGameFotoPreview();checkGameReady();};
+    reader.readAsDataURL(file);
+  });
+  input.value='';
 }
-function removeGameFoto(){gameFotoB64=null;document.getElementById('gameFotoPreview').style.display='none';document.getElementById('gameFotoBtn').textContent='📸 Subir foto';checkGameReady();}
+function renderGameFotoPreview(){
+  const prev=document.getElementById('gameFotoPreview');const btn=document.getElementById('gameFotoBtn');
+  if(gameFotos.length){prev.style.display='block';document.getElementById('gameFotoImg').src='data:image/jpeg;base64,'+gameFotos[gameFotos.length-1];btn.textContent=`📸 ${gameFotos.length} foto${gameFotos.length>1?'s':''} ✓`;}
+  else{prev.style.display='none';btn.textContent='📸 Subir foto';}
+}
+function removeGameFoto(){gameFotos=[];renderGameFotoPreview();checkGameReady();}
 function checkGameReady(){
   const hasText=document.getElementById('temaManualGame')?.value.trim().length>0;
-  const hasFoto=!!gameFotoB64;
+  const hasFoto=gameFotos.length>0;
   const hasTemari=temariText.length>10;
   const ready=hasText||hasFoto||hasTemari;
   const btn=document.getElementById('startGameBtn');
@@ -2189,15 +2205,23 @@ function checkGameReady(){
 }
 
 function handleSimFoto(input){
-  if(!input.files||!input.files[0])return;
-  const reader=new FileReader();
-  reader.onload=e=>{simFotoB64=e.target.result.split(',')[1];document.getElementById('simFotoImg').src=e.target.result;document.getElementById('simFotoPreview').style.display='block';document.getElementById('simFotoBtn').textContent='📸 Foto cargada ✓';checkSimReady();};
-  reader.readAsDataURL(input.files[0]);input.value='';
+  if(!input.files||!input.files.length)return;
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{simFotos.push(e.target.result.split(',')[1]);renderSimFotoPreview();checkSimReady();};
+    reader.readAsDataURL(file);
+  });
+  input.value='';
 }
-function removeSimFoto(){simFotoB64=null;document.getElementById('simFotoPreview').style.display='none';document.getElementById('simFotoBtn').textContent='📸 Subir foto';checkSimReady();}
+function renderSimFotoPreview(){
+  const prev=document.getElementById('simFotoPreview');const btn=document.getElementById('simFotoBtn');
+  if(simFotos.length){prev.style.display='block';document.getElementById('simFotoImg').src='data:image/jpeg;base64,'+simFotos[simFotos.length-1];btn.textContent=`📸 ${simFotos.length} foto${simFotos.length>1?'s':''} ✓`;}
+  else{prev.style.display='none';btn.textContent='📸 Subir foto';}
+}
+function removeSimFoto(){simFotos=[];renderSimFotoPreview();checkSimReady();}
 function checkSimReady(){
   const hasText=document.getElementById('temaManualSim')?.value.trim().length>0;
-  const hasFoto=!!simFotoB64;
+  const hasFoto=simFotos.length>0;
   const hasTemari=temariText.length>10;
   const ready=hasText||hasFoto||hasTemari;
   const btn=document.getElementById('simStartBtn');
@@ -2205,13 +2229,16 @@ function checkSimReady(){
 }
 function selSimType(card){document.querySelectorAll('#simTypeGrid .gmode-card').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');simType=card.dataset.st;}
 
-async function loadTemaFromInput(fotoB64,textareaId){
+async function loadTemaFromInput(fotos,textareaId){
   const texto=(document.getElementById(textareaId)?.value.trim())||'';
-  if(fotoB64&&apiKey){
+  const fotoArr=Array.isArray(fotos)?fotos:(fotos?[fotos]:[]);
+  if(fotoArr.length>0&&apiKey){
     try{
       const lang=curSubj?.lang||'es';
       const langTxt={es:'Responde en español.',ca:'Respon en català.',en:'Answer in English.'};
-      const content=[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:fotoB64}},{type:"text",text:`Extrae TODO el texto visible de esta imagen de un libro/temario de ${curSubj.name} (${profile.cursoLabel||'Primaria'}). ${langTxt[lang]} Devuelve SOLO el contenido extraído completo y detallado, sin resumir.${texto?' El alumno indica: "'+texto+'"':''}`}];
+      const content=[];
+      fotoArr.forEach(b64=>{content.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});});
+      content.push({type:"text",text:`Extrae TODO el texto visible de ${fotoArr.length>1?'estas imágenes':'esta imagen'} de un libro/temario de ${curSubj.name} (${profile.cursoLabel||'Primaria'}). ${langTxt[lang]} Devuelve SOLO el contenido extraído completo y detallado, sin resumir.${texto?' El alumno indica: "'+texto+'"':''}`});
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content}]})});
       const data=await res.json();const reply=data.content?.map(b=>b.text||'').join('').trim()||'';
       temariText=texto?(reply+'\n\nContexto del alumno: '+texto):reply;
@@ -2225,14 +2252,14 @@ function useTemaManualSim(){simStart();}
 function useTemaManualGame(){startGame();}
 function selGM(card){document.querySelectorAll('#gmodeWrap .gmode-card').forEach(c=>c.classList.remove('sel'));card.classList.add('sel');gMode=card.dataset.gm;}
 function gInit(){gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;document.getElementById('gSum').classList.remove('vis');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';
-  gameFotoB64=null;
+  gameFotos=[];
   const gfp=document.getElementById('gameFotoPreview');if(gfp)gfp.style.display='none';
   const gfb=document.getElementById('gameFotoBtn');if(gfb)gfb.textContent='📸 Subir foto';
   checkGameReady();
 }
 
 async function startGame(){
-  const hasInput=gameFotoB64||document.getElementById('temaManualGame')?.value.trim().length>0;
+  const hasInput=gameFotos.length>0||document.getElementById('temaManualGame')?.value.trim().length>0;
   if(!temariText&&!hasInput){toast('Primero escribe el tema o sube una foto 📸');return;}
   document.getElementById('gmodeWrap').style.display='none';document.getElementById('gameWrap').style.display='block';document.getElementById('gSum').classList.remove('vis');
   gQ=0;gScore=0;gStreak=0;gMaxS=0;gAns=false;
@@ -2243,7 +2270,7 @@ async function startGame(){
     ['gVf','gOpts','gAns','gFb'].forEach(id=>document.getElementById(id).style.display='none');
     const loadingDiv=document.createElement('div');loadingDiv.id='gLoading';loadingDiv.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';loadingDiv.innerHTML='Leyendo el temario...<br><br><div class="ldots" style="display:inline-flex"><span></span><span></span><span></span></div>';
     document.getElementById('gameWrap').insertBefore(loadingDiv,document.getElementById('gCard'));
-    await loadTemaFromInput(gameFotoB64,'temaManualGame');
+    await loadTemaFromInput(gameFotos,'temaManualGame');
     const gl0=document.getElementById('gLoading');if(gl0)gl0.remove();
     if(!temariText||temariText.length<5){toast('Error leyendo el temario. Inténtalo de nuevo.');document.getElementById('gmodeWrap').style.display='block';document.getElementById('gameWrap').style.display='none';return;}
   }
@@ -2346,7 +2373,7 @@ function gSummary(){
 // SIMULACRO (desde temario)
 // ════════════════════════════════════════════
 async function simStart(){
-  const hasInput=simFotoB64||document.getElementById('temaManualSim')?.value.trim().length>0;
+  const hasInput=simFotos.length>0||document.getElementById('temaManualSim')?.value.trim().length>0;
   if(!temariText&&!hasInput){toast('Primero escribe el tema o sube una foto 📸');return;}
   document.getElementById('simIntro').style.display='none';document.getElementById('simPlay').style.display='block';document.getElementById('simSum').classList.remove('vis');
   sQ=0;sScore=0;sDev=0;sAns=false;
@@ -2356,7 +2383,7 @@ async function simStart(){
     const sLoadingDiv0=document.createElement('div');sLoadingDiv0.id='sLoading';sLoadingDiv0.style.cssText='text-align:center;padding:2rem;font-size:14px;color:var(--muted)';sLoadingDiv0.innerHTML='Leyendo el temario...<br><br><div class="ldots" style="display:inline-flex;color:var(--purple)"><span></span><span></span><span></span></div>';
     document.getElementById('simPlay').insertBefore(sLoadingDiv0,document.getElementById('sCard'));
     document.getElementById('sCard').style.display='none';
-    await loadTemaFromInput(simFotoB64,'temaManualSim');
+    await loadTemaFromInput(simFotos,'temaManualSim');
     const sl0=document.getElementById('sLoading');if(sl0)sl0.remove();
     if(!temariText||temariText.length<5){toast('Error leyendo el temario. Inténtalo de nuevo.');document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';return;}
   }
@@ -2394,7 +2421,7 @@ async function simStart(){
   sSimShowQ();recordActivity();
 }
 function simReset(){document.getElementById('simIntro').style.display='block';document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.remove('vis');simPregs=[];
-  simFotoB64=null;
+  simFotos=[];
   const sfp=document.getElementById('simFotoPreview');if(sfp)sfp.style.display='none';
   const sfb=document.getElementById('simFotoBtn');if(sfb)sfb.textContent='📸 Subir foto';
   checkSimReady();
