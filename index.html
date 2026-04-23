@@ -1637,13 +1637,10 @@ function checkOrtoBasic(text){
 let examPhotos=[];
 function handleExamPhotos(input){
   if(!input.files||!input.files.length)return;
-  Array.from(input.files).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      examPhotos.push(e.target.result.split(',')[1]);
-      renderExamPhotosList();
-    };
-    reader.readAsDataURL(file);
+  Array.from(input.files).forEach(async file=>{
+    const compressed=await compressImage(file);
+    examPhotos.push(compressed.base64);
+    renderExamPhotosList();
   });
   input.value='';
 }
@@ -2148,10 +2145,31 @@ function simResp(text){
 // ════════════════════════════════════════════
 // FOTOS
 // ════════════════════════════════════════════
+function compressImage(file,maxW=1200){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        let w=img.width,h=img.height;
+        if(w>maxW){h=Math.round(h*(maxW/w));w=maxW;}
+        canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        const dataUrl=canvas.toDataURL('image/jpeg',0.7);
+        resolve({src:dataUrl,base64:dataUrl.split(',')[1]});
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function handlePhotos(input){
   if(!input.files||!input.files.length)return;
-  Array.from(input.files).slice(0,5-uploadedPhotos.length).forEach(file=>{
-    const reader=new FileReader();reader.onload=e=>{uploadedPhotos.push({src:e.target.result,base64:e.target.result.split(',')[1]});renderPhotosPanel();};reader.readAsDataURL(file);
+  Array.from(input.files).slice(0,5-uploadedPhotos.length).forEach(async file=>{
+    const compressed=await compressImage(file);
+    uploadedPhotos.push(compressed);renderPhotosPanel();
   });input.value='';recordActivity();
 }
 function renderPhotosPanel(){
@@ -2194,10 +2212,9 @@ let gameFotos=[], simFotos=[], simType='mix';
 
 function handleGameFoto(input){
   if(!input.files||!input.files.length)return;
-  Array.from(input.files).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=e=>{gameFotos.push(e.target.result.split(',')[1]);renderGameFotoPreview();checkGameReady();};
-    reader.readAsDataURL(file);
+  Array.from(input.files).forEach(async file=>{
+    const compressed=await compressImage(file);
+    gameFotos.push(compressed.base64);renderGameFotoPreview();checkGameReady();
   });
   input.value='';
 }
@@ -2225,10 +2242,9 @@ function checkGameReady(){
 
 function handleSimFoto(input){
   if(!input.files||!input.files.length)return;
-  Array.from(input.files).forEach(file=>{
-    const reader=new FileReader();
-    reader.onload=e=>{simFotos.push(e.target.result.split(',')[1]);renderSimFotoPreview();checkSimReady();};
-    reader.readAsDataURL(file);
+  Array.from(input.files).forEach(async file=>{
+    const compressed=await compressImage(file);
+    simFotos.push(compressed.base64);renderSimFotoPreview();checkSimReady();
   });
   input.value='';
 }
