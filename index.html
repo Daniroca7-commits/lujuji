@@ -496,7 +496,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
       <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px">📸 Fotos del temario (opcional)</div>
       <div id="examPhotosList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
       <div style="position:relative;border:1.5px dashed var(--border);border-radius:var(--r);padding:10px;text-align:center;cursor:pointer;background:var(--faint)">
-        <input type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple onchange="handleExamPhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
+        <input type="file" accept="image/*" multiple onchange="handleExamPhotos(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer"/>
         <div id="examPhotoPlaceholder" style="font-size:13px;color:var(--muted)">📷 Toca para añadir fotos</div>
       </div>
     </div>
@@ -602,7 +602,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <div class="qtitle">Foto de tu agenda</div>
     <div class="qsub">Súbeme una foto para que vea tus tareas</div>
     <div class="upload-box" id="agendaBox">
-      <input type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" capture="environment" onchange="handleAgendaPhoto(this)" onclick="event.stopPropagation()"/>
+      <input type="file" accept="image/*" capture="environment" onchange="handleAgendaPhoto(this)" onclick="event.stopPropagation()"/>
       <img class="ub-prev" id="agendaPrev"/>
       <div id="agendaPlaceholder">
         <div style="font-size:36px;margin-bottom:6px">📷</div>
@@ -691,7 +691,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
       <button class="analyze-foto-btn" id="analyzeBtn" onclick="analyzePhotos()" disabled>🔍 Analizar y practicar</button>
     </div>
     <div class="inp-wrap">
-      <button class="photo-btn" title="Pujar foto"><input type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple onchange="handlePhotos(this)" onclick="event.stopPropagation()"/>📸</button>
+      <button class="photo-btn" title="Pujar foto"><input type="file" accept="image/*" multiple onchange="handlePhotos(this)" onclick="event.stopPropagation()"/>📸</button>
       <input class="chat-in" id="chatIn" onkeydown="if(event.key==='Enter')sendMsg()"/>
       <button class="send-btn" id="sendBtn" onclick="sendMsg()">→</button>
     </div>
@@ -713,7 +713,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
           <div style="font-size:13px;color:#92400E;margin-bottom:.75rem;line-height:1.5">Sube foto del libro y/o escribe el tema.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <button id="gameFotoBtn" onclick="document.getElementById('gameFotoInput').click()" style="flex:1;padding:11px;background:var(--white);color:#92400E;border:1.5px solid var(--amber-b);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
-            <input type="file" id="gameFotoInput" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none" onchange="handleGameFoto(this)"/>
+            <input type="file" id="gameFotoInput" accept="image/*" style="display:none" onchange="handleGameFoto(this)"/>
           </div>
           <div id="gameFotoPreview" style="display:none;margin-bottom:8px">
             <div id="gameFotoThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
@@ -759,7 +759,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
           <div style="font-size:13px;color:#4C1D95;margin-bottom:.75rem;line-height:1.5">Como un examen real. Sube foto del libro y/o escribe el tema.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
             <button id="simFotoBtn" onclick="document.getElementById('simFotoInput').click()" style="flex:1;padding:11px;background:var(--white);color:var(--purple);border:1.5px solid var(--purple-b);border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer">📸 Subir foto</button>
-            <input type="file" id="simFotoInput" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none" onchange="handleSimFoto(this)"/>
+            <input type="file" id="simFotoInput" accept="image/*" style="display:none" onchange="handleSimFoto(this)"/>
           </div>
           <div id="simFotoPreview" style="display:none;margin-bottom:8px">
             <div id="simFotoThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
@@ -2215,7 +2215,7 @@ function handlePhotos(input){
 function renderPhotosPanel(){
   document.getElementById('photosPanel').classList.add('vis');const row=document.getElementById('photosRow');row.innerHTML='';
   uploadedPhotos.forEach((p,i)=>{const w=document.createElement('div');w.className='photo-thumb-wrap';w.innerHTML=`<img class="photo-thumb" src="${p.src}"/><div class="photo-rm" onclick="removePhoto(${i})">✕</div>`;row.appendChild(w);});
-  if(uploadedPhotos.length<5){const a=document.createElement('div');a.className='add-slot';a.innerHTML='<input type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple onchange="handlePhotos(this)" onclick="event.stopPropagation()"/><span style="font-size:20px;opacity:.4">📷</span><span style="font-size:9px;color:#BBB;margin-top:3px">Añadir</span>';row.appendChild(a);}
+  if(uploadedPhotos.length<5){const a=document.createElement('div');a.className='add-slot';a.innerHTML='<input type="file" accept="image/*" multiple onchange="handlePhotos(this)" onclick="event.stopPropagation()"/><span style="font-size:20px;opacity:.4">📷</span><span style="font-size:9px;color:#BBB;margin-top:3px">Añadir</span>';row.appendChild(a);}
   document.getElementById('analyzeBtn').disabled=uploadedPhotos.length===0;
 }
 function removePhoto(i){uploadedPhotos.splice(i,1);if(!uploadedPhotos.length)closePhotos();else renderPhotosPanel();}
@@ -2252,15 +2252,24 @@ let gameFotos=[], simFotos=[], simType='mix';
 
 function handleGameFoto(input){
   if(!input.files||!input.files[0])return;
+  const file=input.files[0];
   const reader=new FileReader();
   reader.onload=e=>{
-    const dataUrl=e.target.result;
-    let mt=dataUrl.substring(dataUrl.indexOf(':')+1,dataUrl.indexOf(';'));
-    const valid=['image/jpeg','image/png','image/gif','image/webp'];
-    if(!valid.includes(mt))mt='image/jpeg';
-    gameFotos.push({b64:dataUrl.split(',')[1],mt});renderGameFotoPreview();checkGameReady();
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');
+      const maxW=1400;
+      c.width=Math.min(img.width,maxW);
+      c.height=Math.round(img.height*(c.width/img.width));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const b64=c.toDataURL('image/jpeg',0.8).split(',')[1];
+      gameFotos.push({b64,mt:'image/jpeg'});
+      renderGameFotoPreview();checkGameReady();
+    };
+    img.onerror=()=>{toast('⚠️ No se pudo leer la imagen');};
+    img.src=e.target.result;
   };
-  reader.readAsDataURL(input.files[0]);input.value='';
+  reader.readAsDataURL(file);input.value='';
 }
 function renderGameFotoPreview(){
   const prev=document.getElementById('gameFotoPreview');const btn=document.getElementById('gameFotoBtn');
@@ -2286,15 +2295,24 @@ function checkGameReady(){
 
 function handleSimFoto(input){
   if(!input.files||!input.files[0])return;
+  const file=input.files[0];
   const reader=new FileReader();
   reader.onload=e=>{
-    const dataUrl=e.target.result;
-    let mt=dataUrl.substring(dataUrl.indexOf(':')+1,dataUrl.indexOf(';'));
-    const valid=['image/jpeg','image/png','image/gif','image/webp'];
-    if(!valid.includes(mt))mt='image/jpeg';
-    simFotos.push({b64:dataUrl.split(',')[1],mt});renderSimFotoPreview();checkSimReady();
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');
+      const maxW=1400;
+      c.width=Math.min(img.width,maxW);
+      c.height=Math.round(img.height*(c.width/img.width));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      const b64=c.toDataURL('image/jpeg',0.8).split(',')[1];
+      simFotos.push({b64,mt:'image/jpeg'});
+      renderSimFotoPreview();checkSimReady();
+    };
+    img.onerror=()=>{toast('⚠️ No se pudo leer la imagen');};
+    img.src=e.target.result;
   };
-  reader.readAsDataURL(input.files[0]);input.value='';
+  reader.readAsDataURL(file);input.value='';
 }
 function renderSimFotoPreview(){
   const prev=document.getElementById('simFotoPreview');const btn=document.getElementById('simFotoBtn');
