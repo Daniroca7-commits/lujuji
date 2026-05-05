@@ -1037,7 +1037,7 @@ let dpWords=[], dpCurrentWord=0, dpMode='', dpCount=0;
 function today(){return new Date().toISOString().split('T')[0];}
 function sv(){localStorage.setItem('lujuji_profile',JSON.stringify(profile));}
 function svTasks(){localStorage.setItem('lujuji_tasks_'+today(),JSON.stringify(tasks));}
-function svExams(){localStorage.setItem('lujuji_exams',JSON.stringify(exams));}
+function svExams(){const clean=exams.map(e=>{const c={id:e.id,name:e.name,date:e.date};return c;});localStorage.setItem('lujuji_exams',JSON.stringify(clean));}
 function svPrizes(){localStorage.setItem('lujuji_prizes',JSON.stringify(prizes));}
 function svTimeRules(){localStorage.setItem('lujuji_timerules',JSON.stringify(timeRules));}
 function svRedeemed(){localStorage.setItem('lujuji_redeemed',JSON.stringify(redeemed));}
@@ -1239,11 +1239,16 @@ function toggleMediLang(useSpanish){
 function openStudyDirect(subjId){
   const subj=SUBJS.find(s=>s.id===subjId);if(!subj)return;
   // Check if there's an exam with photos for this subject
-  const examWithPhoto=exams.find(e=>(e.photo||e.photos)&&e.name.toLowerCase().includes(subj.name.toLowerCase().substring(0,4)));
-  if(examWithPhoto){
-    if(examWithPhoto.photos)uploadedPhotos=[...examWithPhoto.photos];
-    else if(examWithPhoto.photo)uploadedPhotos=[examWithPhoto.photo];
-    temariText='';
+  const examMatch=exams.find(e=>e.name.toLowerCase().includes(subj.name.toLowerCase().substring(0,4)));
+  if(examMatch){
+    // Try loading photos from separate storage
+    try{
+      const stored=localStorage.getItem('lujuji_exam_photos_'+examMatch.id);
+      if(stored){uploadedPhotos=JSON.parse(stored).map(b64=>({src:'data:image/jpeg;base64,'+b64,base64:b64}));temariText='';}
+    }catch(e){}
+    // Legacy: photo stored directly on exam
+    if(examMatch.photo){uploadedPhotos=[{src:'data:image/jpeg;base64,'+examMatch.photo,base64:examMatch.photo}];temariText='';}
+    if(examMatch.photos){uploadedPhotos=examMatch.photos.map(b64=>({src:'data:image/jpeg;base64,'+b64,base64:b64}));temariText='';}
   }
   openStudy(subj);
 }
@@ -1683,8 +1688,10 @@ function saveExam(){
   if(!date){toast('⚠️ Elige una fecha en el calendario');return;}
   if(!examPhotos.length){toast('⚠️ Sube al menos una foto del temario');return;}
   const exam={id:Date.now(),name,date};
-  if(examPhotos.length===1)exam.photo=examPhotos[0];
-  else if(examPhotos.length>1)exam.photos=examPhotos;
+  // Photos stored separately to avoid localStorage quota
+  if(examPhotos.length>0){
+    try{localStorage.setItem('lujuji_exam_photos_'+exam.id,JSON.stringify(examPhotos));}catch(e){console.warn('Photos too large for storage');}
+  }
   exams.push(exam);exams.sort((a,b)=>a.date.localeCompare(b.date));
   svExams();renderExams();renderExamBanner();closeModal('modalExam');
   document.getElementById('examNameIn').value='';document.getElementById('examDatePicked').value='';document.getElementById('examSaveBtn').disabled=true;
