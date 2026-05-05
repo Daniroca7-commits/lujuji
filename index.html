@@ -150,7 +150,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 /* MODALES */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.vis{display:flex}
-.modal-sheet{background:var(--white);border-radius:22px 22px 0 0;padding:1.75rem 1.25rem 3rem;width:100%;max-width:560px;animation:slideUp .3s ease}
+.modal-sheet{background:var(--white);border-radius:22px 22px 0 0;padding:1.75rem 1.25rem 3rem;width:100%;max-width:560px;animation:slideUp .3s ease;max-height:85vh;overflow-y:auto}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .modal-title{font-size:18px;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .modal-close{font-size:22px;cursor:pointer;color:var(--muted);background:none;border:none;padding:0}
@@ -652,6 +652,12 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <span class="timer-txt" id="timerTxtStudy">0:00 / 20:00</span>
     <span id="bonusBadge" style="display:none;padding:2px 8px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:20px;font-size:11px;font-weight:700;color:#92400E;white-space:nowrap"></span>
   </div>
+  <div id="mediLangToggle" style="display:none;margin-bottom:.5rem">
+    <label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--faint);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted)">
+      <input type="checkbox" id="mediEsToggle" onchange="toggleMediLang(this.checked)" style="width:16px;height:16px"/>
+      🇪🇸 Estudiar en español
+    </label>
+  </div>
   <div class="task-banner" id="taskBanner" style="display:none">
     <span class="tb-icon">📌</span>
     <span class="tb-text" id="taskBannerText"></span>
@@ -769,6 +775,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
             <div class="gmode-card" data-st="test" onclick="selSimType(this)" style="border-color:var(--purple-b)"><div class="gm-icon">🎯</div><div class="gm-name">Test</div><div class="gm-sub">4 opciones</div></div>
             <div class="gmode-card" data-st="vf" onclick="selSimType(this)" style="border-color:var(--purple-b)"><div class="gm-icon">⚡</div><div class="gm-name">V/F</div><div class="gm-sub">Verdadero o Falso</div></div>
             <div class="gmode-card" data-st="dev" onclick="selSimType(this)" style="border-color:var(--purple-b)"><div class="gm-icon">✏️</div><div class="gm-name">Desarrollo</div><div class="gm-sub">Respuesta larga</div></div>
+            <div class="gmode-card" data-st="racha20" onclick="selSimType(this)" style="border-color:var(--purple-b)"><div class="gm-icon">🔥</div><div class="gm-name">20 Seguidas</div><div class="gm-sub">Si fallas, a cero</div></div>
           </div>
           <button id="simStartBtn" onclick="simStart()" style="width:100%;padding:14px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;opacity:0.35" disabled>📝 Empezar simulacro</button>
         </div>
@@ -984,6 +991,7 @@ const SUBJS=[
   {id:'medi',name:'Coneixement del Medi',icon:'🌿',lang:'ca',ll:'VAL',minMins:10,color:'#16A34A',colorL:'#F0FDF4',colorB:'#86EFAC'},
   {id:'valencia',name:'Valencià',icon:'🌺',lang:'ca',ll:'VAL',minMins:10,hasDictado:true,color:'#D97706',colorL:'#FFFBEB',colorB:'#FDE68A'},
   {id:'ingles',name:'English',icon:'🇬🇧',lang:'en',ll:'EN',minMins:10,hasDictado:true,color:'#7C3AED',colorL:'#F5F3FF',colorB:'#C4B5FD'},
+  {id:'otros',name:'Otros',icon:'📝',lang:'es',ll:'ES',minMins:10,color:'#6B7280',colorL:'#F9FAFB',colorB:'#D1D5DB'},
 ];
 
 // Más de 60 emojis para elegir
@@ -1017,7 +1025,7 @@ let uploadedPhotos=[], temariText='';
 let timerSecs=0, timerInterval=null, timerDone=false;
 let taskTimerSecs=0, taskTimerInterval=null;
 let gMode='mix', gPool=[], gQ=0, gScore=0, gStreak=0, gMaxS=0, gAns=false, g5VA='';
-let sQ=0, sScore=0, sDev=0, sAns=false, sVA='', simPregs=[];
+let sQ=0, sScore=0, sDev=0, sAns=false, sVA='', simPregs=[], sRacha20=0;
 let dictText='', dictPlaying=false;
 let newTaskType='agent';
 let agendaPhotoB64=null;
@@ -1204,7 +1212,7 @@ function showStudyPicker(){
   const list=document.getElementById('studyPickList');
   let html='';
   SUBJS.forEach(s=>{
-    html+=`<button style="width:100%;padding:14px;margin-bottom:8px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .1s" onclick="closeModal('modalStudyPick');openStudyDirect('${s.id}')">
+    html+=`<button style="width:100%;padding:12px;margin-bottom:6px;background:var(--white);border:1.5px solid var(--border);border-radius:var(--rl);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform .1s" onclick="closeModal('modalStudyPick');openStudyDirect('${s.id}')">
       <span style="font-size:20px">${s.icon||'📚'}</span> ${s.name}
     </button>`;
   });
@@ -1213,6 +1221,19 @@ function showStudyPicker(){
   </button>`;
   list.innerHTML=html;
   openModal('modalStudyPick');
+}
+
+function toggleMediLang(useSpanish){
+  if(!curSubj||curSubj.id!=='medi')return;
+  if(useSpanish){
+    curSubj.lang='es';curSubj.ll='ES';
+    document.getElementById('shLang').textContent='🇪🇸 ES';
+    document.getElementById('chatIn').placeholder='Pregunta lo que quieras...';
+  } else {
+    curSubj.lang='ca';curSubj.ll='VAL';
+    document.getElementById('shLang').textContent='🌺 VAL';
+    document.getElementById('chatIn').placeholder='Pregunta el que vulgues...';
+  }
 }
 
 function openStudyDirect(subjId){
@@ -1811,6 +1832,12 @@ function openStudy(subj,task){
   const sc=subj.color||'#1a1a1a';document.getElementById('sendBtn').style.background=sc;document.getElementById('shLang').style.background=subj.colorL||'#F0F0EC';document.getElementById('shLang').style.color=subj.color||'#1a1a1a';
   document.getElementById('chatIn').placeholder=subj.lang==='es'?'Pregunta lo que quieras...':subj.lang==='ca'?'Pregunta el que vulgues...':'Ask anything...';
 
+  // Medi language toggle
+  const mediToggle=document.getElementById('mediLangToggle');
+  if(mediToggle){
+    mediToggle.style.display=subj.id==='medi'?'block':'none';
+    const cb=document.getElementById('mediEsToggle');if(cb)cb.checked=false;
+  }
   // Task banner
   if(curTask){
     // Penalización si ya había empezado esta tarea y salió antes de tiempo
@@ -2442,7 +2469,7 @@ async function simStart(){
   const hasInput=simFotos.length>0||document.getElementById('temaManualSim')?.value.trim().length>0;
   if(!temariText&&!hasInput){toast('Primero escribe el tema o sube una foto 📸');return;}
   document.getElementById('simIntro').style.display='none';document.getElementById('simPlay').style.display='block';document.getElementById('simSum').classList.remove('vis');
-  sQ=0;sScore=0;sDev=0;sAns=false;
+  sQ=0;sScore=0;sDev=0;sAns=false;sRacha20=0;
 
   // Si hay foto/texto nuevo, cargar temario primero
   if(hasInput){
@@ -2463,8 +2490,9 @@ async function simStart(){
     try{
       const lang=curSubj?.lang||'es';
       const langInstr={es:'Genera en español.',ca:'Genera en català/valencià.',en:'Generate in English.'};
-      const typeInstr={mix:'Mezcla tipos: vf, opts (4 opciones), completa, dev (desarrollo).',test:'SOLO preguntas tipo test con 4 opciones (type:"opts").',vf:'SOLO preguntas de verdadero o falso (type:"vf").',dev:'SOLO preguntas de desarrollo donde el alumno escribe la respuesta larga (type:"dev").'};
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2500,messages:[{role:"user",content:`Genera 5 preguntas de simulacro de examen basadas en este temario de ${curSubj.name}. ${langInstr[lang]} NIVEL DEL ALUMNO: ${profile.cursoLabel||'Primaria'} — adapta la dificultad a este nivel. IMPORTANTE: Las preguntas deben tener la misma dificultad y profundidad que el temario. Si el temario incluye conceptos complejos, las preguntas deben ser igualmente complejas. No simplifiques. TIPO DE EXAMEN: ${typeInstr[simType]||typeInstr.mix} Para cada error incluye los 5 pasos de corrección. JSON sin markdown:\n[{"type":"vf|opts|completa|dev","q":"pregunta","ans":true/false/1/0/"palabra","opts":["a","b","c","d"],"ok":"feedback correcto","err":"feedback incorrecto","analogy":"analogia","verifyQ":"pregunta verificación","verifyA":"respuesta","model":"respuesta modelo completa","punts":["palabra1","palabra2"]}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
+      const typeInstr={mix:'Mezcla tipos: vf, opts (4 opciones), completa, dev (desarrollo).',test:'SOLO preguntas tipo test con 4 opciones (type:"opts").',vf:'SOLO preguntas de verdadero o falso (type:"vf").',dev:'SOLO preguntas de desarrollo donde el alumno escribe la respuesta larga (type:"dev").',racha20:'SOLO preguntas tipo test con 4 opciones (type:"opts"). Genera preguntas variadas cubriendo todo el temario.'};
+      const numPregs=simType==='racha20'?10:5;
+      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:simType==='racha20'?4000:2500,messages:[{role:"user",content:`Genera ${numPregs} preguntas de simulacro de examen basadas en este temario de ${curSubj.name}. ${langInstr[lang]} NIVEL DEL ALUMNO: ${profile.cursoLabel||'Primaria'} — adapta la dificultad a este nivel. IMPORTANTE: Las preguntas deben tener la misma dificultad y profundidad que el temario. Si el temario incluye conceptos complejos, las preguntas deben ser igualmente complejas. No simplifiques. TIPO DE EXAMEN: ${typeInstr[simType]||typeInstr.mix} Para cada error incluye los 5 pasos de corrección. JSON sin markdown:\n[{"type":"vf|opts|completa|dev","q":"pregunta","ans":true/false/1/0/"palabra","opts":["a","b","c","d"],"ok":"feedback correcto","err":"feedback incorrecto","analogy":"analogia","verifyQ":"pregunta verificación","verifyA":"respuesta","model":"respuesta modelo completa","punts":["palabra1","palabra2"]}]\n\nTEMARIO:\n${temariText.substring(0,2000)}`}]})});
       const data=await res.json();
       let raw=data.content?.map(b=>b.text||'').join('').trim()||'';
       raw=raw.replace(/```json/g,'').replace(/```/g,'').trim();
@@ -2495,9 +2523,18 @@ function simReset(){document.getElementById('simIntro').style.display='block';do
 function sReset5(){['s5Ok','s5Err','s5Tip','s5Ver','s5R'].forEach(id=>{const el=document.getElementById(id);el.classList.remove('vis');el.style.display='none';});document.getElementById('s5VR').style.display='none';document.getElementById('s5VI').value='';document.getElementById('s5VI').disabled=false;document.getElementById('sModel').style.display='none';document.getElementById('sNext').classList.remove('vis');document.getElementById('sNext').style.display='';}
 
 function sSimShowQ(){
-  if(sQ>=simPregs.length){sSimResults();return;}
+  if(simType==='racha20'&&sRacha20>=20){sSimResults();return;}
+  if(simType!=='racha20'&&sQ>=simPregs.length){sSimResults();return;}
+  // For racha20, recycle questions if we run out
+  if(simType==='racha20'&&sQ>=simPregs.length){sQ=0;simPregs.sort(()=>Math.random()-.5);}
   sAns=false;const q=simPregs[sQ];const total=simPregs.length;
-  document.getElementById('sCnt').textContent=`${sQ+1}/${total}`;document.getElementById('sProg').style.width=((sQ/total)*100)+'%';document.getElementById('sPts').textContent=sScore+' ✓';
+  if(simType==='racha20'){
+    document.getElementById('sCnt').textContent=`🔥 ${sRacha20}/20`;
+    document.getElementById('sProg').style.width=((sRacha20/20)*100)+'%';
+    document.getElementById('sPts').textContent=sRacha20+'/20';
+  } else {
+    document.getElementById('sCnt').textContent=`${sQ+1}/${total}`;document.getElementById('sProg').style.width=((sQ/total)*100)+'%';document.getElementById('sPts').textContent=sScore+' ✓';
+  }
   document.getElementById('sCard').className='q-card';sReset5();
   const lang=curSubj?.lang||'es';
   const types={vf:{es:'⚡ Verdadero o Falso',ca:'⚡ Verdader o Fals',en:'⚡ True or False'},opts:{es:'🎯 Opciones',ca:'🎯 Opcions',en:'🎯 Options'},completa:{es:'✍️ Completa',ca:'✍️ Completa',en:'✍️ Complete'},dev:{es:'✏️ Desarrollo',ca:'✏️ Desenvolupament',en:'✏️ Extended answer'}};const cls={vf:'st-vf',opts:'st-opts',completa:'st-comp',dev:'st-dev'};
@@ -2531,8 +2568,19 @@ function sAnsDev(){
 }
 function sShowFb(ok,q){
   document.getElementById('sCard').className='q-card '+(ok?'ok':'ko');
-  if(ok){sScore++;flashPts(10);}
-  document.getElementById('sPts').textContent=sScore+' ✓';
+  if(ok){
+    sScore++;flashPts(10);
+    if(simType==='racha20')sRacha20++;
+  } else {
+    if(simType==='racha20'&&sRacha20>0){toast(`💥 ¡${sRacha20} seguidas! Se reinicia el contador...`);sRacha20=0;}
+  }
+  if(simType==='racha20'){
+    document.getElementById('sPts').textContent=sRacha20+'/20';
+    document.getElementById('sProg').style.width=((sRacha20/20)*100)+'%';
+    document.getElementById('sCnt').textContent=`🔥 ${sRacha20}/20`;
+  } else {
+    document.getElementById('sPts').textContent=sScore+' ✓';
+  }
   const okMs=['¡Muy bien! 🎉','¡Correcto! ⭐','¡Exacto! 🌟','¡Lo tienes! 💪'];const koMs=['¡Casi! 😊','Muy cerca 💪','Tiene truco 🔄','¡Bien por intentarlo! 💪'];
   if(ok){const e=document.getElementById('s5Ok');e.style.display='block';e.classList.add('vis');document.getElementById('s5OkB').textContent=okMs[Math.floor(Math.random()*okMs.length)]+' '+(q.ok||'');}
   else{
@@ -2546,10 +2594,20 @@ function sShowFb(ok,q){
   recordActivity();
 }
 function s5ChkV(){const ua=document.getElementById('s5VI').value.trim().toLowerCase();if(!ua)return;const lang=curSubj?.lang||'es';const ok=ua.includes(sVA)||sVA.includes(ua);const res=document.getElementById('s5VR');res.className='ver-res '+(ok?'vr-ok':'vr-ko');res.style.display='block';if(ok){res.textContent=lang==='en'?'✓ Perfect! 🌟':'✓ ¡Perfecto! 🌟';const r=document.getElementById('s5R');r.style.display='block';r.textContent=lang==='en'?'🌟 Great! Keep going! 💪':'🌟 ¡Genial! ¡Seguimos! 💪';document.getElementById('s5VI').disabled=true;}else res.textContent=lang==='en'?`Almost! The answer is "${sVA}" 😊`:lang==='ca'?`Quasi! La resposta és "${sVA}" 😊`:`¡Casi! La respuesta es "${sVA}" 😊`;setSnext();}
-function setSnext(){const nb=document.getElementById('sNext');nb.style.display='';nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';nb.classList.add('vis');}
+function setSnext(){const nb=document.getElementById('sNext');nb.style.display='';
+  if(simType==='racha20'){nb.textContent=sRacha20>=20?'🏆 ¡Conseguido! 🏆':'Siguiente →';}
+  else{nb.textContent=sQ<simPregs.length-1?'Siguiente →':'Ver resultados 🎉';}
+  nb.classList.add('vis');}
 function showSModel(text){const lang=curSubj?.lang||'es';document.getElementById('sModelTitle').textContent=lang==='en'?'CORRECT ANSWER':lang==='ca'?'SOLUCIÓ CORRECTA':'SOLUCIÓN CORRECTA';document.getElementById('sModel').style.display='block';document.getElementById('sModelT').textContent=text||'';}
 function sNextQ(){sQ++;sSimShowQ();recordActivity();}
 function sSimResults(){
+  if(simType==='racha20'&&sRacha20>=20){
+    document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.add('vis');
+    document.getElementById('sSI').textContent='🏆';document.getElementById('ssST').textContent='¡20 seguidas! ¡INCREÍBLE! 🔥🔥🔥';
+    document.getElementById('sSC').textContent='20/20';document.getElementById('sSN').textContent='10/10';document.getElementById('sSD').textContent=sScore+'✓';
+    confetti();flashPts(100);profile.simsPlayed=(profile.simsPlayed||0)+1;checkBadges();sv();
+    return;
+  }
   document.getElementById('simPlay').style.display='none';document.getElementById('simSum').classList.add('vis');
   const total=simPregs.length;const pct=Math.round(sScore/total*100);const nota=pct>=90?10:pct>=80?9:pct>=70?7:pct>=60?6:pct>=50?5:4;
   const msgs={10:'¡Increíble! 🏆',9:"¡Excelente! 🌟",7:'¡Muy bien! 🌿',6:'¡Bien! 💪',5:'Aprobado 📚',4:'¡Sigue practicando! 💪'};
