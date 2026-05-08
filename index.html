@@ -152,6 +152,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg
 .modal-overlay.vis{display:flex}
 .modal-sheet{background:var(--white);border-radius:22px 22px 0 0;padding:1.75rem 1.25rem 3rem;width:100%;max-width:560px;animation:slideUp .3s ease;max-height:85vh;overflow-y:auto}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes bonusPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.02);box-shadow:0 0 20px rgba(245,158,11,.3)}}
 .modal-title{font-size:18px;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .modal-close{font-size:22px;cursor:pointer;color:var(--muted);background:none;border:none;padding:0}
 .modal-in{width:100%;padding:13px 15px;font-size:15px;border:1.5px solid var(--border);border-radius:var(--r);outline:none;margin-bottom:.75rem;background:#FAFAFA;-webkit-appearance:none}
@@ -563,6 +564,7 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
     <span class="timer-txt" id="timerTxt">0:00 / 20:00</span>
   </div>
   <div id="miniCalendar"></div>
+  <div id="bonusBannerDash"></div>
   <div id="tempPrizeBanner"></div>
   <div id="extraRoundBanner"></div>
   <div id="examList" style="margin-bottom:.75rem"></div>
@@ -816,6 +818,8 @@ label:has(input[type=checkbox]:checked)>span:last-of-type{transform:translateX(2
         <button class="dict-type-btn active" data-dtype="general" onclick="selDictType(this)">📝 General</button>
         <button class="dict-type-btn" data-dtype="acentos" onclick="selDictType(this)">´ Acentos</button>
         <button class="dict-type-btn" data-dtype="hache" onclick="selDictType(this)">H h/sin h</button>
+        <button class="dict-type-btn" data-dtype="haa" onclick="selDictType(this)">ha/a/ah</button>
+        <button class="dict-type-btn" data-dtype="interrogativos" onclick="selDictType(this)">?¿ Quién/qué</button>
         <button class="dict-type-btn" data-dtype="bv" onclick="selDictType(this)">B/V b y v</button>
         <button class="dict-type-btn" data-dtype="gj" onclick="selDictType(this)">G/J g y j</button>
         <button class="dict-type-btn" data-dtype="cqu" onclick="selDictType(this)">C/QU c y qu</button>
@@ -1216,7 +1220,7 @@ function openDash(){
   document.getElementById('dStreak').textContent=(profile.streak||0)+'🔥';
   document.getElementById('dPts').textContent=profile.pts||0;
   document.getElementById('dBadges').textContent=(profile.badges||[]).length;
-  renderTasks();renderExams();renderExamBanner();renderAllMiniHitos();renderMiniCalendar();
+  renderTasks();renderExams();renderExamBanner();renderAllMiniHitos();renderMiniCalendar();renderBonusBanner();
   const tpb=document.getElementById('tempPrizeBanner');if(tpb)tpb.innerHTML=renderTempPrizeBanner();
   const erb=document.getElementById('extraRoundBanner');if(erb)erb.innerHTML=renderExtraRoundBanner();
   checkTempPrize();
@@ -1771,6 +1775,19 @@ function renderExams(){
   html+=`<div onclick="openModal('modalExam')" style="display:flex;align-items:center;justify-content:center;padding:8px 12px;background:var(--faint);border:1.5px dashed var(--border);border-radius:12px;font-size:12px;cursor:pointer;min-width:50px;color:var(--muted);font-weight:600">+</div>`;
   html+=`</div>`;
   list.innerHTML=html;
+}
+
+function renderBonusBanner(){
+  const el=document.getElementById('bonusBannerDash');if(!el)return;
+  const{mult,reason}=getBonus();
+  if(mult<=1){el.innerHTML='';return;}
+  const colors={2:{bg:'#FEF3C7',border:'#FDE68A',color:'#92400E',glow:'#F59E0B'},3:{bg:'#DCFCE7',border:'#86EFAC',color:'#166534',glow:'#22C55E'}};
+  const c=colors[Math.floor(mult)]||colors[2];
+  el.innerHTML=`<div style="background:${c.bg};border:2px solid ${c.border};border-radius:var(--rl);padding:14px 16px;margin-bottom:.75rem;text-align:center;animation:bonusPulse 2s ease-in-out infinite;cursor:pointer" onclick="showStudyPicker()">
+    <div style="font-size:20px;font-weight:800;color:${c.color}">⚡ ¡PUNTOS x${mult}! ⚡</div>
+    <div style="font-size:13px;color:${c.color};margin-top:3px;font-weight:600">${reason} — ¡Estudia ahora y gana el doble!</div>
+    <div style="margin-top:8px;display:inline-block;padding:6px 16px;background:${c.glow};color:#fff;border-radius:20px;font-size:12px;font-weight:700">📚 Empezar a estudiar →</div>
+  </div>`;
 }
 
 function renderExamBanner(){}
@@ -2682,8 +2699,10 @@ async function buildDictado(subj){
       const nivel=profile?.cursoLabel||'Primaria';
       const typeInstr={
         general:'con vocabulario variado y alguna palabra difícil de escribir',
-        acentos:'con MUCHAS palabras que lleven acento/tilde (á, é, í, ó, ú). Al menos 8 palabras acentuadas. Ejemplos: también, último, difícil, rápido, fácil, música, teléfono, pájaro',
-        hache:'con MUCHAS palabras con H y sin H que se confunden. Ejemplos: haber/a ver, hecho/echo, hola/ola, huevo, hierba, ahora, almohada, prohibido, zanahoria',
+        acentos:'con MUCHAS palabras que lleven acento/tilde (á, é, í, ó, ú). Al menos 8 palabras acentuadas. Incluye palabras interrogativas con tilde: quién, qué, cómo, dónde, cuándo, cuánto, por qué. Ejemplos: también, último, difícil, rápido, fácil, música, teléfono, pájaro, ¿quién viene?, ¿cómo estás?, ¿dónde vamos?',
+        hache:'con MUCHAS palabras con H y sin H que se confunden. Incluye: ha (verbo haber) vs a (preposición) vs ah (exclamación). Ejemplos: ha venido/a casa/¡ah claro!, haber/a ver, hecho/echo, hola/ola, huevo, hierba, ahora, almohada, hay/ahí/ay, prohibido',
+        interrogativos:'con MUCHAS frases que incluyan quién, qué, cómo, dónde, cuándo, cuánto, por qué (con tilde en pregunta) y quien, que, como, donde, cuando (sin tilde en afirmación). Mezcla frases interrogativas con exclamativas y afirmativas para que practique cuándo lleva tilde y cuándo no',
+        haa:'con MUCHAS frases que usen ha (verbo haber: ha comido, ha ido), a (preposición: a casa, a jugar) y ah (exclamación: ¡ah, claro!). Mezcla las tres formas para que el alumno practique la diferencia. Incluye también hay/ahí/ay',
         bv:'con MUCHAS palabras que contengan B y V. Ejemplos: caballo, volver, escribir, vivir, hablar, vocabulario, búfalo, envolver, observar, avión',
         gj:'con MUCHAS palabras con G y J que se confunden. Ejemplos: coger, tejer, girar, jirafa, genio, ejemplo, geometría, ejercicio, magia, viaje',
         cqu:'con MUCHAS palabras con C, QU, K y Z. Ejemplos: queso, colegio, quince, comenzar, cenar, querer, parque, circo, máquina',
@@ -3605,6 +3624,7 @@ async function stopLectura(){
   const prevMins=parseInt(localStorage.getItem('lujuji_read_mins_'+today())||'0');
   localStorage.setItem('lujuji_read_mins_'+today(),prevMins+readMins);
   profile.lecturas=(profile.lecturas||0)+1;
+  flashPts(15); // Puntos por lectura verificada
   // Save to reading history
   if(!profile.readHistory)profile.readHistory=[];
   profile.readHistory.push({title,page:pags,mins:readMins,words,date:today()});
@@ -3641,7 +3661,6 @@ async function stopLectura(){
       <div style="font-size:13px;color:var(--muted);margin-bottom:1rem">${words} palabras leídas · +15 pts</div>
       <button onclick="show('s_dash')" style="width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer">Volver al inicio</button>
     </div>`;
-    flashPts(15);
   }
 }
 
